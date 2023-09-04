@@ -46,7 +46,7 @@ def test_grib_gridspec_from_metadata(item):
 def test_grib_gridspec_from_file():
     ds = from_source(
         "file",
-        earthkit_test_data_file(os.path.join("gridspec", "t_-60_75_40_10_5x5.grib1")),
+        earthkit_test_data_file(os.path.join("gridspec", "t_75_-60_10_40_5x5.grib1")),
     )
 
     ref = {
