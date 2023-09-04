@@ -12,8 +12,12 @@ import datetime
 from earthkit.data.core.geography import Geography
 from earthkit.data.core.metadata import Metadata
 from earthkit.data.indexing.database import GRIB_KEYS_NAMES
+from earthkit.data.readers.grib.gridspec import make_gridspec
 from earthkit.data.utils.bbox import BoundingBox
 from earthkit.data.utils.projections import Projection
+
+FULL_GLOBE_LIMIT_X = 359.9
+FULL_GLOBE_LIMIT_Y = 179.9
 
 
 def missing_is_none(x):
@@ -132,6 +136,9 @@ class GribFieldGeography(Geography):
             west=self.metadata.get("longitudeOfFirstGridPointInDegrees", None),
             east=self.metadata.get("longitudeOfLastGridPointInDegrees", None),
         )
+
+    def gridspec(self):
+        return make_gridspec(self.metadata)
 
 
 class GribMetadata(Metadata):
@@ -277,6 +284,11 @@ class GribMetadata(Metadata):
         >>> m1 = m.override(key1=1, key2=2)
         """
         d = dict(*args, **kwargs)
+
+        if "gridspec" in d:
+            gridspec = d.pop("gridspec")
+            d.update(gridspec.to_metadata())
+
         handle = self._handle.clone()
         handle.set_multiple(d)
         return GribMetadata(handle)

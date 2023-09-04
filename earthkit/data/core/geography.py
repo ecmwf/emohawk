@@ -117,3 +117,13 @@ class Geography(metaclass=ABCMeta):
         :obj:`BoundingBox <data.utils.bbox.BoundingBox>`
         """
         pass
+
+    @abstractmethod
+    def gridspec(self):
+        r"""Return the grid specification.
+
+        Returns
+        -------
+        :class:`~data.core.gridspec.GridSpec>`
+        """
+        pass

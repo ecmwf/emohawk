@@ -7,5 +7,10 @@
 # nor does it submit to any jurisdiction.
 #
 
-DATETIME = "valid_datetime"
-GRIDSPEC = "grid_spec"
+from earthkit.data.core.metadata import RawMetadata
+
+
+class GridSpec(RawMetadata):
+    """Geographical information about a field or data unit"""
+
+    pass

@@ -202,6 +202,11 @@ class XArrayFieldGeography(Geography):
             north=self.north, south=self.south, east=self.east, west=self.west
         )
 
+    def gridspec(self):
+        from earthkit.data.core.gridspec import GridSpec
+
+        return GridSpec({})
+
     def _grid_mapping(self):
         if "grid_mapping" in self._da.attrs:
             grid_mapping = self._ds[self._da.attrs["grid_mapping"]]

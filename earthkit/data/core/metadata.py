@@ -10,7 +10,7 @@
 
 from abc import ABCMeta, abstractmethod
 
-from earthkit.data.core.constants import DATETIME
+from earthkit.data.core.constants import DATETIME, GRIDSPEC
 
 
 class Metadata(metaclass=ABCMeta):
@@ -135,6 +135,8 @@ class Metadata(metaclass=ABCMeta):
         try:
             if key == DATETIME:
                 return True, self.datetime().get("valid_time")
+            elif key == GRIDSPEC:
+                return True, self.grid_spec
         except Exception as e:
             if not raise_on_missing:
                 return default
@@ -211,6 +213,14 @@ class Metadata(metaclass=ABCMeta):
         If it is not available None is returned.
         """
         return None
+
+    @property
+    def gridspec(self):
+        r""":ref:`~data.core.gridspec.GridSpec`: Get grid description.
+
+        If it is not available None is returned.
+        """
+        return None if self.geography is None else self.geography.gridspec()
 
     def ls_keys(self):
         r"""Return the keys to be used with the :meth:`ls` method."""
