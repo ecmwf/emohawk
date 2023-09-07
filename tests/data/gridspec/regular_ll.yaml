@@ -8,9 +8,9 @@
     grid:
     - 0.083
     - 0.083
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 1
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 1
     type: regular_ll
   metadata:
     Ni: 97
@@ -37,9 +37,9 @@
     grid:
     - 5.0
     - 5.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 72
@@ -66,9 +66,9 @@
     grid:
     - 5.0
     - 5.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 21
@@ -95,9 +95,9 @@
     grid:
     - 1.0
     - 1.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 360
@@ -124,9 +124,9 @@
     grid:
     - 5.0
     - 5.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 57
@@ -153,9 +153,9 @@
     grid:
     - 5.0
     - 5.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 72
@@ -182,9 +182,9 @@
     grid:
     - 5.0
     - 5.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 72
@@ -211,9 +211,9 @@
     grid:
     - 0.125
     - 0.083
-    iScansNegatively: 0
-    jPointsAreConsecutive: 1
-    jScansPositively: 1
+    i_scans_negatively: 0
+    j_points_consecutive: 1
+    j_scans_positively: 1
     type: regular_ll
   metadata:
     Ni: 201
@@ -240,9 +240,9 @@
     grid:
     - 1.0
     - 1.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 360
@@ -269,9 +269,9 @@
     grid:
     - 5.0
     - 5.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 21
@@ -298,9 +298,9 @@
     grid:
     - 5.0
     - 5.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 57
@@ -327,9 +327,9 @@
     grid:
     - 5.0
     - 5.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_ll
   metadata:
     Ni: 72

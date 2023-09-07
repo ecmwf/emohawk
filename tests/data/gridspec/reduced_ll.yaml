@@ -6,9 +6,9 @@
     - -90.0
     - 359.875
     grid: 0.125
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: reduced_ll
   metadata:
     Nj: 1441

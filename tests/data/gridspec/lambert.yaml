@@ -1,0 +1,36 @@
+- file: lambert/2t_lambert_belgium_inca.grib1
+  gridspec:
+    first_point:
+    - 47.896
+    - 0.492
+    grid:
+    - 1000
+    - 1000
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 1
+    lad: 49.833
+    lov: 4.359
+    nx: 601
+    ny: 591
+    type: lambert
+  metadata:
+    DxInMetres: 1000
+    DyInMetres: 1000
+    LaDInDegrees: 49.833
+    Latin1InDegrees: 49.833
+    Latin2InDegrees: 51.167
+    LoVInDegrees: 4.359
+    Ni: 601
+    Nj: 591
+    Nx: 601
+    Ny: 591
+    gridType: lambert
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 1
+    latitudeOfFirstGridPointInDegrees: 47.896
+    latitudeOfSouthernPoleInDegrees: 0.0
+    longitudeOfFirstGridPointInDegrees: 0.492
+    longitudeOfSouthernPoleInDegrees: 0.0
+    orientationOfTheGridInDegrees: 4.359

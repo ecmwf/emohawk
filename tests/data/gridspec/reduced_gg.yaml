@@ -6,9 +6,9 @@
     - -9.977
     - -70.0
     grid: O320
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: reduced_gg
   metadata:
     N: 320
@@ -27,9 +27,9 @@
 - file: reduced_gg/t_reduced_gg_O128_global.grib1
   gridspec:
     grid: O128
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: reduced_gg
   metadata:
     N: 128
@@ -53,9 +53,9 @@
     - 41.23
     - 28.692
     grid: O1280
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: reduced_gg
   metadata:
     N: 1280
@@ -74,9 +74,9 @@
 - file: reduced_gg/t_reduced_gg_N128_global.grib1
   gridspec:
     grid: F128
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_gg
   metadata:
     N: 128
@@ -103,9 +103,9 @@
     - 24.991
     - 300.0
     grid: O1280
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: reduced_gg
   metadata:
     N: 1280

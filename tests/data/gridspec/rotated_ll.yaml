@@ -1,6 +1,6 @@
 - file: rotated_ll/t_rotated_ll_subarea.grib2
   gridspec:
-    angleOfRotationInDegrees: 0.0
+    angle_of_rotation: 0.0
     area:
     - 5.5
     - 356.2
@@ -9,9 +9,9 @@
     grid:
     - 0.02
     - 0.02
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 1
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 1
     rotation:
     - -47.0
     - 10.0

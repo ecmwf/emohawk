@@ -31,6 +31,8 @@ def gridspec_list():
         "reduced_rotated_gg",
         "mercator",
         "polar_stereographic",
+        "lambert",
+        "lambert_azimuthal_equal_area",
     ]:
         with open(
             earthkit_test_data_file(os.path.join("gridspec", f"{grid_type}.yaml")), "r"
@@ -61,9 +63,9 @@ def test_grib_gridspec_from_file():
         "type": "regular_ll",
         "grid": [5.0, 5.0],
         "area": [75.0, -60.0, 10.0, 40.0],
-        "jPointsAreConsecutive": 0,
-        "iScansNegatively": 0,
-        "jScansPositively": 0,
+        "j_points_consecutive": 0,
+        "i_scans_negatively": 0,
+        "j_scans_positively": 0,
     }
     gs = ds[0].metadata().gridspec
     assert isinstance(gs, GridSpec)

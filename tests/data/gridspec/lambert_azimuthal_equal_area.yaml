@@ -1,0 +1,31 @@
+- file: lambert_azimuthal_equal_area/laea_oblate.grib2
+  gridspec:
+    central_longitude: 10.0
+    first_point:
+    - 66.982143
+    - -35.034024
+    grid:
+    - 5000.0
+    - 5000.0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
+    nx: 1000
+    ny: 950
+    standard_parallel: 52.0
+    type: lambert_azimuthal_equal_area
+  metadata:
+    DxInMetres: 5000.0
+    DyInMetres: 5000.0
+    Ni: 1000
+    Nj: 950
+    Nx: 1000
+    Ny: 950
+    centralLongitudeInDegrees: 10.0
+    gridType: lambert_azimuthal_equal_area
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 0
+    latitudeOfFirstGridPointInDegrees: 66.982143
+    longitudeOfFirstGridPointInDegrees: -35.034024
+    standardParallelInDegrees: 52.0

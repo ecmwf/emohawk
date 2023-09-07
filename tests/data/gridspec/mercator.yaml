@@ -1,8 +1,5 @@
 - file: mercator/t_mercator_global_gulf_fnmo.grib2
   gridspec:
-    LaDInDegrees: 14.0
-    Ni: 56
-    Nj: 44
     area:
     - 31.173058
     - 262.036499
@@ -11,10 +8,13 @@
     grid:
     - 45000.0
     - 45000.0
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 1
-    orientationOfTheGridInDegrees: 0.0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 1
+    lad: 14.0
+    ni: 56
+    nj: 44
+    orientation: 0.0
     type: mercator
   metadata:
     DiInMetres: 45000.0

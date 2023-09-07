@@ -1,9 +1,9 @@
 - file: regular_gg/t_regular_gg_F48_global.grib1
   gridspec:
     grid: F48
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     type: regular_gg
   metadata:
     N: 48

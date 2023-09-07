@@ -1,10 +1,10 @@
 - file: rotated_gg/t_rotated_regular_gg_F48_global.grib1
   gridspec:
-    angleOfRotationInDegrees: 0.0
+    angle_of_rotation: 0.0
     grid: F48
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
+    i_scans_negatively: 0
+    j_points_consecutive: 0
+    j_scans_positively: 0
     rotation:
     - 40.0
     - 20.0
