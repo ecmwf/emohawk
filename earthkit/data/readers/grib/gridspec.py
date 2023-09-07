@@ -11,6 +11,7 @@
 from abc import ABCMeta, abstractmethod
 
 from earthkit.data.core.gridspec import GridSpec
+from earthkit.data.core.metadata import RawMetadata
 
 
 def missing_is_none(x):
@@ -30,11 +31,13 @@ def make_gridspec(metadata):
 class GridSpecMaker(metaclass=ABCMeta):
     POSITIVE_SCAN_DIR = 1
     NEGATIVE_SCAN_DIR = -1
+    GRID_TYPE = None
 
-    def __init__(self, md, grid_type):
+    def __init__(self, md):
+        if isinstance(md, dict):
+            md = RawMetadata(md)
         self.md = md
-        self.grid_type = grid_type
-        assert md.get("gridType", None) == self.grid_type
+        assert md.get("gridType", None) == self.GRID_TYPE
 
     def _get_first_valid(self, keys, desc=""):
         for k in keys:
@@ -81,12 +84,14 @@ class GridSpecMaker(metaclass=ABCMeta):
 
 
 class LatLonGridSpecMaker(GridSpecMaker):
+    GRID_TYPE = "regular_ll"
+
     def __init__(self, md):
-        super().__init__(md, "regular_ll")
+        super().__init__(md)
 
     def make(self):
         d = dict()
-        d["type"] = self.grid_type
+        d["type"] = self.GRID_TYPE
         dx, dy = self._get_grid()
         d["grid"] = [abs(dx), abs(dy)]
         d["area"] = [self.north(), self.west(), self.south(), self.east()]
@@ -152,7 +157,7 @@ class GaussianGridSpecMaker(GridSpecMaker):
 
     def make(self):
         d = dict()
-        d["type"] = self.grid_type
+        d["type"] = self.GRID_TYPE
         N = self.md.get("N")
         global_grid = self.md.get("global", 0) == 1
         d["grid"] = f"{self.label}{N}"
@@ -179,19 +184,65 @@ class GaussianGridSpecMaker(GridSpecMaker):
 
 
 class RegularGaussianGridSpecMaker(GaussianGridSpecMaker):
+    GRID_TYPE = "regular_gg"
+
     def __init__(self, md):
-        super().__init__(md, "regular_gg", label="F")
+        super().__init__(md, label="F")
 
 
 class ReducedGaussianGridSpecMaker(GaussianGridSpecMaker):
+    GRID_TYPE = "reduced_gg"
+
     def __init__(self, md):
         octahedral = md.get("isOctahedral", 0) == 1
         label = "O" if octahedral else "N"
-        super().__init__(md, "reduced_gg", label=label)
+        super().__init__(md, label=label)
+
+
+class ReducedLatLonGridSpecMaker(LatLonGridSpecMaker):
+    GRID_TYPE = "reduced_ll"
+
+    def __init__(self, md):
+        super().__init__(md)
+
+    def make(self):
+        d = dict()
+        d["type"] = self.GRID_TYPE
+        _, dy = self._get_grid()
+        d["grid"] = abs(dy)
+        d["area"] = [self.north(), self.west(), self.south(), self.east()]
+
+        for key in [
+            "jPointsAreConsecutive",
+            "iScansNegatively",
+            "jScansPositively",
+        ]:
+            v = self.md.get(key, None)
+            if v is not None:
+                d[key] = v
+
+        return d
+
+    def _get_grid(self):
+        dy = self.md.get("jDirectionIncrementInDegrees", None)
+
+        if dy is None:
+            ny = self._get_first_valid(
+                ["numberOfPointsAlongAMeridian", "Nj"],
+                desc="number of points in latitude",
+            )
+            lat_range = self.last_lat() - self.first_lat()
+            if ny == 1:
+                dy = 1.0
+            else:
+                dy = lat_range / (ny - 1.0)
+
+        return None, dy
 
 
 grid_specs = {
     "regular_ll": LatLonGridSpecMaker,
     "regular_gg": RegularGaussianGridSpecMaker,
     "reduced_gg": ReducedGaussianGridSpecMaker,
+    "reduced_ll": ReducedLatLonGridSpecMaker,
 }

@@ -22,7 +22,7 @@ from earthkit.data.testing import earthkit_test_data_file
 
 def gridspec_list():
     d = []
-    for grid_type in ["regular_ll", "regular_gg", "reduced_gg"]:
+    for grid_type in ["regular_ll", "regular_gg", "reduced_gg", "reduced_ll"]:
         with open(
             earthkit_test_data_file(os.path.join("gridspec", f"{grid_type}.yaml")), "r"
         ) as f:
