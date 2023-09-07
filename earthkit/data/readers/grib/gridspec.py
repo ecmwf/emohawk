@@ -240,9 +240,42 @@ class ReducedLatLonGridSpecMaker(LatLonGridSpecMaker):
         return None, dy
 
 
+class RotatedLatLonGridSpecMaker(LatLonGridSpecMaker):
+    GRID_TYPE = "rotated_ll"
+
+    def __init__(self, md):
+        super().__init__(md)
+
+    def make(self):
+        d = dict()
+        d["type"] = self.GRID_TYPE
+        dx, dy = self._get_grid()
+        d["grid"] = [abs(dx), abs(dy)]
+        d["area"] = [self.north(), self.west(), self.south(), self.east()]
+        d["rotation"] = [self.south_pole_lat(), self.south_pole_lon()]
+        for key in [
+            "angleOfRotationInDegrees",
+            "jPointsAreConsecutive",
+            "iScansNegatively",
+            "jScansPositively",
+        ]:
+            v = self.md.get(key, None)
+            if v is not None:
+                d[key] = v
+
+        return d
+
+    def south_pole_lat(self):
+        return self.md.get("latitudeOfSouthernPoleInDegrees", None)
+
+    def south_pole_lon(self):
+        return self.md.get("longitudeOfSouthernPoleInDegrees", None)
+
+
 grid_specs = {
     "regular_ll": LatLonGridSpecMaker,
     "regular_gg": RegularGaussianGridSpecMaker,
     "reduced_gg": ReducedGaussianGridSpecMaker,
     "reduced_ll": ReducedLatLonGridSpecMaker,
+    "rotated_ll": RotatedLatLonGridSpecMaker,
 }

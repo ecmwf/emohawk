@@ -1,0 +1,34 @@
+- file: rotated_ll/t_rotated_ll_subarea.grib2
+  gridspec:
+    angleOfRotationInDegrees: 0.0
+    area:
+    - 5.5
+    - 356.2
+    - -8.5
+    - 7.7
+    grid:
+    - 0.02
+    - 0.02
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 1
+    rotation:
+    - -47.0
+    - 10.0
+    type: rotated_ll
+  metadata:
+    Ni: 576
+    Nj: 701
+    angleOfRotationInDegrees: 0.0
+    gridType: rotated_ll
+    iDirectionIncrementInDegrees: 0.02
+    iScansNegatively: 0
+    jDirectionIncrementInDegrees: 0.02
+    jPointsAreConsecutive: 0
+    jScansPositively: 1
+    latitudeOfFirstGridPointInDegrees: -8.5
+    latitudeOfLastGridPointInDegrees: 5.5
+    latitudeOfSouthernPoleInDegrees: -47.0
+    longitudeOfFirstGridPointInDegrees: 356.2
+    longitudeOfLastGridPointInDegrees: 7.7
+    longitudeOfSouthernPoleInDegrees: 10.0

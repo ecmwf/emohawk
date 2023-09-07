@@ -16,13 +16,18 @@ import yaml
 
 from earthkit.data import from_source
 from earthkit.data.core.gridspec import GridSpec
-from earthkit.data.core.metadata import RawMetadata
 from earthkit.data.testing import earthkit_test_data_file
 
 
 def gridspec_list():
     d = []
-    for grid_type in ["regular_ll", "regular_gg", "reduced_gg", "reduced_ll"]:
+    for grid_type in [
+        "regular_ll",
+        "regular_gg",
+        "reduced_gg",
+        "reduced_ll",
+        "rotated_ll",
+    ]:
         with open(
             earthkit_test_data_file(os.path.join("gridspec", f"{grid_type}.yaml")), "r"
         ) as f:
@@ -31,15 +36,14 @@ def gridspec_list():
     return d
 
 
-@pytest.mark.parametrize("item", gridspec_list())
-def test_grib_gridspec_from_metadata(item):
+@pytest.mark.parametrize(
+    "metadata,ref,name",
+    [(item["metadata"], item["gridspec"], item["file"]) for item in gridspec_list()],
+)
+def test_grib_gridspec_from_metadata(metadata, ref, name):
     from earthkit.data.readers.grib.gridspec import make_gridspec
 
-    md = RawMetadata(item["metadata"])
-    ref = item["gridspec"]
-    name = item["file"]
-
-    gridspec = make_gridspec(md)
+    gridspec = make_gridspec(metadata)
     assert dict(gridspec) == ref, name
 
 
