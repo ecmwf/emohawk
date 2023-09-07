@@ -1,0 +1,31 @@
+- file: polar_stereographic/tp_polar_stereographic_north_ncep.grib1
+  gridspec:
+    LaDInDegrees: 60
+    Nx: 1121
+    Ny: 881
+    area:
+    - 23.117
+    - -119.023
+    grid:
+    - 4763
+    - 4763
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 1
+    orientationOfTheGridInDegrees: -105.0
+    type: polar_stereographic
+  metadata:
+    DxInMetres: 4763
+    DyInMetres: 4763
+    LaDInDegrees: 60
+    Ni: 1121
+    Nj: 881
+    Nx: 1121
+    Ny: 881
+    gridType: polar_stereographic
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 1
+    latitudeOfFirstGridPointInDegrees: 23.117
+    longitudeOfFirstGridPointInDegrees: -119.023
+    orientationOfTheGridInDegrees: -105.0

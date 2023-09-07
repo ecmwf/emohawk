@@ -1,71 +1,4 @@
-- file: reduced_gg/t_rgg_O1280_subarea.grib1
-  gridspec:
-    area:
-    - 44.254
-    - 22.269
-    - 41.23
-    - 28.692
-    grid: O1280
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
-    type: reduced_gg
-  metadata:
-    N: 1280
-    Nj: 44
-    global: 0
-    gridType: reduced_gg
-    iScansNegatively: 0
-    isOctahedral: 1
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
-    latitudeOfFirstGridPointInDegrees: 44.254
-    latitudeOfLastGridPointInDegrees: 41.23
-    longitudeOfFirstGridPointInDegrees: 22.269
-    longitudeOfLastGridPointInDegrees: 28.692
-- file: reduced_gg/t_rgg_N128_global.grib1
-  gridspec:
-    grid: F128
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
-    type: regular_gg
-  metadata:
-    N: 128
-    Ni: 512
-    Nj: 256
-    global: 1
-    gridType: regular_gg
-    iDirectionIncrementInDegrees: 0.703
-    iScansNegatively: 0
-    isOctahedral: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
-    latitudeOfFirstGridPointInDegrees: 89.463
-    latitudeOfLastGridPointInDegrees: -89.463
-    longitudeOfFirstGridPointInDegrees: 0.0
-    longitudeOfLastGridPointInDegrees: 359.297
-- file: reduced_gg/t_rgg_O128_global.grib1
-  gridspec:
-    grid: O128
-    iScansNegatively: 0
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
-    type: reduced_gg
-  metadata:
-    N: 128
-    Nj: 256
-    global: 1
-    gridType: reduced_gg
-    iScansNegatively: 0
-    isOctahedral: 1
-    jPointsAreConsecutive: 0
-    jScansPositively: 0
-    latitudeOfFirstGridPointInDegrees: 89.463
-    latitudeOfLastGridPointInDegrees: -89.463
-    longitudeOfFirstGridPointInDegrees: 0.0
-    longitudeOfLastGridPointInDegrees: 359.319
-- file: reduced_gg/t_rgg_O320_west.grib1
+- file: reduced_gg/t_reduced_gg_O320_west.grib1
   gridspec:
     area:
     - 11.944
@@ -80,6 +13,7 @@
   metadata:
     N: 320
     Nj: 79
+    Ny: 79
     global: 0
     gridType: reduced_gg
     iScansNegatively: 0
@@ -90,7 +24,78 @@
     latitudeOfLastGridPointInDegrees: -9.977
     longitudeOfFirstGridPointInDegrees: -80.0
     longitudeOfLastGridPointInDegrees: -70.0
-- file: reduced_gg/PCE_I2D_rgg_O1280_57961000_230000000_24991000_300000000.grib2
+- file: reduced_gg/t_reduced_gg_O128_global.grib1
+  gridspec:
+    grid: O128
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 0
+    type: reduced_gg
+  metadata:
+    N: 128
+    Nj: 256
+    Ny: 256
+    global: 1
+    gridType: reduced_gg
+    iScansNegatively: 0
+    isOctahedral: 1
+    jPointsAreConsecutive: 0
+    jScansPositively: 0
+    latitudeOfFirstGridPointInDegrees: 89.463
+    latitudeOfLastGridPointInDegrees: -89.463
+    longitudeOfFirstGridPointInDegrees: 0.0
+    longitudeOfLastGridPointInDegrees: 359.319
+- file: reduced_gg/t_reduced_gg_O1280_subarea.grib1
+  gridspec:
+    area:
+    - 44.254
+    - 22.269
+    - 41.23
+    - 28.692
+    grid: O1280
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 0
+    type: reduced_gg
+  metadata:
+    N: 1280
+    Nj: 44
+    Ny: 44
+    global: 0
+    gridType: reduced_gg
+    iScansNegatively: 0
+    isOctahedral: 1
+    jPointsAreConsecutive: 0
+    jScansPositively: 0
+    latitudeOfFirstGridPointInDegrees: 44.254
+    latitudeOfLastGridPointInDegrees: 41.23
+    longitudeOfFirstGridPointInDegrees: 22.269
+    longitudeOfLastGridPointInDegrees: 28.692
+- file: reduced_gg/t_reduced_gg_N128_global.grib1
+  gridspec:
+    grid: F128
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 0
+    type: regular_gg
+  metadata:
+    N: 128
+    Ni: 512
+    Nj: 256
+    Nx: 512
+    Ny: 256
+    global: 1
+    gridType: regular_gg
+    iDirectionIncrementInDegrees: 0.703
+    iScansNegatively: 0
+    isOctahedral: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 0
+    latitudeOfFirstGridPointInDegrees: 89.463
+    latitudeOfLastGridPointInDegrees: -89.463
+    longitudeOfFirstGridPointInDegrees: 0.0
+    longitudeOfLastGridPointInDegrees: 359.297
+- file: reduced_gg/PCE_I2D_reduced_gg_O1280_57961000_230000000_24991000_300000000.grib2
   gridspec:
     area:
     - 57.961
@@ -105,6 +110,7 @@
   metadata:
     N: 1280
     Nj: 470
+    Ny: 470
     global: 0
     gridType: reduced_gg
     iScansNegatively: 0

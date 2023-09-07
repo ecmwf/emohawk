@@ -1,4 +1,4 @@
-- file: reduced_ll/reduced_ll.grib
+- file: reduced_ll/swh_rll_global.grib1
   gridspec:
     area:
     - 90.0
@@ -12,6 +12,7 @@
     type: reduced_ll
   metadata:
     Nj: 1441
+    Ny: 1441
     gridType: reduced_ll
     iScansNegatively: 0
     jDirectionIncrementInDegrees: 0.125

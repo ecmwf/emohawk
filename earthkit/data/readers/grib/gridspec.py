@@ -32,6 +32,7 @@ class GridSpecMaker(metaclass=ABCMeta):
     POSITIVE_SCAN_DIR = 1
     NEGATIVE_SCAN_DIR = -1
     GRID_TYPE = None
+    ROTATED = None
 
     def __init__(self, md):
         if isinstance(md, dict):
@@ -67,6 +68,24 @@ class GridSpecMaker(metaclass=ABCMeta):
     def south(self):
         return min(self.first_lat(), self.last_lat())
 
+    def west(self):
+        if self.x_scan_dir() == self.POSITIVE_SCAN_DIR:
+            return self.first_lon()
+        else:
+            return self.last_lon()
+
+    def east(self):
+        if self.x_scan_dir() == self.POSITIVE_SCAN_DIR:
+            return self.last_lon()
+        else:
+            return self.first_lon()
+
+    def rotation(self):
+        return [
+            self.md.get("latitudeOfSouthernPoleInDegrees", None),
+            self.md.get("longitudeOfSouthernPoleInDegrees", None),
+        ]
+
     def x_scan_dir(self):
         v = self.md.get("iScansNegatively", None)
         if v is not None:
@@ -82,9 +101,25 @@ class GridSpecMaker(metaclass=ABCMeta):
     def make(self):
         pass
 
+    def _add_rotation(self, d):
+        if self.ROTATED:
+            d["rotation"] = self.rotation()
+            d["angleOfRotationInDegrees"] = self.md.get("angleOfRotationInDegrees")
+
+    def _add_scan_mode(self, d):
+        for key in [
+            "jPointsAreConsecutive",
+            "iScansNegatively",
+            "jScansPositively",
+        ]:
+            v = self.md.get(key, None)
+            if v is not None:
+                d[key] = v
+
 
 class LatLonGridSpecMaker(GridSpecMaker):
     GRID_TYPE = "regular_ll"
+    ROTATED = False
 
     def __init__(self, md):
         super().__init__(md)
@@ -96,15 +131,8 @@ class LatLonGridSpecMaker(GridSpecMaker):
         d["grid"] = [abs(dx), abs(dy)]
         d["area"] = [self.north(), self.west(), self.south(), self.east()]
 
-        for key in [
-            "jPointsAreConsecutive",
-            "iScansNegatively",
-            "jScansPositively",
-        ]:
-            v = self.md.get(key, None)
-            if v is not None:
-                d[key] = v
-
+        self._add_rotation(d)
+        self._add_scan_mode(d)
         return d
 
     def _get_grid(self):
@@ -135,72 +163,10 @@ class LatLonGridSpecMaker(GridSpecMaker):
 
         return dx, dy
 
-    def west(self):
-        if self.x_scan_dir() == self.POSITIVE_SCAN_DIR:
-            return self.first_lon()
-        else:
-            return self.last_lon()
-
-    def east(self):
-        if self.x_scan_dir() == self.POSITIVE_SCAN_DIR:
-            return self.last_lon()
-        else:
-            return self.first_lon()
-
-
-class GaussianGridSpecMaker(GridSpecMaker):
-    def __init__(self, *args, label=None):
-        if label not in ["F", "N", "O"]:
-            raise ValueError("Invalid Gaussian grid label={label}")
-        self.label = label
-        super().__init__(*args)
-
-    def make(self):
-        d = dict()
-        d["type"] = self.GRID_TYPE
-        N = self.md.get("N")
-        global_grid = self.md.get("global", 0) == 1
-        d["grid"] = f"{self.label}{N}"
-
-        if not global_grid:
-            d["area"] = [self.north(), self.west(), self.south(), self.east()]
-
-        for key in [
-            "jPointsAreConsecutive",
-            "iScansNegatively",
-            "jScansPositively",
-        ]:
-            v = self.md.get(key, None)
-            if v is not None:
-                d[key] = v
-
-        return d
-
-    def west(self):
-        return self.first_lon()
-
-    def east(self):
-        return self.last_lon()
-
-
-class RegularGaussianGridSpecMaker(GaussianGridSpecMaker):
-    GRID_TYPE = "regular_gg"
-
-    def __init__(self, md):
-        super().__init__(md, label="F")
-
-
-class ReducedGaussianGridSpecMaker(GaussianGridSpecMaker):
-    GRID_TYPE = "reduced_gg"
-
-    def __init__(self, md):
-        octahedral = md.get("isOctahedral", 0) == 1
-        label = "O" if octahedral else "N"
-        super().__init__(md, label=label)
-
 
 class ReducedLatLonGridSpecMaker(LatLonGridSpecMaker):
     GRID_TYPE = "reduced_ll"
+    ROTATED = False
 
     def __init__(self, md):
         super().__init__(md)
@@ -212,15 +178,8 @@ class ReducedLatLonGridSpecMaker(LatLonGridSpecMaker):
         d["grid"] = abs(dy)
         d["area"] = [self.north(), self.west(), self.south(), self.east()]
 
-        for key in [
-            "jPointsAreConsecutive",
-            "iScansNegatively",
-            "jScansPositively",
-        ]:
-            v = self.md.get(key, None)
-            if v is not None:
-                d[key] = v
-
+        self._add_rotation(d)
+        self._add_scan_mode(d)
         return d
 
     def _get_grid(self):
@@ -242,6 +201,70 @@ class ReducedLatLonGridSpecMaker(LatLonGridSpecMaker):
 
 class RotatedLatLonGridSpecMaker(LatLonGridSpecMaker):
     GRID_TYPE = "rotated_ll"
+    ROTATED = True
+
+    def __init__(self, md):
+        super().__init__(md)
+
+
+class GaussianGridSpecMaker(GridSpecMaker):
+    def __init__(self, *args, label=None):
+        if label not in ["F", "N", "O"]:
+            raise ValueError("Invalid Gaussian grid label={label}")
+        self.label = label
+        super().__init__(*args)
+
+    def make(self):
+        d = dict()
+        d["type"] = self.GRID_TYPE
+        N = self.md.get("N")
+        global_grid = self.md.get("global", 0) == 1
+        d["grid"] = f"{self.label}{N}"
+        if not global_grid:
+            d["area"] = [self.north(), self.west(), self.south(), self.east()]
+
+        self._add_rotation(d)
+        self._add_scan_mode(d)
+        return d
+
+    def west(self):
+        return self.first_lon()
+
+    def east(self):
+        return self.last_lon()
+
+
+class RegularGaussianGridSpecMaker(GaussianGridSpecMaker):
+    GRID_TYPE = "regular_gg"
+    ROTATED = False
+
+    def __init__(self, md):
+        super().__init__(md, label="F")
+
+
+class ReducedGaussianGridSpecMaker(GaussianGridSpecMaker):
+    GRID_TYPE = "reduced_gg"
+    ROTATED = False
+
+    def __init__(self, md):
+        octahedral = md.get("isOctahedral", 0) == 1
+        label = "O" if octahedral else "N"
+        super().__init__(md, label=label)
+
+
+class RegularRotatedGaussianGridSpecMaker(RegularGaussianGridSpecMaker):
+    GRID_TYPE = "rotated_gg"
+    ROTATED = True
+
+
+class ReducedRotatedGaussianGridSpecMaker(ReducedGaussianGridSpecMaker):
+    GRID_TYPE = "reduced_rotated_gg"
+    ROTATED = True
+
+
+class MercatorGridSpecMaker(GridSpecMaker):
+    GRID_TYPE = "mercator"
+    ROTATED = False
 
     def __init__(self, md):
         super().__init__(md)
@@ -252,30 +275,69 @@ class RotatedLatLonGridSpecMaker(LatLonGridSpecMaker):
         dx, dy = self._get_grid()
         d["grid"] = [abs(dx), abs(dy)]
         d["area"] = [self.north(), self.west(), self.south(), self.east()]
-        d["rotation"] = [self.south_pole_lat(), self.south_pole_lon()]
+
         for key in [
-            "angleOfRotationInDegrees",
-            "jPointsAreConsecutive",
-            "iScansNegatively",
-            "jScansPositively",
+            "Ni",
+            "Nj",
+            "LaDInDegrees",
+            "orientationOfTheGridInDegrees",
         ]:
             v = self.md.get(key, None)
             if v is not None:
                 d[key] = v
 
+        self._add_scan_mode(d)
         return d
 
-    def south_pole_lat(self):
-        return self.md.get("latitudeOfSouthernPoleInDegrees", None)
+    def _get_grid(self):
+        dx = self.md.get("DiInMetres")
+        dy = self.md.get("DjInMetres")
+        return dx, dy
 
-    def south_pole_lon(self):
-        return self.md.get("longitudeOfSouthernPoleInDegrees", None)
+
+class PolarStereographicGridSpecMaker(GridSpecMaker):
+    GRID_TYPE = "polar_stereographic"
+    ROTATED = False
+
+    def __init__(self, md):
+        super().__init__(md)
+
+    def make(self):
+        d = dict()
+        d["type"] = self.GRID_TYPE
+        dx, dy = self._get_grid()
+        d["grid"] = [abs(dx), abs(dy)]
+        d["area"] = [self.first_lat(), self.first_lon()]
+
+        for key in [
+            "Nx",
+            "Ny",
+            "LaDInDegrees",
+            "orientationOfTheGridInDegrees",
+        ]:
+            v = self.md.get(key, None)
+            if v is not None:
+                d[key] = v
+
+        self._add_scan_mode(d)
+        return d
+
+    def _get_grid(self):
+        dx = self.md.get("DxInMetres")
+        dy = self.md.get("DyInMetres")
+        return dx, dy
 
 
-grid_specs = {
-    "regular_ll": LatLonGridSpecMaker,
-    "regular_gg": RegularGaussianGridSpecMaker,
-    "reduced_gg": ReducedGaussianGridSpecMaker,
-    "reduced_ll": ReducedLatLonGridSpecMaker,
-    "rotated_ll": RotatedLatLonGridSpecMaker,
-}
+grid_specs = {}
+for g in [
+    LatLonGridSpecMaker,
+    ReducedLatLonGridSpecMaker,
+    RotatedLatLonGridSpecMaker,
+    RegularGaussianGridSpecMaker,
+    ReducedGaussianGridSpecMaker,
+    RegularRotatedGaussianGridSpecMaker,
+    ReducedRotatedGaussianGridSpecMaker,
+    MercatorGridSpecMaker,
+    PolarStereographicGridSpecMaker,
+]:
+    grid_specs[g.GRID_TYPE] = g

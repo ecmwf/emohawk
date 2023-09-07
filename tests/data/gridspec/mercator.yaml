@@ -1,0 +1,37 @@
+- file: mercator/t_mercator_global_gulf_fnmo.grib2
+  gridspec:
+    LaDInDegrees: 14.0
+    Ni: 56
+    Nj: 44
+    area:
+    - 31.173058
+    - 262.036499
+    - 14.736453
+    - 284.975281
+    grid:
+    - 45000.0
+    - 45000.0
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 1
+    orientationOfTheGridInDegrees: 0.0
+    type: mercator
+  metadata:
+    DiInMetres: 45000.0
+    DjInMetres: 45000.0
+    DxInMetres: 45000.0
+    DyInMetres: 45000.0
+    LaDInDegrees: 14.0
+    Ni: 56
+    Nj: 44
+    Nx: 56
+    Ny: 44
+    gridType: mercator
+    iScansNegatively: 0
+    jPointsAreConsecutive: 0
+    jScansPositively: 1
+    latitudeOfFirstGridPointInDegrees: 14.736453
+    latitudeOfLastGridPointInDegrees: 31.173058
+    longitudeOfFirstGridPointInDegrees: 262.036499
+    longitudeOfLastGridPointInDegrees: 284.975281
+    orientationOfTheGridInDegrees: 0.0

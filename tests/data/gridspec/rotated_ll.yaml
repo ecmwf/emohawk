@@ -19,6 +19,8 @@
   metadata:
     Ni: 576
     Nj: 701
+    Nx: 576
+    Ny: 701
     angleOfRotationInDegrees: 0.0
     gridType: rotated_ll
     iDirectionIncrementInDegrees: 0.02

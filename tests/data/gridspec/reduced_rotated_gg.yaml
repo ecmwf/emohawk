@@ -1,24 +1,28 @@
-- file: regular_gg/t_regular_gg_F48_global.grib1
+- file: reduced_rotated_gg/t_reduced_rotated_gg_N48_global.grib1
   gridspec:
-    grid: F48
+    angleOfRotationInDegrees: 0.0
+    grid: N48
     iScansNegatively: 0
     jPointsAreConsecutive: 0
     jScansPositively: 0
-    type: regular_gg
+    rotation:
+    - 40.0
+    - 20.0
+    type: reduced_rotated_gg
   metadata:
     N: 48
-    Ni: 192
     Nj: 96
-    Nx: 192
     Ny: 96
+    angleOfRotationInDegrees: 0.0
     global: 1
-    gridType: regular_gg
-    iDirectionIncrementInDegrees: 1.875
+    gridType: reduced_rotated_gg
     iScansNegatively: 0
     isOctahedral: 0
     jPointsAreConsecutive: 0
     jScansPositively: 0
     latitudeOfFirstGridPointInDegrees: 88.573
     latitudeOfLastGridPointInDegrees: -88.573
+    latitudeOfSouthernPoleInDegrees: 40.0
     longitudeOfFirstGridPointInDegrees: 0.0
     longitudeOfLastGridPointInDegrees: 358.125
+    longitudeOfSouthernPoleInDegrees: 20.0

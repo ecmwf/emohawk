@@ -23,10 +23,14 @@ def gridspec_list():
     d = []
     for grid_type in [
         "regular_ll",
-        "regular_gg",
-        "reduced_gg",
         "reduced_ll",
         "rotated_ll",
+        "regular_gg",
+        "reduced_gg",
+        "rotated_gg",
+        "reduced_rotated_gg",
+        "mercator",
+        "polar_stereographic",
     ]:
         with open(
             earthkit_test_data_file(os.path.join("gridspec", f"{grid_type}.yaml")), "r"
