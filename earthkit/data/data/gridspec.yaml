@@ -86,6 +86,7 @@ types:
     - grid:
       - N
     - *area
+    N_label: F
   reduced_gg:
     grid_types:
     - reduced_gg
@@ -94,6 +95,10 @@ types:
     - grid:
       - N
     - *area
+    N_label:
+      octahedral:
+        0: N
+        1: O
   mercator:
     grid_types:
     - mercator

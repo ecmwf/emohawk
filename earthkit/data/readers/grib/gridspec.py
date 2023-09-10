@@ -126,12 +126,12 @@ class GridSpecMaker(RawMetadata):
             raise ValueError("Could not determine i-direction scanning mode")
 
     def N(self):
-        label = ""
-        if self["type"] == "regular_gg":
-            label = "F"
-        elif self["type"] == "reduced_gg":
-            octahedral = self.get("octahedral", 0) == 1
-            label = "O" if octahedral else "N"
-        else:
-            raise Exception("Cannot define N for type=" + self["type"])
+        label = self.grid_conf["N_label"]
+        if isinstance(label, dict):
+            if "octahedral" not in label:
+                raise ValueError(f"octahedral missing from N label description={label}")
+            octahedral = 1 if self.get("octahedral", 0) == 1 else 0
+            label = label["octahedral"][octahedral]
+        elif not isinstance(label, str):
+            raise ValueError(f"Invalid N label description={label}")
         return label + str(self["N"])
