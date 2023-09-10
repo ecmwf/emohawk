@@ -24,11 +24,8 @@ def gridspec_list():
     for grid_type in [
         "regular_ll",
         "reduced_ll",
-        "rotated_ll",
         "regular_gg",
         "reduced_gg",
-        "rotated_gg",
-        "reduced_rotated_gg",
         "mercator",
         "polar_stereographic",
         "lambert",

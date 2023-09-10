@@ -1,6 +1,11 @@
 - file: reduced_rotated_gg/t_reduced_rotated_gg_N48_global.grib1
   gridspec:
     angle_of_rotation: 0.0
+    area:
+    - 88.573
+    - 0.0
+    - -88.573
+    - 358.125
     grid: N48
     i_scans_negatively: 0
     j_points_consecutive: 0
@@ -8,7 +13,7 @@
     rotation:
     - 40.0
     - 20.0
-    type: reduced_rotated_gg
+    type: reduced_gg
   metadata:
     N: 48
     Nj: 96

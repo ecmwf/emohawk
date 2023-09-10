@@ -26,6 +26,11 @@
     longitudeOfLastGridPointInDegrees: -70.0
 - file: reduced_gg/t_reduced_gg_O128_global.grib1
   gridspec:
+    area:
+    - 89.463
+    - 0.0
+    - -89.463
+    - 359.319
     grid: O128
     i_scans_negatively: 0
     j_points_consecutive: 0
@@ -73,6 +78,11 @@
     longitudeOfLastGridPointInDegrees: 28.692
 - file: reduced_gg/t_reduced_gg_N128_global.grib1
   gridspec:
+    area:
+    - 89.463
+    - 0.0
+    - -89.463
+    - 359.297
     grid: F128
     i_scans_negatively: 0
     j_points_consecutive: 0

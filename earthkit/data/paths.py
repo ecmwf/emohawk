@@ -7,15 +7,14 @@
 # nor does it submit to any jurisdiction.
 #
 
-from earthkit.data.core.metadata import RawMetadata
+import logging
+import os
+
+LOG = logging.getLogger(__name__)
 
 
-class GridSpec(RawMetadata):
-    """Geographical information about a field or data unit"""
+_ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
-    @staticmethod
-    def from_metadata(metadata):
-        pass
 
-    def to_metadata(self):
-        pass
+def earthkit_conf_file(*args):
+    return os.path.join(_ROOT_DIR, "earthkit", "data", *args)

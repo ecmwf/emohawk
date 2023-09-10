@@ -1,5 +1,10 @@
 - file: regular_gg/t_regular_gg_F48_global.grib1
   gridspec:
+    area:
+    - 88.573
+    - 0.0
+    - -88.573
+    - 358.125
     grid: F48
     i_scans_negatively: 0
     j_points_consecutive: 0

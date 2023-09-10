@@ -12,8 +12,8 @@
     j_points_consecutive: 0
     j_scans_positively: 1
     lad: 14.0
-    ni: 56
-    nj: 44
+    nx: 56
+    ny: 44
     orientation: 0.0
     type: mercator
   metadata:

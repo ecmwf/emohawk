@@ -1,6 +1,11 @@
 - file: rotated_gg/t_rotated_regular_gg_F48_global.grib1
   gridspec:
     angle_of_rotation: 0.0
+    area:
+    - 88.573
+    - 0.0
+    - -88.573
+    - 358.125
     grid: F48
     i_scans_negatively: 0
     j_points_consecutive: 0
@@ -8,7 +13,7 @@
     rotation:
     - 40.0
     - 20.0
-    type: rotated_gg
+    type: regular_gg
   metadata:
     N: 48
     Ni: 192

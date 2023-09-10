@@ -1,0 +1,146 @@
+grib_mapping:
+  gridType: grid_type
+  N: N
+  Nx: nx
+  Ny: ny
+  Ni: nx
+  Nj: ny
+  iDirectionIncrementInDegrees: dx
+  jDirectionIncrementInDegrees: dy
+  DxInMetres: dx_in_metres
+  DyInMetres: dy_in_metres
+  DiInMetres: dx_in_metres
+  DjInMetres: dy_in_metres
+  xDirectionGridLengthInMetres: dx_in_metres
+  yDirectionGridLengthInMetres: dy_in_metres
+  LaDInDegrees: lad
+  LoVInDegrees: lov
+  Latin1InDegrees: latin_1
+  Latin2InDegrees: latin_2
+  angleOfRotationInDegrees: angle_of_rotation
+  latitudeOfSouthernPoleInDegrees: lat_south_pole
+  longitudeOfSouthernPoleInDegrees: lon_south_pole
+  orientationOfTheGridInDegrees: orientation
+  jPointsAreConsecutive: j_points_consecutive
+  iScansNegatively: i_scans_negatively
+  jScansPositively: j_scans_positively
+  standardParallelInDegrees: standard_parallel
+  centralLongitudeInDegrees: central_longitude
+  shapeOfTheEarth: shape_of_the_earth
+  radius: radius
+  earthMajorAxis: earth_major_axis
+  earthMinorAxis: earth_minor_axis
+  isOctahedral: octahedral
+  global: global
+  latitudeOfFirstGridPointInDegrees: first_lat
+  latitudeOfLastGridPointInDegrees: last_lat
+  longitudeOfFirstGridPointInDegrees: first_lon
+  longitudeOfLastGridPointInDegrees: last_lon
+definitions:
+  _1: &area
+    area:
+    - north
+    - west
+    - south
+    - east
+  _2: &rotation
+    rotation:
+    - lat_south_pole
+    - lon_south_pole
+  _3: &first_point
+    first_point:
+    - first_lat
+    - first_lon
+shared_keys:
+- type
+- *rotation
+- angle_of_rotation
+- j_points_consecutive
+- i_scans_negatively
+- j_scans_positively
+rotation_keys:
+- rotation
+- angle_of_rotation
+types:
+  regular_ll:
+    grid_types:
+    - regular_ll
+    - rotated_ll
+    keys:
+    - grid:
+      - dx
+      - dy
+    - *area
+  reduced_ll:
+    grid_types:
+    - reduced_ll
+    keys:
+    - grid:
+      - dy
+    - *area
+  regular_gg:
+    grid_types:
+    - regular_gg
+    - rotated_gg
+    keys:
+    - grid:
+      - N
+    - *area
+  reduced_gg:
+    grid_types:
+    - reduced_gg
+    - reduced_rotated_gg
+    keys:
+    - grid:
+      - N
+    - *area
+  mercator:
+    grid_types:
+    - mercator
+    keys:
+    - grid:
+      - dx_in_metres
+      - dy_in_metres
+    - *area
+    - nx
+    - ny
+    - lad
+    - orientation
+  polar_stereographic:
+    grid_types:
+    - polar_stereographic
+    keys:
+    - grid:
+      - dx_in_metres
+      - dy_in_metres
+    - *first_point
+    - nx
+    - ny
+    - lad
+    - orientation
+  lambert:
+    grid_types:
+    - lambert
+    keys:
+    - grid:
+      - dx_in_metres
+      - dy_in_metres
+    - *first_point
+    - nx
+    - ny
+    - lad
+    - lov
+    - latin_1
+    - latin_2
+  lambert_azimuthal_equal_area:
+    grid_types:
+    - lambert_azimuthal_equal_area
+    keys:
+    - grid:
+      - dx_in_metres
+      - dy_in_metres
+    - *first_point
+    - nx
+    - ny
+    - standard_parallel
+    - central_longitude

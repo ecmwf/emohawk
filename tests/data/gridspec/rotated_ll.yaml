@@ -15,7 +15,7 @@
     rotation:
     - -47.0
     - 10.0
-    type: rotated_ll
+    type: regular_ll
   metadata:
     Ni: 576
     Nj: 701
