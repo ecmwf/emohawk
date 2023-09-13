@@ -1,10 +1,17 @@
 Version 0.3 Updates
 /////////////////////////
 
+Version 0.3.1
+===============
+
+Fixes
+++++++
+
+- fixed issue when could not read data from an "fdb" source
+
 
 Version 0.3.0
 ===============
-
 
 New features
 ++++++++++++++++

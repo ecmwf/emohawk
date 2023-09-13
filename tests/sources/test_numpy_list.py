@@ -27,27 +27,31 @@ def test_numpy_list_grib_single_field():
 
     assert ds[0].metadata("shortName") == "2t"
 
-    v = ds[0].values
+    lat, lon, v = ds[0].data(flatten=True)
     v1 = v + 1
 
     md = ds[0].metadata()
     md1 = md.override(shortName="msl")
     r = FieldList.from_numpy(v1, md1)
 
-    assert len(r) == 1
-    assert np.allclose(v1, r[0].values)
-    assert r[0].shape == ds[0].shape
-    assert r[0].metadata("shortName") == "msl"
+    def _check_field(r):
+        assert len(r) == 1
+        assert np.allclose(r[0].values, v1)
+        assert r[0].shape == ds[0].shape
+        assert r[0].metadata("shortName") == "msl"
+        _lat, _lon, _v = r[0].data(flatten=True)
+        assert np.allclose(_lat, lat)
+        assert np.allclose(_lon, lon)
+        assert np.allclose(_v, v1)
+
+    _check_field(r)
 
     # save to disk
     tmp = temp_file()
     r.save(tmp.path)
     assert os.path.exists(tmp.path)
     r_tmp = from_source("file", tmp.path)
-    assert len(r_tmp) == 1
-    assert np.allclose(v1, r_tmp[0].values)
-    assert r_tmp[0].shape == ds[0].shape
-    assert r_tmp[0].metadata("shortName") == "msl"
+    _check_field(r_tmp)
 
 
 def test_numpy_list_grib_multi_field():

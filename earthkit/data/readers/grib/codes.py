@@ -44,42 +44,38 @@ class GribCodesFloatArrayAccessor:
             )
 
     def get(self, handle, dtype=None):
-        if dtype is np.float32 and self.HAS_FLOAT_SUPPORT:
-            return eccodes.codes_get_array(handle, self.KEY, ktype=dtype)
+        v = eccodes.codes_get_array(handle, self.KEY)
+        if dtype is not None:
+            return v.astype(dtype)
         else:
-            return eccodes.codes_get_array(handle, self.KEY)
+            return v
 
 
 class GribCodesValueAccessor(GribCodesFloatArrayAccessor):
+    KEY = "values"
+
     def __init__(self):
         super().__init__()
-        self.KEY = "values"
+
+    def get(self, handle, dtype=None):
+        if dtype is np.float32 and self.HAS_FLOAT_SUPPORT:
+            return eccodes.codes_get_array(handle, self.KEY, ktype=dtype)
+        else:
+            return super().get(handle, dtype=dtype)
 
 
 class GribCodesLatitudeAccessor(GribCodesFloatArrayAccessor):
+    KEY = "latitudes"
+
     def __init__(self):
         super().__init__()
-        self.KEY = "latitudes"
-
-    def get(self, handle, dtype=None):
-        v = eccodes.codes_get_array(handle, self.KEY)
-        if dtype is not None:
-            return v.astype(dtype)
-        else:
-            return v
 
 
 class GribCodesLongitudeAccessor(GribCodesFloatArrayAccessor):
+    KEY = "longitudes"
+
     def __init__(self):
         super().__init__()
-        self.KEY = "longitudes"
-
-    def get(self, handle, dtype=None):
-        v = eccodes.codes_get_array(handle, self.KEY)
-        if dtype is not None:
-            return v.astype(dtype)
-        else:
-            return v
 
 
 VALUE_ACCESSOR = GribCodesValueAccessor()

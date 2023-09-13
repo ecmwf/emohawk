@@ -88,6 +88,14 @@ try:
 except Exception:
     NO_EOD = True
 
+try:
+    import pyfdb  # noqa
+
+    fdb_home = os.environ.get("FDB_HOME", None)
+    NO_FDB = fdb_home is None
+except Exception:
+    NO_FDB = True
+
 
 def MISSING(*modules):
     return not modules_installed(*modules)

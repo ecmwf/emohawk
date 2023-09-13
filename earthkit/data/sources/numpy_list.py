@@ -27,7 +27,10 @@ class NumpyField(Field):
         pass
 
     def _values(self, dtype=None):
-        return self._array
+        if dtype is None:
+            return self._array
+        else:
+            return self._array.astype(dtype)
 
     def write(self, f):
         from earthkit.data.writers import write
