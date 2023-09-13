@@ -285,12 +285,23 @@ class GribMetadata(Metadata):
         """
         d = dict(*args, **kwargs)
 
+        adjust_values = False
         if "gridspec" in d:
             gridspec = d.pop("gridspec")
-            d.update(gridspec.to_metadata())
+            from earthkit.data.readers.grib.gridspec import GridSpecConverter
+
+            d.update(GridSpecConverter.to_metadata(gridspec, edition=self["edition"]))
+            adjust_values = True
 
         handle = self._handle.clone()
         handle.set_multiple(d)
+
+        if adjust_values:
+            import numpy as np
+
+            a = np.zeros(42)
+            handle.set_values(a)
+
         return GribMetadata(handle)
 
     def as_namespace(self, namespace=None):

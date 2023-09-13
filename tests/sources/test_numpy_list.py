@@ -17,7 +17,7 @@ import numpy as np
 from earthkit.data import from_source
 from earthkit.data.core.fieldlist import FieldList
 from earthkit.data.core.temporary import temp_file
-from earthkit.data.testing import earthkit_examples_file
+from earthkit.data.testing import earthkit_examples_file, earthkit_test_data_file
 
 LOG = logging.getLogger(__name__)
 
@@ -79,6 +79,56 @@ def test_numpy_list_grib_multi_field():
         assert f.shape == ds[i].shape
         assert f.metadata("shortName") == "2d", f"shortName {i}"
         assert f.metadata("name") == "2 metre dewpoint temperature", f"name {i}"
+
+
+def test_numpy_list_grib_gridspec_override():
+    ds = from_source(
+        "file",
+        earthkit_test_data_file(os.path.join("gridspec", "t_75_-60_10_40_5x5.grib1")),
+    )
+
+    # define gridspec for new grid
+    gs = {
+        "type": "regular_ll",
+        "grid": [10.0, 10.0],
+        "area": [70.0, -50.0, 20.0, 10.0],
+        "j_points_consecutive": 0,
+        "i_scans_negatively": 0,
+        "j_scans_positively": 0,
+    }
+
+    # reference metadata
+    ref = {
+        "gridType": "regular_ll",
+        "Nx": 7,
+        "Ni": 7,
+        "Ny": 6,
+        "Nj": 6,
+        "iDirectionIncrementInDegrees": 10.0,
+        "jDirectionIncrementInDegrees": 10.0,
+        "latitudeOfFirstGridPointInDegrees": 70.0,
+        "latitudeOfLastGridPointInDegrees": 20.0,
+        "longitudeOfFirstGridPointInDegrees": -50.0,
+        "longitudeOfLastGridPointInDegrees": 10.0,
+        "jPointsAreConsecutive": 0,
+        "iScansNegatively": 0,
+        "jScansPositively": 0,
+        "numberOfDataPoints": 42,
+    }
+
+    from earthkit.data.readers.grib.gridspec import GridSpecConverter
+
+    md = GridSpecConverter.to_metadata(gs, edition=1)
+    md_new = ds[0].metadata().override(md)
+    for k, v in ref.items():
+        assert md_new[k] == v
+
+    v_new = np.ones(6 * 7)
+    r = FieldList.from_numpy(v_new, md_new)
+    assert len(r) == 1
+    assert np.allclose(r[0].values, v_new)
+    for k, v in ref.items():
+        assert r[0].metadata(k) == v
 
 
 if __name__ == "__main__":

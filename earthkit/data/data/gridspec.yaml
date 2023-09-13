@@ -1,4 +1,4 @@
-grib_mapping:
+grib_key_map:
   gridType: grid_type
   N: N
   Nx: nx
@@ -36,6 +36,9 @@ grib_mapping:
   latitudeOfLastGridPointInDegrees: last_lat
   longitudeOfFirstGridPointInDegrees: first_lon
   longitudeOfLastGridPointInDegrees: last_lon
+  J: J
+  K: K
+  M: M
 definitions:
   _1: &area
     area:
@@ -62,35 +65,39 @@ rotation_keys:
 - rotation
 - angle_of_rotation
 types:
+  sh:
+    type: sh
+    spectral: 1
+    keys:
+    - type
+    - J
+    - K
+    - M
   regular_ll:
-    grid_types:
-    - regular_ll
-    - rotated_ll
+    type: regular_ll
+    rotated_type: rotated_ll
     keys:
     - grid:
       - dx
       - dy
     - *area
   reduced_ll:
-    grid_types:
-    - reduced_ll
+    type: reduced_ll
     keys:
     - grid:
       - dy
     - *area
   regular_gg:
-    grid_types:
-    - regular_gg
-    - rotated_gg
+    type: regular_gg
+    rotated_type: rotated_gg
     keys:
     - grid:
       - N
     - *area
     N_label: F
   reduced_gg:
-    grid_types:
-    - reduced_gg
-    - reduced_rotated_gg
+    type: reduced_gg
+    rotated_type: reduced_rotated_gg
     keys:
     - grid:
       - N
@@ -100,8 +107,7 @@ types:
         0: N
         1: O
   mercator:
-    grid_types:
-    - mercator
+    type: mercator
     keys:
     - grid:
       - dx_in_metres
@@ -112,8 +118,7 @@ types:
     - lad
     - orientation
   polar_stereographic:
-    grid_types:
-    - polar_stereographic
+    type: polar_stereographic
     keys:
     - grid:
       - dx_in_metres
@@ -124,8 +129,7 @@ types:
     - lad
     - orientation
   lambert:
-    grid_types:
-    - lambert
+    type: lambert
     keys:
     - grid:
       - dx_in_metres
@@ -138,8 +142,7 @@ types:
     - latin_1
     - latin_2
   lambert_azimuthal_equal_area:
-    grid_types:
-    - lambert_azimuthal_equal_area
+    type: lambert_azimuthal_equal_area
     keys:
     - grid:
       - dx_in_metres

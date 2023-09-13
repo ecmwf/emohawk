@@ -1,0 +1,13 @@
+- file: sh/sh_1279.grib1
+  gridspec:
+    J: 1279
+    K: 1279
+    M: 1279
+    type: sh
+  metadata:
+    J: 1279
+    K: 1279
+    M: 1279
+    N: 1958
+    Nj: 0
+    gridType: sh

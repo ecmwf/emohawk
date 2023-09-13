@@ -26,8 +26,7 @@ class NumpyField(Field):
     def _make_metadata(self):
         pass
 
-    @property
-    def values(self):
+    def _values(self, dtype=None):
         return self._array
 
     def write(self, f):
