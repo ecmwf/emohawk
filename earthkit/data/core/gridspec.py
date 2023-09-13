@@ -13,9 +13,4 @@ from earthkit.data.core.metadata import RawMetadata
 class GridSpec(RawMetadata):
     """Geographical information about a field or data unit"""
 
-    @staticmethod
-    def from_metadata(metadata):
-        pass
-
-    def to_metadata(self):
-        pass
+    pass

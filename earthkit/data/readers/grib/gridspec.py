@@ -201,6 +201,7 @@ class GridSpecConverter(metaclass=ABCMeta):
         self.gs_type = gs_type
         self.conf = GridSpecConf.config()["types"][gs_type]
         self.edition = edition
+        self.grid_size = 0
         # TODO: add gridspec validation
 
     def run(self):
@@ -222,7 +223,7 @@ class GridSpecConverter(metaclass=ABCMeta):
             raise ValueError(f"Unsupported gridspec type={gs_type}")
         else:
             converter = maker(gs, gs_type, edition)
-            return converter.run()
+            return converter.run(), converter.grid_size
 
     @staticmethod
     def infer_gs_type(gs):
@@ -407,6 +408,8 @@ class LatLonGridSpecConverter(GridSpecConverter):
         d["last_lat"] = south
         d["first_lon"] = west
         d["last_lon"] = east
+
+        self.grid_size = nx * ny
 
         return d
 

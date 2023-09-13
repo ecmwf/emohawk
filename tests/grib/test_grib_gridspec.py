@@ -98,8 +98,7 @@ def test_grib_metadata_from_gridspec(gridspec, ref, name):
 
     edition = int(name[-1])
     assert edition in [1, 2]
-    # if name == "regular_ll/t_global_-180_180_5x5.grib1":
-    md = GridSpecConverter.to_metadata(gridspec, edition=edition)
+    md, _ = GridSpecConverter.to_metadata(gridspec, edition=edition)
     assert md == ref, name
 
 

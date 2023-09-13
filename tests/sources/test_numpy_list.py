@@ -116,10 +116,7 @@ def test_numpy_list_grib_gridspec_override():
         "numberOfDataPoints": 42,
     }
 
-    from earthkit.data.readers.grib.gridspec import GridSpecConverter
-
-    md = GridSpecConverter.to_metadata(gs, edition=1)
-    md_new = ds[0].metadata().override(md)
+    md_new = ds[0].metadata().override(gridspec=gs)
     for k, v in ref.items():
         assert md_new[k] == v
 
