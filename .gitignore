@@ -212,6 +212,7 @@ docs/examples/*.tar
 docs/examples/*.zip
 docs/examples/_*
 docs/examples/earthkit_use_cases/*.grib
+docs/experimental/*.grib*
 
 # PyBuilder
 .pybuilder/
