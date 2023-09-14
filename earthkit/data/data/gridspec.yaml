@@ -54,7 +54,7 @@ definitions:
     first_point:
     - first_lat
     - first_lon
-shared_keys:
+shared_keys: &shared_keys
 - type
 - *rotation
 - angle_of_rotation
@@ -66,39 +66,42 @@ rotation_keys:
 - angle_of_rotation
 types:
   sh:
-    type: sh
-    spectral: 1
-    keys:
+    grid_type: sh
+    spec:
     - type
     - J
     - K
     - M
   regular_ll:
-    type: regular_ll
+    grid_type: regular_ll
     rotated_type: rotated_ll
-    keys:
+    spec:
+    - *shared_keys
     - grid:
       - dx
       - dy
     - *area
   reduced_ll:
-    type: reduced_ll
-    keys:
+    grid_type: reduced_ll
+    spec:
+    - *shared_keys
     - grid:
       - dy
     - *area
   regular_gg:
-    type: regular_gg
+    grid_type: regular_gg
     rotated_type: rotated_gg
-    keys:
+    spec:
+    - *shared_keys
     - grid:
       - N
     - *area
     N_label: F
   reduced_gg:
-    type: reduced_gg
+    grid_type: reduced_gg
     rotated_type: reduced_rotated_gg
-    keys:
+    spec:
+    - *shared_keys
     - grid:
       - N
     - *area
@@ -107,8 +110,9 @@ types:
         0: N
         1: O
   mercator:
-    type: mercator
-    keys:
+    grid_type: mercator
+    spec:
+    - *shared_keys
     - grid:
       - dx_in_metres
       - dy_in_metres
@@ -118,8 +122,9 @@ types:
     - lad
     - orientation
   polar_stereographic:
-    type: polar_stereographic
-    keys:
+    grid_type: polar_stereographic
+    spec:
+    - *shared_keys
     - grid:
       - dx_in_metres
       - dy_in_metres
@@ -129,8 +134,9 @@ types:
     - lad
     - orientation
   lambert:
-    type: lambert
-    keys:
+    grid_type: lambert
+    spec:
+    - *shared_keys
     - grid:
       - dx_in_metres
       - dy_in_metres
@@ -142,8 +148,9 @@ types:
     - latin_1
     - latin_2
   lambert_azimuthal_equal_area:
-    type: lambert_azimuthal_equal_area
-    keys:
+    grid_type: lambert_azimuthal_equal_area
+    spec:
+    - *shared_keys
     - grid:
       - dx_in_metres
       - dy_in_metres

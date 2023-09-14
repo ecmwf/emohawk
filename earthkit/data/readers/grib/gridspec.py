@@ -55,12 +55,12 @@ class GridSpecConf:
                     else:
                         k = tuple([k_act, k])
                 d[v] = k
-            GridSpecConf._CONFIG["gs_key_map"] = d
+            GridSpecConf._CONFIG["conf_key_map"] = d
 
             # assign conf to GRIB gridType
             GridSpecConf._GRID_TYPES = {}
             for k, v in GridSpecConf._CONFIG["types"].items():
-                g = v["type"]
+                g = v["grid_type"]
                 GridSpecConf._GRID_TYPES[g] = k
                 g = v.get("rotated_type", None)
                 if g is not None:
@@ -68,7 +68,7 @@ class GridSpecConf:
 
     @staticmethod
     def remap_gs_keys_to_grib(gs):
-        gs_to_grib = GridSpecConf._CONFIG["gs_key_map"]
+        gs_to_grib = GridSpecConf._CONFIG["conf_key_map"]
         r = {}
         for k, v in gs.items():
             grib_key = gs_to_grib[k]
@@ -112,16 +112,12 @@ class GridSpecMaker(RawMetadata):
     def make(self):
         d = {}
 
-        if self.grid_conf.get("spectral", 0) == 1:
-            for v in self.grid_conf["keys"]:
-                self._add_key_to_spec(v, d)
-        else:
-            for v in self.conf["shared_keys"] + self.grid_conf["keys"]:
-                self._add_key_to_spec(v, d)
+        for v in self.grid_conf["spec"]:
+            self._add_key_to_spec(v, d)
 
-            if "rotated" not in self["grid_type"]:
-                for k in self.conf["rotation_keys"]:
-                    d.pop(k, None)
+        if "rotated" not in self["grid_type"]:
+            for k in self.conf["rotation_keys"]:
+                d.pop(k, None)
 
         return d
 
@@ -135,6 +131,9 @@ class GridSpecMaker(RawMetadata):
                 method = self.getters.get(k, self.get_list)
                 r = method(v)
                 d[k] = r[0] if len(r) == 1 else r
+        elif isinstance(item, list):
+            for v in item:
+                self._add_key_to_spec(v, d)
         else:
             raise TypeError(f"Unsupported item type={type(item)}")
 
@@ -186,11 +185,6 @@ class GridSpecMaker(RawMetadata):
         elif not isinstance(label, str):
             raise ValueError(f"Invalid N label description={label}")
         return label + str(self["N"])
-
-
-class GribGridSpec(GridSpec):
-    def to_metadata(self):
-        return GridSpecConverter.to_metadata(self)
 
 
 class GridSpecConverter(metaclass=ABCMeta):
@@ -267,7 +261,7 @@ class GridSpecConverter(metaclass=ABCMeta):
 
     def add_grid_type(self):
         d = {}
-        d["grid_type"] = self.conf["type"]
+        d["grid_type"] = self.conf["grid_type"]
 
         rotation = self.add_rotation()
         if rotation:
