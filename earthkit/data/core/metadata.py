@@ -224,6 +224,14 @@ class Metadata(metaclass=ABCMeta):
         r"""Return the keys to be used with the :meth:`indices` method."""
         return []
 
+    @property
+    def levelspec(self):
+        r""":obj:dict`: Get level description.
+
+        If it is not available None is returned.
+        """
+        return None
+
 
 class RawMetadata(Metadata):
     r"""Metadata implementation based on key/value pairs.

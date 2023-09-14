@@ -12,6 +12,7 @@ import datetime
 from earthkit.data.core.geography import Geography
 from earthkit.data.core.metadata import Metadata
 from earthkit.data.indexing.database import GRIB_KEYS_NAMES
+from earthkit.data.readers.grib.levelspec import make_levelspec
 from earthkit.data.utils.bbox import BoundingBox
 from earthkit.data.utils.projections import Projection
 
@@ -417,3 +418,7 @@ class GribMetadata(Metadata):
     def index_keys(self):
         r"""Return the keys to be used with the :meth:`indices` method."""
         return self.INDEX_KEYS
+
+    @property
+    def levelspec(self):
+        return make_levelspec(self)
