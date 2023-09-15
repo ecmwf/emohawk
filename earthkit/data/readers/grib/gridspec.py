@@ -7,10 +7,14 @@
 # nor does it submit to any jurisdiction.
 #
 
+import logging
 from abc import ABCMeta, abstractmethod
 
 from earthkit.data.core.gridspec import GridSpec
 from earthkit.data.core.metadata import RawMetadata
+
+LOG = logging.getLogger(__name__)
+
 
 FULL_GLOBE = 360.0
 FULL_GLOBE_EPS = 1e-7
@@ -24,6 +28,7 @@ def make_gridspec(metadata):
 class GridSpecConf:
     _CONFIG = None
     _GRID_TYPES = None
+    _SCHEMA = None
 
     @staticmethod
     def config():
@@ -38,11 +43,18 @@ class GridSpecConf:
     @staticmethod
     def _load():
         if GridSpecConf._CONFIG is None:
+            import json
+
             import yaml
 
             from earthkit.data.paths import earthkit_conf_file
 
-            with open(earthkit_conf_file("data", "gridspec.yaml"), "r") as f:
+            # schema
+            with open(earthkit_conf_file("gridspec_schema.json"), "r") as f:
+                GridSpecConf._SCHEMA = json.load(f)
+
+            # gridspec config
+            with open(earthkit_conf_file("gridspec.yaml"), "r") as f:
                 GridSpecConf._CONFIG = yaml.safe_load(f)
 
             # add gridspec key to grib key mapping to conf
@@ -55,7 +67,7 @@ class GridSpecConf:
                     else:
                         k = tuple([k_act, k])
                 d[v] = k
-            GridSpecConf._CONFIG["conf_key_map"] = d
+            GridSpecConf._CONFIG["spec_key_map"] = d
 
             # assign conf to GRIB gridType
             GridSpecConf._GRID_TYPES = {}
@@ -67,17 +79,23 @@ class GridSpecConf:
                     GridSpecConf._GRID_TYPES[g] = k
 
     @staticmethod
-    def remap_gs_keys_to_grib(gs):
-        gs_to_grib = GridSpecConf._CONFIG["conf_key_map"]
+    def remap_keys_to_grib(spec):
+        spec_to_grib = GridSpecConf._CONFIG["spec_key_map"]
         r = {}
-        for k, v in gs.items():
-            grib_key = gs_to_grib[k]
+        for k, v in spec.items():
+            grib_key = spec_to_grib[k]
             if isinstance(grib_key, tuple):
                 for x in grib_key:
                     r[x] = v
             else:
                 r[grib_key] = v
         return r
+
+    @staticmethod
+    def validate(gridspec):
+        from jsonschema import validate
+
+        validate(instance=gridspec, schema=GridSpecConf._SCHEMA)
 
 
 class GridSpecMaker(RawMetadata):
@@ -119,6 +137,7 @@ class GridSpecMaker(RawMetadata):
             for k in self.conf["rotation_keys"]:
                 d.pop(k, None)
 
+        GridSpecConf.validate(d)
         return d
 
     def _add_key_to_spec(self, item, d):
@@ -179,11 +198,11 @@ class GridSpecMaker(RawMetadata):
         label = self.grid_conf["N_label"]
         if isinstance(label, dict):
             if "octahedral" not in label:
-                raise ValueError(f"octahedral missing from N label description={label}")
+                raise ValueError(f"octahedral missing from N label config={label}")
             octahedral = 1 if self.get("octahedral", 0) == 1 else 0
             label = label["octahedral"][octahedral]
         elif not isinstance(label, str):
-            raise ValueError(f"Invalid N label description={label}")
+            raise ValueError(f"invalid N label config={label}")
         return label + str(self["N"])
 
 
@@ -204,11 +223,13 @@ class GridSpecConverter(metaclass=ABCMeta):
         d.update(self.add_grid())
         d.update(self.add_rotation())
         d.update(self.add_scanning())
-        d = GridSpecConf.remap_gs_keys_to_grib(d)
+        d = GridSpecConf.remap_keys_to_grib(d)
         return d
 
     @staticmethod
     def to_metadata(gs, edition=2):
+        GridSpecConf.validate(gs)
+
         gs_type = GridSpecConverter.infer_gs_type(gs)
 
         # create converter and generate metadata
@@ -456,5 +477,9 @@ class ReducedGaussianGridSpecConverter(GridSpecConverter):
 
 
 gridspec_converters = {}
-for x in [LatLonGridSpecConverter, RegularGaussianGridSpecConverter]:
+for x in [
+    LatLonGridSpecConverter,
+    RegularGaussianGridSpecConverter,
+    ReducedGaussianGridSpecConverter,
+]:
     gridspec_converters[x.GS_GRID_TYPE] = x

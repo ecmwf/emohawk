@@ -17,4 +17,4 @@ _ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 
 def earthkit_conf_file(*args):
-    return os.path.join(_ROOT_DIR, "earthkit", "data", *args)
+    return os.path.join(_ROOT_DIR, "earthkit", "data", "data", *args)

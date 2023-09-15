@@ -1,0 +1,408 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/product.schema.json",
+    "title": "Gridspec",
+    "description": "Gridspec definition for earthkit",
+    "type": "object",
+    "properties": {
+        "type": {
+            "description": "Unique identifier of the grid",
+            "enum": [
+                "regular_ll",
+                "reduced_ll",
+                "regular_gg",
+                "reduced_gg",
+                "mercator",
+                "polar_stereographic",
+                "lambert",
+                "lambert_azimuthal_equal_area",
+                "sh"
+            ],
+            "type": "string"
+        },
+        "area": {
+            "description": "Area of the grid as an array of [north, west, south, east] in degrees.",
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4
+        },
+        "grid": {
+            "description": "Grid resolution/increment in degrees or metres.",
+            "type": [
+                "array",
+                "number",
+                "string"
+            ],
+            "items": {
+                "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "pattern": "^[F,N,O]?\\d+"
+        },
+        "rotation": {
+            "description": "Location of the South Pole of the rotated grid as an array of [lat, lon] in degrees.",
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "default": null
+        },
+        "i_scans_negatively": {
+            "description": "Scanning mode in i direction.",
+            "enum": [
+                0,
+                1
+            ],
+            "type": "number",
+            "default": 0
+        },
+        "j_scans_positively": {
+            "description": "Scanning mode in j direction.",
+            "enum": [
+                0,
+                1
+            ],
+            "type": "number",
+            "default": 0
+        },
+        "j_points_consecutive": {
+            "description": "Indicate if points in j direction are consecutive.",
+            "enum": [
+                0,
+                1
+            ],
+            "type": "number",
+            "default": 0
+        },
+        "angle_of_rotation": {
+            "description": "Angle of rotation in degrees.",
+            "type": "number",
+            "default": 0
+        },
+        "first_point": {
+            "description": "First gridpoint as an array of [lat, lon] in degrees.",
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "default": null
+        },
+        "nx": {
+            "description": "Number of points in x direction.",
+            "type": "integer",
+            "minimum": 1
+        },
+        "ny": {
+            "description": "Number of points in y direction.",
+            "type": "integer",
+            "minimum": 1
+        },
+        "lad": {
+            "description": "Number of points in y direction",
+            "type": "number"
+        },
+        "lov": {
+            "description": "Number of points in y direction",
+            "type": "number"
+        },
+        "latin_1": {
+            "description": "Number of points in y direction",
+            "type": "number"
+        },
+        "latin_2": {
+            "description": "Number of points in y direction",
+            "type": "number"
+        },
+        "standard_parallel": {
+            "description": "Latitude of standrad parallel in degrees.",
+            "type": "number"
+        },
+        "central_longitude": {
+            "description": "Central longitude in degrees.",
+            "type": "number"
+        },
+        "orientation": {
+            "description": "Orientation of the grid in degrees.",
+            "type": "number",
+            "default": 0
+        },
+        "J": {
+            "description": "J number for spehrical harmonics.",
+            "type": "integer",
+            "minimum": 1
+        },
+        "K": {
+            "description": "J number for spehrical harmonics.",
+            "type": "integer",
+            "minimum": 1
+        },
+        "M": {
+            "description": "M number for spehrical harmonics.",
+            "type": "integer",
+            "minimum": 1
+        }
+    },
+    "allOf": [
+        {
+            "if": {
+                "properties": {
+                    "type": false
+                }
+            },
+            "then": {
+                "anyOf": [
+                    {
+                        "required": [
+                            "grid"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "area"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "regular_ll"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "anyOf": [
+                    {
+                        "required": [
+                            "grid"
+                        ],
+                        "properties": {
+                            "grid": {
+                                "type": "array"
+                            }
+                        }
+                    },
+                    {
+                        "required": [
+                            "area"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "reduced_ll"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "grid"
+                ],
+                "properties": {
+                    "grid": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "regular_gg"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "grid"
+                ],
+                "properties": {
+                    "grid": {
+                        "type": [
+                            "string",
+                            "number"
+                        ],
+                        "pattern": "^F?\\d+"
+                    }
+                }
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "reduced_gg"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "grid"
+                ],
+                "properties": {
+                    "grid": {
+                        "type": "string",
+                        "pattern": "^[N,O]{1}\\d+"
+                    }
+                }
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "mercator"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "grid",
+                    "nx",
+                    "ny",
+                    "lad"
+                ],
+                "properties": {
+                    "grid": {
+                        "type": "array"
+                    }
+                }
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "polar_stereographic"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "grid",
+                    "first_point",
+                    "nx",
+                    "ny",
+                    "lad"
+                ],
+                "properties": {
+                    "grid": {
+                        "type": "array"
+                    }
+                }
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "lambert"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "grid",
+                    "first_point",
+                    "nx",
+                    "ny",
+                    "lad",
+                    "lov",
+                    "latin_1",
+                    "latin_2"
+                ],
+                "properties": {
+                    "grid": {
+                        "type": "array"
+                    }
+                }
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "lambert_azimuthal_equal_area"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "grid",
+                    "first_point",
+                    "nx",
+                    "ny",
+                    "standard_parallel",
+                    "central_longitude"
+                ],
+                "properties": {
+                    "grid": {
+                        "type": "array"
+                    }
+                }
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "sh"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "J",
+                    "K",
+                    "M"
+                ]
+            }
+        }
+    ]
+}
