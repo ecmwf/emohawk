@@ -207,15 +207,14 @@ class GridSpecMaker(RawMetadata):
 
 
 class GridSpecConverter(metaclass=ABCMeta):
-    GS_GRID_TYPE = None
+    SPEC_GRID_TYPE = None
 
-    def __init__(self, gs, gs_type, edition):
-        self.gs = gs
-        self.gs_type = gs_type
-        self.conf = GridSpecConf.config()["types"][gs_type]
+    def __init__(self, spec, spec_type, edition):
+        self.spec = spec
+        self.spec_type = spec_type
+        self.conf = GridSpecConf.config()["types"][spec_type]
         self.edition = edition
         self.grid_size = 0
-        # TODO: add gridspec validation
 
     def run(self):
         # the order might matter
@@ -227,56 +226,56 @@ class GridSpecConverter(metaclass=ABCMeta):
         return d
 
     @staticmethod
-    def to_metadata(gs, edition=2):
-        GridSpecConf.validate(gs)
+    def to_metadata(spec, edition=2):
+        GridSpecConf.validate(spec)
 
-        gs_type = GridSpecConverter.infer_gs_type(gs)
+        spec_type = GridSpecConverter.infer_spec_type(spec)
 
         # create converter and generate metadata
-        maker = gridspec_converters.get(gs_type, None)
+        maker = gridspec_converters.get(spec_type, None)
         if maker is None:
-            raise ValueError(f"Unsupported gridspec type={gs_type}")
+            raise ValueError(f"Unsupported gridspec type={spec_type}")
         else:
-            converter = maker(gs, gs_type, edition)
+            converter = maker(spec, spec_type, edition)
             return converter.run(), converter.grid_size
 
     @staticmethod
-    def infer_gs_type(gs):
-        gs_type = gs.get("type", None)
+    def infer_spec_type(spec):
+        spec_type = spec.get("type", None)
         # when no type specified the grid must be regular_ll or gaussian
-        if gs_type is None:
-            grid = gs["grid"]
+        if spec_type is None:
+            grid = spec["grid"]
             # regular_ll: the grid is in the form of [dx, dy]
-            if isinstance(grid, list) and len(grid) == 2:
-                gs_type = "regular_ll"
+            if isinstance(spec, list) and len(grid) == 2:
+                spec_type = "regular_ll"
             # gaussian: the grid=N as a str or int
-            elif isinstance(grid, (str, int)):
-                gs_type = GridSpecConverter.infer_gaussian_type(grid)
+            elif isinstance(spec, (str, int)):
+                spec_type = GridSpecConverter.infer_gaussian_type(grid)
 
-        if gs_type is None:
-            raise ValueError("Could not determine type of gridspec={gs}")
+        if spec_type is None:
+            raise ValueError("Could not determine type of gridspec={spec}")
 
-        return gs_type
+        return spec_type
 
     @staticmethod
-    def infer_gaussian_type(v):
+    def infer_gaussian_type(grid):
         """Determine gridspec type for Gaussian grids"""
         grid_type = ""
-        if isinstance(v, str):
+        if isinstance(grid, str) and len(grid) > 0:
             try:
-                if v[0] == "F":
+                if grid[0] == "F":
                     grid_type = "regular_gg"
-                elif v[0] in ["N", "O"]:
+                elif grid[0] in ["N", "O"]:
                     grid_type = "reduced_gg"
                 else:
                     grid_type = "regular_gg"
-                    _ = int(v)
+                    _ = int(grid)
             except Exception:
-                raise ValueError(f"Invalid Gaussian grid description str={v}")
-        elif isinstance(v, int):
+                raise ValueError(f"Invalid Gaussian grid description str={grid}")
+        elif isinstance(grid, int):
             grid_type = "regular_gg"
         else:
-            raise ValueError(f"Invalid Gaussian grid description={v}")
+            raise ValueError(f"Invalid Gaussian grid description={grid}")
 
         return grid_type
 
@@ -289,7 +288,7 @@ class GridSpecConverter(metaclass=ABCMeta):
             rotated_type = self.conf.get("rotated_type", None)
             if rotated_type is None:
                 raise ValueError(
-                    f"Rotation is not supported for gridspec type={self.gs_type}"
+                    f"Rotation is not supported for gridspec type={self.spec_type}"
                 )
             d["grid_type"] = rotated_type
             d.update(rotation)
@@ -302,7 +301,7 @@ class GridSpecConverter(metaclass=ABCMeta):
 
     def add_rotation(self):
         d = {}
-        rotation = self.gs.get("rotation", None)
+        rotation = self.spec.get("rotation", None)
         if rotation is not None:
             if not isinstance(rotation, list) or len(rotation) != 2:
                 raise ValueError(f"Invalid rotation in grid spec={rotation}")
@@ -330,7 +329,7 @@ class GridSpecConverter(metaclass=ABCMeta):
         return 1 if (v == 1 or v is True) else 0
 
     def get(self, key, default=None, transform=None):
-        v = self.gs.get(key, default)
+        v = self.spec.get(key, default)
         if v is not None and callable(transform):
             return transform(v)
         return v
@@ -345,10 +344,10 @@ class GridSpecConverter(metaclass=ABCMeta):
 
 
 class LatLonGridSpecConverter(GridSpecConverter):
-    GS_GRID_TYPE = "regular_ll"
+    SPEC_GRID_TYPE = "regular_ll"
 
     def _parse_ew(self, dx, west, east):
-        nx = self.gs.get("nx", None)
+        nx = self.spec.get("nx", None)
         west = self.normalise_lon(west, 0)
         east = self.normalise_lon(east, 0)
         global_ew = False
@@ -384,7 +383,7 @@ class LatLonGridSpecConverter(GridSpecConverter):
         return nx, west, east
 
     def _parse_ns(self, dy, north, south):
-        ny = self.gs.get("ny", None)
+        ny = self.spec.get("ny", None)
         if ny is None:
             d_lat = abs(north - south)
             ny = int(d_lat / dy) + 1
@@ -398,13 +397,13 @@ class LatLonGridSpecConverter(GridSpecConverter):
 
     def add_grid(self):
         d = {}
-        area = self.gs.get("area", None)
+        area = self.spec.get("area", None)
         if isinstance(area, list) and len(area) == 4:
             north, west, south, east = area
         else:
             raise ValueError(f"Invalid area={area}")
 
-        dx, dy = self.gs.get("grid", [1, 1])
+        dx, dy = self.spec.get("grid", [1, 1])
         nx, west, east = self._parse_ew(dx, west, east)
         ny, north, south = self._parse_ns(dy, north, south)
 
@@ -430,10 +429,10 @@ class LatLonGridSpecConverter(GridSpecConverter):
 
 
 class RegularGaussianGridSpecConverter(GridSpecConverter):
-    GS_GRID_TYPE = "regular_gg"
+    SPEC_GRID_TYPE = "regular_gg"
 
     def add_grid(self):
-        N = self.gs.get("grid", None)
+        N = self.spec.get("grid", None)
         if isinstance(N, str):
             try:
                 if N[0] == "F":
@@ -451,11 +450,11 @@ class RegularGaussianGridSpecConverter(GridSpecConverter):
 
 
 class ReducedGaussianGridSpecConverter(GridSpecConverter):
-    GS_GRID_TYPE = "reduced_gg"
+    SPEC_GRID_TYPE = "reduced_gg"
 
     def add_grid(self):
-        N = self.gs.get("grid", None)
-        octahedral = self.gs.get("octahedral", 0)
+        N = self.spec.get("grid", None)
+        octahedral = self.spec.get("octahedral", 0)
         if isinstance(N, str):
             try:
                 if N[0] == "N":
@@ -482,4 +481,4 @@ for x in [
     RegularGaussianGridSpecConverter,
     ReducedGaussianGridSpecConverter,
 ]:
-    gridspec_converters[x.GS_GRID_TYPE] = x
+    gridspec_converters[x.SPEC_GRID_TYPE] = x
