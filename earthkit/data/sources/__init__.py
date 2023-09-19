@@ -44,6 +44,12 @@ class Source(Base):
         return self
 
     def ignore(self):
+        """Indicates to ignore this source in concatenation/merging.
+
+        Returns
+        -------
+        bool
+        """
         # Used by multi-source
         return False
 

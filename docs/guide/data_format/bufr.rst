@@ -9,12 +9,12 @@ BUFR (Binary Universal Form for Representation of meteorological data) is a bina
 BUFRList
 +++++++++++
 
-We can read/retrieve BUFR data with :func:`from_source <data-sources>`. The resulting object will be a :obj:`BUFRList <data.readers.bufr.bufr.BUFRList>` representing a list of :obj:`BUFRMessage <data.readers.bufr.bufr.BUFRMessage>`.
+We can read/retrieve BUFR data with :func:`from_source <data-sources>`. The resulting object will be a :obj:`BUFRList <data.readers.bufr.bufr.BUFRList>` representing a list of :obj:`BUFRMessage <data.readers.bufr.bufr.BUFRMessage>`\ s.
 
 The structure of a BUFR message is typically hierarchical and can be rather complex, so the recommended way to deal with BUFR data is to extract the required data with :meth:`to_pandas() <data.readers.bufr.bufr.BUFRList.to_pandas>`
 into a pandas DataFrame, which is much easier to work with.
 
-The following table gives an overview of the :obj:`BUFRList API<data.readers.bufr.bufr.BUFRList>`:
+The following table gives us an overview of the :obj:`BUFRList API<data.readers.bufr.bufr.BUFRList>`:
 
 .. list-table:: Highlights of the BUFRList API
    :header-rows: 1

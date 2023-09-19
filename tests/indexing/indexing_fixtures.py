@@ -11,10 +11,8 @@
 
 import os
 import shutil
-import warnings
 
 from earthkit.data.core.temporary import temp_directory, temp_file
-from earthkit.data.readers.grib.index import GribFieldList
 from earthkit.data.testing import (
     earthkit_examples_file,
     earthkit_file,
@@ -76,36 +74,6 @@ def list_of_dicts():
         {"param": "d", "levelist": 850, **prototype},
         {"param": "d", "levelist": 600, **prototype},
     ]
-
-
-class GribIndexFromDicts(GribFieldList):
-    def __init__(self, list_of_dicts, *args, **kwargs):
-        self.list_of_dicts = list_of_dicts
-        print(f"KWARGS={kwargs}")
-        super().__init__(*args, **kwargs)
-
-    def __getitem__(self, n):
-        class _VirtualGribField(dict):
-            def metadata(_self, n, **kwargs):
-                try:
-                    if n == "level":
-                        n = "levelist"
-                    if n == "shortName":
-                        n = "param"
-                    if n == "paramId":
-                        n = "_param_id"
-                    return _self[n]
-                except KeyError:
-                    warnings.warn("Cannot find all metadata keys.")
-
-            @property
-            def values(self, n):
-                return self["values"]
-
-        return _VirtualGribField(self.list_of_dicts[n])
-
-    def __len__(self):
-        return len(self.list_of_dicts)
 
 
 def get_tmp_fixture(input_mode):

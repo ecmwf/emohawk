@@ -10,23 +10,31 @@
 #
 
 import datetime
+import os
+import sys
 
 import numpy as np
 import pytest
 
 from earthkit.data import from_source
-from earthkit.data.testing import earthkit_file
 
+here = os.path.dirname(__file__)
+sys.path.insert(0, here)
+from grib_fixtures import load_file_or_numpy_fs  # noqa: E402
 
 # @pytest.mark.skipif(("GITHUB_WORKFLOW" in os.environ) or True, reason="Not yet ready")
-def test_grib_sel_single_message():
-    s = from_source("file", earthkit_file("tests/data/test_single.grib"))
+
+
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_sel_single_message(mode):
+    s = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     r = s.sel(shortName="2t")
     assert len(r) == 1
     assert r[0].metadata("shortName") == "2t"
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "params,expected_meta,metadata_keys",
     [
@@ -54,8 +62,8 @@ def test_grib_sel_single_message():
         ),
     ],
 )
-def test_grib_sel_single_file_1(params, expected_meta, metadata_keys):
-    f = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
+def test_grib_sel_single_file_1(mode, params, expected_meta, metadata_keys):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     g = f.sel(**params)
     assert len(g) == len(expected_meta)
@@ -68,8 +76,9 @@ def test_grib_sel_single_file_1(params, expected_meta, metadata_keys):
     return
 
 
-def test_grib_sel_single_file_2():
-    f = from_source("file", earthkit_file("tests/data/t_time_series.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_sel_single_file_2(mode):
+    f = load_file_or_numpy_fs("t_time_series.grib", mode, folder="data")
 
     g = f.sel(shortName=["t"], step=[3, 6])
     assert len(g) == 2
@@ -88,8 +97,10 @@ def test_grib_sel_single_file_2():
     ]
 
 
-def test_grib_sel_single_file_as_dict():
-    f = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_sel_single_file_as_dict(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
+
     g = f.sel({"shortName": "t", "level": [500, 700], "mars.type": "an"})
     assert len(g) == 2
     assert g.metadata(["shortName", "level:l", "mars.type"]) == [
@@ -98,6 +109,7 @@ def test_grib_sel_single_file_as_dict():
     ]
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "param_id,level,expected_meta",
     [
@@ -109,8 +121,8 @@ def test_grib_sel_single_file_as_dict():
         (131, (slice(510, 520)), []),
     ],
 )
-def test_grib_sel_slice_single_file(param_id, level, expected_meta):
-    f = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
+def test_grib_sel_slice_single_file(mode, param_id, level, expected_meta):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     g = f.sel(paramId=param_id, level=level)
     assert len(g) == len(expected_meta)
@@ -118,9 +130,10 @@ def test_grib_sel_slice_single_file(param_id, level, expected_meta):
         assert g.metadata(["paramId", "level"]) == expected_meta
 
 
-def test_grib_sel_multi_file():
-    f1 = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
-    f2 = from_source("file", earthkit_file("tests/data/ml_data.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_sel_multi_file(mode):
+    f1 = load_file_or_numpy_fs("tuv_pl.grib", mode)
+    f2 = load_file_or_numpy_fs("ml_data.grib", mode, folder="data")
     f = from_source("multi", [f1, f2])
 
     # single resulting field
@@ -133,9 +146,11 @@ def test_grib_sel_multi_file():
     assert np.allclose(d, np.zeros(len(d)))
 
 
-def test_grib_sel_slice_multi_file():
-    f1 = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
-    f2 = from_source("file", earthkit_file("tests/data/ml_data.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_sel_slice_multi_file(mode):
+    f1 = load_file_or_numpy_fs("tuv_pl.grib", mode)
+    f2 = load_file_or_numpy_fs("ml_data.grib", mode, folder="data")
+
     f = from_source("multi", [f1, f2])
 
     g = f.sel(shortName="t", level=slice(56, 62))
@@ -146,9 +161,10 @@ def test_grib_sel_slice_multi_file():
     ]
 
 
-def test_grib_sel_date():
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_sel_date(mode):
     # date and time
-    f = from_source("file", earthkit_file("tests/data/t_time_series.grib"))
+    f = load_file_or_numpy_fs("t_time_series.grib", mode, folder="data")
 
     g = f.sel(date=20201221, time=1200, step=9)
     # g = f.sel(date="20201221", time="12", step="9")
@@ -163,8 +179,9 @@ def test_grib_sel_date():
     assert g.metadata(ref_keys) == ref
 
 
-def test_grib_sel_valid_datetime():
-    f = from_source("file", earthkit_file("tests/data/t_time_series.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_sel_valid_datetime(mode):
+    f = load_file_or_numpy_fs("t_time_series.grib", mode, folder="data")
 
     g = f.sel(valid_datetime=datetime.datetime(2020, 12, 21, 21))
     assert len(g) == 2
@@ -178,14 +195,16 @@ def test_grib_sel_valid_datetime():
     assert g.metadata(ref_keys) == ref
 
 
-def test_grib_isel_single_message():
-    s = from_source("file", earthkit_file("tests/data/test_single.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_isel_single_message(mode):
+    s = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     r = s.isel(shortName=0)
     assert len(r) == 1
     assert r[0].metadata("shortName") == "2t"
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "params,expected_meta,metadata_keys",
     [
@@ -222,8 +241,8 @@ def test_grib_isel_single_message():
         ),
     ],
 )
-def test_grib_isel_single_file(params, expected_meta, metadata_keys):
-    f = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
+def test_grib_isel_single_file(mode, params, expected_meta, metadata_keys):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     g = f.isel(**params)
     assert len(g) == len(expected_meta)
@@ -235,6 +254,7 @@ def test_grib_isel_single_file(params, expected_meta, metadata_keys):
         assert g.metadata(keys) == expected_meta
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "param_id,level,expected_meta",
     [
@@ -246,8 +266,8 @@ def test_grib_isel_single_file(params, expected_meta, metadata_keys):
         (1, (slice(None, None, 2)), [[131, 850], [131, 500], [131, 300]]),
     ],
 )
-def test_grib_isel_slice_single_file(param_id, level, expected_meta):
-    f = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
+def test_grib_isel_slice_single_file(mode, param_id, level, expected_meta):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     g = f.isel(paramId=param_id, level=level)
     assert len(g) == len(expected_meta)
@@ -255,8 +275,9 @@ def test_grib_isel_slice_single_file(param_id, level, expected_meta):
         assert g.metadata(["paramId", "level"]) == expected_meta
 
 
-def test_grib_isel_slice_invalid():
-    f = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_isel_slice_invalid(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     with pytest.raises(IndexError):
         f.isel(level=500)
@@ -265,9 +286,10 @@ def test_grib_isel_slice_invalid():
         f.isel(level="a")
 
 
-def test_grib_isel_multi_file():
-    f1 = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
-    f2 = from_source("file", earthkit_file("tests/data/ml_data.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_isel_multi_file(mode):
+    f1 = load_file_or_numpy_fs("tuv_pl.grib", mode)
+    f2 = load_file_or_numpy_fs("ml_data.grib", mode, folder="data")
     f = from_source("multi", [f1, f2])
 
     # single resulting field
@@ -280,9 +302,10 @@ def test_grib_isel_multi_file():
     assert np.allclose(d, np.zeros(len(d)))
 
 
-def test_grib_isel_slice_multi_file():
-    f1 = from_source("file", earthkit_file("docs/examples/tuv_pl.grib"))
-    f2 = from_source("file", earthkit_file("tests/data/ml_data.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_isel_slice_multi_file(mode):
+    f1 = load_file_or_numpy_fs("tuv_pl.grib", mode)
+    f2 = load_file_or_numpy_fs("ml_data.grib", mode, folder="data")
     f = from_source("multi", [f1, f2])
 
     g = f.isel(shortName=1, level=slice(20, 22))

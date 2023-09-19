@@ -9,6 +9,8 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+import sys
 
 import numpy as np
 import pytest
@@ -16,7 +18,12 @@ import pytest
 from earthkit.data import from_source
 from earthkit.data.testing import earthkit_examples_file
 
+here = os.path.dirname(__file__)
+sys.path.insert(0, here)
+from grib_fixtures import load_file_or_numpy_fs  # noqa: E402
 
+
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "index,expected_meta",
     [
@@ -27,8 +34,9 @@ from earthkit.data.testing import earthkit_examples_file
         (-5, ["u", 400]),
     ],
 )
-def test_grib_single_index(index, expected_meta):
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+def test_grib_single_index(mode, index, expected_meta):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
+    # f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
 
     r = f[index]
     assert r.metadata(["shortName", "level"]) == expected_meta
@@ -38,12 +46,14 @@ def test_grib_single_index(index, expected_meta):
     # assert np.isclose(v[1088], 304.5642, eps)
 
 
-def test_grib_single_index_bad():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_single_index_bad(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
     with pytest.raises(IndexError):
         f[27]
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "indexes,expected_meta",
     [
@@ -55,8 +65,8 @@ def test_grib_single_index_bad():
         (slice(14, None), [["v", 400], ["t", 300], ["u", 300], ["v", 300]]),
     ],
 )
-def test_grib_slice_single_file(indexes, expected_meta):
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+def test_grib_slice_single_file(mode, indexes, expected_meta):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
     r = f[indexes]
     assert len(r) == 4
     assert r.metadata(["shortName", "level"]) == expected_meta
@@ -91,12 +101,14 @@ def test_grib_slice_multi_file(indexes, expected_meta):
     assert f.metadata("shortName") == ["2t", "msl", "t", "z", "t", "z"]
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "indexes1,indexes2",
     [(np.array([1, 16, 5, 9]), np.array([1, 3])), ([1, 16, 5, 9], [1, 3])],
 )
-def test_grib_array_indexing(indexes1, indexes2):
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+def test_grib_array_indexing(mode, indexes1, indexes2):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
+
     r = f[indexes1]
     assert len(r) == 4
     assert r.metadata("shortName") == ["u", "u", "v", "t"]
@@ -106,15 +118,17 @@ def test_grib_array_indexing(indexes1, indexes2):
     assert r1.metadata("shortName") == ["u", "t"]
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("indexes", [(np.array([1, 19, 5, 9])), ([1, 19, 5, 9])])
-def test_grib_array_indexing_bad(indexes):
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+def test_grib_array_indexing_bad(mode, indexes):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
     with pytest.raises(IndexError):
         f[indexes]
 
 
-def test_grib_fieldlist_iterator():
-    g = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_fieldlist_iterator(mode):
+    g = load_file_or_numpy_fs("tuv_pl.grib", mode)
     sn = g.metadata("shortName")
     assert len(sn) == 18
     iter_sn = [f.metadata("shortName") for f in g]
@@ -124,11 +138,12 @@ def test_grib_fieldlist_iterator():
     assert iter_sn == sn
 
 
-def test_grib_fieldlist_iterator_with_zip():
-    # this tests something different with the iterator - this does not try to
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_fieldlist_iterator_with_zip(mode):
+    # test something different to the iterator - does not try to
     # 'go off the edge' of the fieldlist, because the length is determined by
     # the list of levels
-    g = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+    g = load_file_or_numpy_fs("tuv_pl.grib", mode)
     ref_levs = g.metadata("level")
     assert len(ref_levs) == 18
     levs1 = []
@@ -140,9 +155,10 @@ def test_grib_fieldlist_iterator_with_zip():
     assert levs2 == ref_levs
 
 
-def test_grib_fieldlist_iterator_with_zip_multiple():
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_fieldlist_iterator_with_zip_multiple(mode):
     # same as test_fieldlist_iterator_with_zip() but multiple times
-    g = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+    g = load_file_or_numpy_fs("tuv_pl.grib", mode)
     ref_levs = g.metadata("level")
     assert len(ref_levs) == 18
     for i in range(2):
@@ -155,8 +171,9 @@ def test_grib_fieldlist_iterator_with_zip_multiple():
         assert levs2 == ref_levs, i
 
 
-def test_grib_fieldlist_reverse_iterator():
-    g = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_fieldlist_reverse_iterator(mode):
+    g = load_file_or_numpy_fs("tuv_pl.grib", mode)
     sn = g.metadata("shortName")
     sn_reversed = list(reversed(sn))
     assert sn_reversed[0] == "v"

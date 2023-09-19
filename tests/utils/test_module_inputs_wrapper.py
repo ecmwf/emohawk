@@ -28,7 +28,6 @@ TEST_DA2 = xr.DataArray(TEST_NP2, name="test2")
 TEST_DS = TEST_DA.to_dataset()
 TEST_DS["test2"] = TEST_DA2
 
-EK_GRIB_READER = from_source("file", "tests/data/test_single.grib")
 EK_XARRAY_WRAPPER = from_object(TEST_DS)
 EK_NUMPY_WRAPPER = from_object(TEST_NP)
 
@@ -59,6 +58,7 @@ WRAPPED_DUMMY_MODULE = module_inputs_wrapper.transform_module_inputs(
 
 def test_transform_function_inputs_reader_to_xarray():
     # Check EK GribReader object
+    EK_GRIB_READER = from_source("file", "tests/data/test_single.grib")
     ek_reader_result = WRAPPED_XR_ONES_LIKE(EK_GRIB_READER)
     # Will return a DataSet becuase that is first value in kwarg_types
     assert isinstance(ek_reader_result, xr.Dataset)
@@ -67,6 +67,7 @@ def test_transform_function_inputs_reader_to_xarray():
 
 def test_transform_function_inputs_reader_to_xarray_typesetting():
     # Check EK GribReader object
+    EK_GRIB_READER = from_source("file", "tests/data/test_single.grib")
     ek_reader_result = WRAPPED_XR_ONES_LIKE_TYPE_SETTING(EK_GRIB_READER)
     # Will return a dataarray because that is first value in type-set Union
     assert isinstance(ek_reader_result, xr.DataArray)
@@ -75,6 +76,7 @@ def test_transform_function_inputs_reader_to_xarray_typesetting():
 
 def test_transform_module_inputs_reader_to_xarray():
     # Check EK GribReader object
+    EK_GRIB_READER = from_source("file", "tests/data/test_single.grib")
     ek_reader_result = WRAPPED_DUMMY_MODULE.xarray_ones_like(EK_GRIB_READER)
     # Data array because type-setting of function has dataarray first
     assert isinstance(ek_reader_result, xr.DataArray)
@@ -106,12 +108,14 @@ def test_transform_module_inputs_wrapper_to_xarray():
 
 def test_transform_function_inputs_reader_to_numpy():
     # Test with Earthkit.data GribReader object
+    EK_GRIB_READER = from_source("file", "tests/data/test_single.grib")
     assert WRAPPED_NP_MEAN(EK_GRIB_READER) == np.mean(EK_GRIB_READER.to_numpy())
     assert isinstance(WRAPPED_NP_MEAN(EK_GRIB_READER), np.float64)
 
 
 def test_transform_function_inputs_reader_to_numpy_typesetting():
     # Test with Earthkit.data GribReader object
+    EK_GRIB_READER = from_source("file", "tests/data/test_single.grib")
     result = WRAPPED_NP_MEAN_TYPE_SETTING(EK_GRIB_READER)
     assert result == np.mean(EK_GRIB_READER.to_numpy())
     assert isinstance(result, np.float64)
@@ -119,6 +123,7 @@ def test_transform_function_inputs_reader_to_numpy_typesetting():
 
 def test_transform_module_inputs_reader_to_numpy():
     # Test with Earthkit.data GribReader object
+    EK_GRIB_READER = from_source("file", "tests/data/test_single.grib")
     result = WRAPPED_DUMMY_MODULE.numpy_mean(EK_GRIB_READER)
     assert result == np.mean(EK_GRIB_READER.to_numpy())
     assert isinstance(result, np.float64)

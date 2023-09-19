@@ -5,11 +5,6 @@ Welcome to earthkit-data's documentation
 
     This project is **BETA** and will be **Experimental** for the foreseeable future. Interfaces and functionality are likely to change, and the project itself may be scrapped. **DO NOT** use this software in any project/software that is operational.
 
-.. warning::
-
-    This documentation is still work in progress and can only be regarded as a **DRAFT**.
-
-
 **earthkit-data** is a format-agnostic Python interface for geospatial data with a focus on meteorology and
 climate science.
 
@@ -40,6 +35,7 @@ reference systems and bounding boxes.
    :maxdepth: 1
    :caption: Documentation
 
+   howtos
    guide/index
    api
 

@@ -9,7 +9,7 @@ GRIB is the WMO's format for binary gridded data consisting of GRIB messages, wh
 Fieldlists
 +++++++++++
 
-We can read/retrieve GRIB data with :func:`from_source`. The resulting object will be a :class:`~data.readers.grib.index.GribFieldList` representing a list of :class:`~data.readers.grib.codes.GribField`, which we can iterate through:
+We can read/retrieve GRIB data with :func:`from_source`. The resulting object will be a :class:`~data.readers.grib.index.GribFieldList` representing a list of :class:`~data.readers.grib.codes.GribField`\ s, which we can iterate through:
 
 .. code-block:: python
 
@@ -26,7 +26,7 @@ We can read/retrieve GRIB data with :func:`from_source`. The resulting object wi
     GribField(msl,1000,20200513,1200,0,0)
 
 
-The following table gives an overview of the GRIB :class:`~data.readers.grib.index.FieldList` API:
+The following table gives us an overview of the GRIB :class:`~data.readers.grib.index.FieldList` API:
 
 .. list-table:: Highlights of the GRIB FieldList API
    :header-rows: 1

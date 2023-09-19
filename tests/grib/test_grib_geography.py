@@ -9,12 +9,17 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+import sys
+
 import numpy as np
 import pytest
 
-from earthkit.data import from_source
-from earthkit.data.testing import earthkit_examples_file, earthkit_test_data_file
 from earthkit.data.utils import projections
+
+here = os.path.dirname(__file__)
+sys.path.insert(0, here)
+from grib_fixtures import load_file_or_numpy_fs  # noqa: E402
 
 
 def check_array(v, shape=None, first=None, last=None, meanv=None, eps=1e-3):
@@ -24,9 +29,10 @@ def check_array(v, shape=None, first=None, last=None, meanv=None, eps=1e-3):
     assert np.isclose(v.mean(), meanv, eps)
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("index", [0, None])
-def test_grib_to_latlon_single(index):
-    f = from_source("file", earthkit_test_data_file("test_single.grib"))
+def test_grib_to_latlon_single(mode, index):
+    f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     eps = 1e-5
     g = f[index] if index is not None else f
@@ -54,9 +60,10 @@ def test_grib_to_latlon_single(index):
     )
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("index", [0, None])
-def test_grib_to_latlon_single_shape(index):
-    f = from_source("file", earthkit_test_data_file("test_single.grib"))
+def test_grib_to_latlon_single_shape(mode, index):
+    f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     g = f[index] if index is not None else f
     v = g.to_latlon()
@@ -77,9 +84,10 @@ def test_grib_to_latlon_single_shape(index):
         assert np.allclose(y, np.ones(12) * (90 - i * 30))
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_grib_to_latlon_multi(dtype):
-    f = from_source("file", earthkit_examples_file("test.grib"))
+def test_grib_to_latlon_multi(mode, dtype):
+    f = load_file_or_numpy_fs("test.grib", mode)
 
     v_ref = f[0].to_latlon(flatten=True, dtype=dtype)
     v = f.to_latlon(flatten=True, dtype=dtype)
@@ -93,18 +101,20 @@ def test_grib_to_latlon_multi(dtype):
     assert v["lon"].dtype == dtype
 
 
-def test_grib_to_latlon_multi_non_shared_grid():
-    f1 = from_source("file", earthkit_examples_file("test.grib"))
-    f2 = from_source("file", earthkit_examples_file("test4.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_to_latlon_multi_non_shared_grid(mode):
+    f1 = load_file_or_numpy_fs("test.grib", mode)
+    f2 = load_file_or_numpy_fs("test4.grib", mode)
     f = f1 + f2
 
     with pytest.raises(ValueError):
         f.to_latlon()
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("index", [0, None])
-def test_grib_to_points_single(index):
-    f = from_source("file", earthkit_test_data_file("test_single.grib"))
+def test_grib_to_points_single(mode, index):
+    f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     eps = 1e-5
     g = f[index] if index is not None else f
@@ -132,15 +142,17 @@ def test_grib_to_points_single(index):
     )
 
 
-def test_grib_to_points_unsupported_grid():
-    f = from_source("file", earthkit_test_data_file("mercator.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_to_points_unsupported_grid(mode):
+    f = load_file_or_numpy_fs("mercator.grib", mode, folder="data")
     with pytest.raises(ValueError):
         f[0].to_points()
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_grib_to_points_multi(dtype):
-    f = from_source("file", earthkit_examples_file("test.grib"))
+def test_grib_to_points_multi(mode, dtype):
+    f = load_file_or_numpy_fs("test.grib", mode)
 
     v_ref = f[0].to_points(flatten=True, dtype=dtype)
     v = f.to_points(flatten=True, dtype=dtype)
@@ -154,26 +166,29 @@ def test_grib_to_points_multi(dtype):
     assert v["y"].dtype == dtype
 
 
-def test_grib_to_points_multi_non_shared_grid():
-    f1 = from_source("file", earthkit_examples_file("test.grib"))
-    f2 = from_source("file", earthkit_examples_file("test4.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_to_points_multi_non_shared_grid(mode):
+    f1 = load_file_or_numpy_fs("test.grib", mode)
+    f2 = load_file_or_numpy_fs("test4.grib", mode)
     f = f1 + f2
 
     with pytest.raises(ValueError):
         f.to_points()
 
 
-def test_bbox():
-    ds = from_source("file", earthkit_examples_file("test.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_bbox(mode):
+    ds = load_file_or_numpy_fs("test.grib", mode)
     bb = ds.bounding_box()
     assert len(bb) == 2
     for b in bb:
         assert b.as_tuple() == (73, -27, 33, 45)
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("index", [0, None])
-def test_grib_projection_ll(index):
-    f = from_source("file", earthkit_examples_file("test.grib"))
+def test_grib_projection_ll(mode, index):
+    f = load_file_or_numpy_fs("test.grib", mode)
 
     if index is not None:
         g = f[index]
@@ -184,8 +199,9 @@ def test_grib_projection_ll(index):
     )
 
 
-def test_grib_projection_mercator():
-    f = from_source("file", earthkit_test_data_file("mercator.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_projection_mercator(mode):
+    f = load_file_or_numpy_fs("mercator.grib", mode, folder="data")
     projection = f[0].projection()
     assert isinstance(projection, projections.Mercator)
     assert projection.parameters == {
