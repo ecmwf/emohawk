@@ -26,23 +26,13 @@ def make_gridspec(metadata):
 
 
 class GridSpecConf:
-    _CONFIG = None
-    _GRID_TYPES = None
-    _SCHEMA = None
+    def __init__(self):
+        self._config = None
+        self._grid_types = None
+        self._schema = None
 
-    @staticmethod
-    def config():
-        GridSpecConf._load()
-        return GridSpecConf._CONFIG
-
-    @staticmethod
-    def grid_types():
-        GridSpecConf._load()
-        return GridSpecConf._GRID_TYPES
-
-    @staticmethod
-    def _load():
-        if GridSpecConf._CONFIG is None:
+    def _load(self):
+        if self._config is None:
             import json
 
             import yaml
@@ -51,15 +41,15 @@ class GridSpecConf:
 
             # schema
             with open(earthkit_conf_file("gridspec_schema.json"), "r") as f:
-                GridSpecConf._SCHEMA = json.load(f)
+                self._schema = json.load(f)
 
             # gridspec config
             with open(earthkit_conf_file("gridspec.yaml"), "r") as f:
-                GridSpecConf._CONFIG = yaml.safe_load(f)
+                self._config = yaml.safe_load(f)
 
             # add gridspec key to grib key mapping to conf
             d = {}
-            for k, v in GridSpecConf._CONFIG["grib_key_map"].items():
+            for k, v in self._config["grib_key_map"].items():
                 if v in d:
                     k_act = d[v]
                     if isinstance(k_act, tuple):
@@ -67,20 +57,30 @@ class GridSpecConf:
                     else:
                         k = tuple([k_act, k])
                 d[v] = k
-            GridSpecConf._CONFIG["spec_key_map"] = d
+            self._config["spec_key_map"] = d
 
             # assign conf to GRIB gridType
-            GridSpecConf._GRID_TYPES = {}
-            for k, v in GridSpecConf._CONFIG["types"].items():
+            self._grid_types = {}
+            for k, v in self._config["types"].items():
                 g = v["grid_type"]
-                GridSpecConf._GRID_TYPES[g] = k
+                self._grid_types[g] = k
                 g = v.get("rotated_type", None)
                 if g is not None:
-                    GridSpecConf._GRID_TYPES[g] = k
+                    self._grid_types[g] = k
 
-    @staticmethod
-    def remap_keys_to_grib(spec):
-        spec_to_grib = GridSpecConf._CONFIG["spec_key_map"]
+    @property
+    def config(self):
+        self._load()
+        return self._config
+
+    @property
+    def grid_types(self):
+        self._load()
+        return self._grid_types
+
+    def remap_keys_to_grib(self, spec):
+        self._load()
+        spec_to_grib = self._config["spec_key_map"]
         r = {}
         for k, v in spec.items():
             grib_key = spec_to_grib[k]
@@ -91,11 +91,14 @@ class GridSpecConf:
                 r[grib_key] = v
         return r
 
-    @staticmethod
-    def validate(gridspec):
+    def validate(self, gridspec):
+        self._load()
         from jsonschema import validate
 
-        validate(instance=gridspec, schema=GridSpecConf._SCHEMA)
+        validate(instance=gridspec, schema=self._schema)
+
+
+CONF = GridSpecConf()
 
 
 class GridSpecMaker(RawMetadata):
@@ -103,7 +106,7 @@ class GridSpecMaker(RawMetadata):
     NEGATIVE_SCAN_DIR = -1
 
     def __init__(self, metadata):
-        self.conf = GridSpecConf.config()
+        self.conf = CONF.config
 
         # remap metadata keys and get values
         d = {}
@@ -114,7 +117,7 @@ class GridSpecMaker(RawMetadata):
 
         # determine grid type
         grid_type = d["grid_type"]
-        self.grid_type = GridSpecConf.grid_types().get(grid_type, None)
+        self.grid_type = CONF.grid_types.get(grid_type, None)
         if self.grid_type is None:
             raise ValueError(f"Unsupported grib grid type={grid_type}")
         self.grid_conf = dict(self.conf["types"][self.grid_type])
@@ -137,7 +140,7 @@ class GridSpecMaker(RawMetadata):
             for k in self.conf["rotation_keys"]:
                 d.pop(k, None)
 
-        GridSpecConf.validate(d)
+        CONF.validate(d)
         return d
 
     def _add_key_to_spec(self, item, d):
@@ -212,7 +215,7 @@ class GridSpecConverter(metaclass=ABCMeta):
     def __init__(self, spec, spec_type, edition):
         self.spec = spec
         self.spec_type = spec_type
-        self.conf = GridSpecConf.config()["types"][spec_type]
+        self.conf = CONF.config["types"][spec_type]
         self.edition = edition
         self.grid_size = 0
 
@@ -222,12 +225,12 @@ class GridSpecConverter(metaclass=ABCMeta):
         d.update(self.add_grid())
         d.update(self.add_rotation())
         d.update(self.add_scanning())
-        d = GridSpecConf.remap_keys_to_grib(d)
+        d = CONF.remap_keys_to_grib(d)
         return d
 
     @staticmethod
     def to_metadata(spec, edition=2):
-        GridSpecConf.validate(spec)
+        CONF.validate(spec)
 
         spec_type = GridSpecConverter.infer_spec_type(spec)
 

@@ -9,20 +9,23 @@
 # nor does it submit to any jurisdiction.
 #
 
-import logging
 import os
+import sys
 
 import numpy as np
+import pytest
 
 from earthkit.data import from_source
 from earthkit.data.core.fieldlist import FieldList
 from earthkit.data.core.temporary import temp_file
 from earthkit.data.testing import earthkit_examples_file, earthkit_test_data_file
 
-LOG = logging.getLogger(__name__)
+here = os.path.dirname(__file__)
+sys.path.insert(0, here)
+from numpy_fs_fixtures import check_numpy_fs  # noqa: E402
 
 
-def test_numpy_list_grib_single_field():
+def test_numpy_fs_grib_single_field():
     ds = from_source("file", earthkit_examples_file("test.grib"))
 
     assert ds[0].metadata("shortName") == "2t"
@@ -54,7 +57,7 @@ def test_numpy_list_grib_single_field():
     _check_field(r_tmp)
 
 
-def test_numpy_list_grib_multi_field():
+def test_numpy_fs_grib_multi_field():
     ds = from_source("file", earthkit_examples_file("test.grib"))
 
     assert ds[0].metadata("shortName") == "2t"
@@ -85,7 +88,7 @@ def test_numpy_list_grib_multi_field():
         assert f.metadata("name") == "2 metre dewpoint temperature", f"name {i}"
 
 
-def test_numpy_list_grib_gridspec_override():
+def test_numpy_fs_grib_gridspec_override():
     ds = from_source(
         "file",
         earthkit_test_data_file(os.path.join("gridspec", "t_75_-60_10_40_5x5.grib1")),
@@ -130,6 +133,31 @@ def test_numpy_list_grib_gridspec_override():
     assert np.allclose(r[0].values, v_new)
     for k, v in ref.items():
         assert r[0].metadata(k) == v
+
+
+def test_numpy_fs_grib_from_list_of_arrays():
+    ds = from_source("file", earthkit_examples_file("test.grib"))
+    md_full = ds.metadata("param")
+    assert len(ds) == 2
+
+    v = [ds[0].values, ds[1].values]
+    md = [f.metadata().override(generatingProcessIdentifier=150) for f in ds]
+    r = FieldList.from_numpy(v, md)
+
+    check_numpy_fs(r, [ds], md_full)
+
+
+def test_numpy_fs_grib_from_list_of_arrays_bad():
+    ds = from_source("file", earthkit_examples_file("test.grib"))
+
+    v = ds[0].values
+    md = [f.metadata().override(generatingProcessIdentifier=150) for f in ds]
+
+    with pytest.raises(ValueError):
+        _ = FieldList.from_numpy(v, md)
+
+    with pytest.raises(ValueError):
+        _ = FieldList.from_numpy([v], md)
 
 
 if __name__ == "__main__":
