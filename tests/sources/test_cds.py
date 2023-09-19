@@ -81,6 +81,27 @@ def test_cds_netcdf():
     assert len(s) == 2
 
 
+@pytest.mark.long_test
+@pytest.mark.download
+@pytest.mark.skipif(NO_CDS, reason="No access to CDS")
+def test_cds_netcdf_selection_limited():
+    s = from_source(
+        "cds",
+        "satellite-albedo",
+        {
+            "variable": "albb_bh",
+            "satellite": "noaa_7",
+            "sensor": "avhrr",
+            "product_version": "v2",
+            "horizontal_resolution": "4km",
+            "year": "1983",
+            "month": "01",
+            "nominal_day": "10",
+        },
+    )
+    assert len(s) == 9
+
+
 if __name__ == "__main__":
     from earthkit.data.testing import main
 

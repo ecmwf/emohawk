@@ -9,15 +9,22 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+import sys
+
 import numpy as np
+import pytest
 
-from earthkit.data import from_source
-from earthkit.data.testing import earthkit_test_data_file
+here = os.path.dirname(__file__)
+sys.path.insert(0, here)
+from grib_fixtures import load_file_or_numpy_fs  # noqa: E402
 
 
-def test_icon_to_xarray():
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_icon_to_xarray(mode):
     # test the conversion to xarray for an icon (unstructured grid) grib file.
-    g = from_source("file", earthkit_test_data_file("test_icon.grib"))
+    g = load_file_or_numpy_fs("test_icon.grib", mode, folder="data")
+
     ds = g.to_xarray()
     assert len(ds.data_vars) == 1
     # Dataset contains 9 levels and 9 grid points per level
@@ -26,8 +33,9 @@ def test_icon_to_xarray():
     assert ds["pres"].sizes["values"] == 6
 
 
-def test_grib_to_pandas():
-    f = from_source("file", earthkit_test_data_file("test_single.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_to_pandas(mode):
+    f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     # all points
     df = f.to_pandas()
@@ -60,3 +68,9 @@ def test_grib_to_pandas():
     assert np.isclose(df["lat"][0], 90)
     assert np.isclose(df["lon"][0], 30)
     assert np.isclose(df["value"][0], 260.435608)
+
+
+if __name__ == "__main__":
+    from earthkit.data.testing import main
+
+    main()

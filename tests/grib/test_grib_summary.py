@@ -8,14 +8,19 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import os
+import sys
+
 import pytest
 
-from earthkit.data import from_source
-from earthkit.data.testing import earthkit_examples_file
+here = os.path.dirname(__file__)
+sys.path.insert(0, here)
+from grib_fixtures import load_file_or_numpy_fs  # noqa: E402
 
 
-def test_grib_describe():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_describe(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     # full contents
     df = f.describe()
@@ -138,11 +143,12 @@ def test_grib_describe():
     assert ref[0] == df[0].to_dict()
 
 
-def test_grib_ls():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_ls(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     # default keys
-    f1 = f.sel(count=[1, 2, 3, 4])
+    f1 = f[0:4]
     df = f1.ls()
 
     ref = {
@@ -171,7 +177,7 @@ def test_grib_ls():
     assert ref == df.to_dict()
 
     # extra keys
-    f1 = f.sel(count=[1, 2])
+    f1 = f[0:2]
     df = f1.ls(extra_keys=["paramId"])
 
     ref = {
@@ -191,8 +197,9 @@ def test_grib_ls():
     assert ref == df.to_dict()
 
 
-def test_grib_ls_keys():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_ls_keys(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     # default keys
     # positive num (=head)
@@ -216,8 +223,9 @@ def test_grib_ls_keys():
     assert ref == df.to_dict()
 
 
-def test_grib_ls_namespace():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_ls_namespace(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     df = f.ls(n=2, namespace="vertical")
     ref = {
@@ -236,8 +244,10 @@ def test_grib_ls_namespace():
     assert ref == df.to_dict()
 
 
-def test_grib_ls_invalid_num():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_ls_invalid_num(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
+
     with pytest.raises(ValueError):
         f.ls(n=0)
 
@@ -245,14 +255,16 @@ def test_grib_ls_invalid_num():
         f.ls(0)
 
 
-def test_grib_ls_invalid_arg():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_ls_invalid_arg(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
     with pytest.raises(TypeError):
         f.ls(invalid=1)
 
 
-def test_grib_ls_num():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_ls_num(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     # default keys
 
@@ -297,8 +309,9 @@ def test_grib_ls_num():
     assert ref == df.to_dict()
 
 
-def test_grib_head_num():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_head_num(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     # default keys
     df = f.head(n=2)
@@ -321,8 +334,9 @@ def test_grib_head_num():
     assert ref == df.to_dict()
 
 
-def test_grib_tail_num():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_tail_num(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     # default keys
     df = f.tail(n=2)
@@ -345,8 +359,9 @@ def test_grib_tail_num():
     assert ref == df.to_dict()
 
 
-def test_grib_dump():
-    f = from_source("file", earthkit_examples_file("test6.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_dump(mode):
+    f = load_file_or_numpy_fs("test6.grib", mode)
 
     namespaces = (
         "default",

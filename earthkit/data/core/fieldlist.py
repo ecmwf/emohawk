@@ -537,6 +537,15 @@ class FieldList(Index):
 
         return NumpyFieldList(array, metadata)
 
+    def ignore(self):
+        # When the concrete type is Fieldlist we assume the object was
+        # created with Fieldlist() i.e. it is empty. We ignore it from
+        # all the merge operations.
+        if type(self) is FieldList:
+            return True
+        else:
+            return False
+
     @cached_method
     def _default_index_keys(self):
         if len(self) > 0:
@@ -1144,16 +1153,19 @@ class FieldList(Index):
                 )
         return False
 
-    def save(self, filename):
-        r"""Write all the fields into a file. The target file will be overwritten if
-        already exists.
+    def save(self, filename, append=False):
+        r"""Write all the fields into a file.
 
         Parameters
         ----------
         filename: str
             The target file path.
+        append: bool
+            When it is true append data to the target file. Otherwise
+            the target file be overwritten if already exists.
         """
-        with open(filename, "wb") as f:
+        flag = "wb" if not append else "ab"
+        with open(filename, flag) as f:
             self.write(f)
 
     def write(self, f):

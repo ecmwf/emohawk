@@ -15,7 +15,6 @@ import os
 from earthkit.data import from_source
 from earthkit.data.core.caching import CACHE
 from earthkit.data.readers import reader
-from earthkit.data.sources.file_indexed import FileIndexedSource
 
 from . import Source
 
@@ -53,6 +52,8 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
 
         # here we must have a file or a directory
         if self._kwargs.get("indexing", False):
+            from earthkit.data.sources.file_indexed import FileIndexedSource
+
             kw = dict(self._kwargs)
             kw.pop("indexing", None)
             return FileIndexedSource(self.path, filter=filter, merger=self.merger, **kw)

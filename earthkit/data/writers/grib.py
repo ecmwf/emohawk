@@ -13,14 +13,13 @@ from . import Writer
 class GribWriter(Writer):
     METADATA_TYPE = "GribMetadata"
 
-    def write(self, f, values, metadata, check_nans=False):
+    def write(self, f, values, metadata, check_nans=True):
         handle = metadata._handle
         if check_nans:
             import numpy as np
 
             if np.isnan(values).any():
-                # missing_value = np.finfo(values.dtype).max
-                missing_value = 9999
+                missing_value = handle.MISSING_VALUE
                 values = np.nan_to_num(values, nan=missing_value)
                 handle.set_double("missingValue", missing_value)
                 handle.set_long("bitmapPresent", 1)

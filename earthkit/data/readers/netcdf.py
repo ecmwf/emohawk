@@ -633,7 +633,6 @@ class NetCDFFieldListReader(NetCDFFieldListInOneFile, Reader):
 class NetCDFReader(Reader):
     def __init__(self, source, path):
         Reader.__init__(self, source, path)
-        NetCDFFieldList.__init__(self, path)
 
     def __repr__(self):
         return "NetCDFReader(%s)" % (self.path,)

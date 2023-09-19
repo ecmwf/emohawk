@@ -9,11 +9,15 @@
 # nor does it submit to any jurisdiction.
 #
 
+import os
+import sys
+
 import numpy as np
 import pytest
 
-from earthkit.data import from_source
-from earthkit.data.testing import earthkit_examples_file, earthkit_test_data_file
+here = os.path.dirname(__file__)
+sys.path.insert(0, here)
+from grib_fixtures import load_file_or_numpy_fs  # noqa: E402
 
 
 def check_array(v, shape=None, first=None, last=None, meanv=None, eps=1e-3):
@@ -23,9 +27,9 @@ def check_array(v, shape=None, first=None, last=None, meanv=None, eps=1e-3):
     assert np.isclose(v.mean(), meanv, eps)
 
 
-def test_grib_values_1():
-    f = from_source("file", earthkit_test_data_file("test_single.grib"))
-
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_values_1(mode):
+    f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
     eps = 1e-5
 
     # whole file
@@ -50,9 +54,9 @@ def test_grib_values_1():
     assert np.allclose(v, v1, eps)
 
 
-def test_grib_values_18():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
-
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_values_18(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
     eps = 1e-5
 
     # whole file
@@ -81,8 +85,9 @@ def test_grib_values_18():
     )
 
 
-def test_grib_to_numpy_1():
-    f = from_source("file", earthkit_test_data_file("test_single.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_to_numpy_1(mode):
+    f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     eps = 1e-5
     v = f.to_numpy()
@@ -99,6 +104,7 @@ def test_grib_to_numpy_1():
     )
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "first,options, expected_shape",
     [
@@ -110,8 +116,8 @@ def test_grib_to_numpy_1():
         (True, {"flatten": False}, (7, 12)),
     ],
 )
-def test_grib_to_numpy_1_shape(first, options, expected_shape):
-    f = from_source("file", earthkit_test_data_file("test_single.grib"))
+def test_grib_to_numpy_1_shape(mode, first, options, expected_shape):
+    f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     v_ref = f[0].to_numpy().flatten()
     eps = 1e-5
@@ -125,8 +131,9 @@ def test_grib_to_numpy_1_shape(first, options, expected_shape):
     assert np.allclose(v_ref, v1, eps)
 
 
-def test_grib_to_numpy_18():
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_to_numpy_18(mode):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     eps = 1e-5
 
@@ -156,6 +163,7 @@ def test_grib_to_numpy_18():
     )
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "options, expected_shape",
     [
@@ -177,8 +185,8 @@ def test_grib_to_numpy_18():
         ({"flatten": False}, (18, 7, 12)),
     ],
 )
-def test_grib_to_numpy_18_shape(options, expected_shape):
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+def test_grib_to_numpy_18_shape(mode, options, expected_shape):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     eps = 1e-5
 
@@ -202,9 +210,10 @@ def test_grib_to_numpy_18_shape(options, expected_shape):
     assert np.allclose(vf15, vr, eps)
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_grib_to_numpy_1_dtype(dtype):
-    f = from_source("file", earthkit_test_data_file("test_single.grib"))
+def test_grib_to_numpy_1_dtype(mode, dtype):
+    f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
     v = f[0].to_numpy(dtype=dtype)
     assert v.dtype == dtype
@@ -213,9 +222,10 @@ def test_grib_to_numpy_1_dtype(dtype):
     assert v.dtype == dtype
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_grib_to_numpy_18_dtype(dtype):
-    f = from_source("file", earthkit_examples_file("tuv_pl.grib"))
+def test_grib_to_numpy_18_dtype(mode, dtype):
+    f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
     v = f[0].to_numpy(dtype=dtype)
     assert v.dtype == dtype
@@ -224,6 +234,7 @@ def test_grib_to_numpy_18_dtype(dtype):
     assert v.dtype == dtype
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "kwarg,expected_shape,expected_dtype",
     [
@@ -236,8 +247,8 @@ def test_grib_to_numpy_18_dtype(dtype):
         ({"flatten": False, "dtype": np.float64}, (11, 19), np.float64),
     ],
 )
-def test_grib_field_data(kwarg, expected_shape, expected_dtype):
-    ds = from_source("file", earthkit_examples_file("test.grib"))
+def test_grib_field_data(mode, kwarg, expected_shape, expected_dtype):
+    ds = load_file_or_numpy_fs("test.grib", mode)
 
     latlon = ds[0].to_latlon(**kwarg)
     v = ds[0].to_numpy(**kwarg)
@@ -274,6 +285,7 @@ def test_grib_field_data(kwarg, expected_shape, expected_dtype):
     assert np.allclose(d[1], latlon["lon"])
 
 
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 @pytest.mark.parametrize(
     "kwarg,expected_shape,expected_dtype",
     [
@@ -286,8 +298,8 @@ def test_grib_field_data(kwarg, expected_shape, expected_dtype):
         ({"flatten": False, "dtype": np.float64}, (11, 19), np.float64),
     ],
 )
-def test_grib_fieldlist_data(kwarg, expected_shape, expected_dtype):
-    ds = from_source("file", earthkit_examples_file("test.grib"))
+def test_grib_fieldlist_data(mode, kwarg, expected_shape, expected_dtype):
+    ds = load_file_or_numpy_fs("test.grib", mode)
 
     latlon = ds.to_latlon(**kwarg)
     v = ds.to_numpy(**kwarg)
@@ -325,8 +337,9 @@ def test_grib_fieldlist_data(kwarg, expected_shape, expected_dtype):
     assert np.allclose(d[2], latlon["lon"])
 
 
-def test_grib_values_with_missing():
-    f = from_source("file", earthkit_test_data_file("test_single_with_missing.grib"))
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_grib_values_with_missing(mode):
+    f = load_file_or_numpy_fs("test_single_with_missing.grib", mode, folder="data")
 
     v = f[0].values
     assert isinstance(v, np.ndarray)
