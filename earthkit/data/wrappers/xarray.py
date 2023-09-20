@@ -145,7 +145,7 @@ def wrapper(data, *args, **kwargs):
 
     if ds is not None:
         fs = netcdf.XArrayFieldList(ds, **kwargs)
-        if len(fs) > 0:
+        if fs.has_fields():
             return fs
         else:
             return XArrayDatasetWrapper(ds, *args, **kwargs)

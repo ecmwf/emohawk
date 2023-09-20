@@ -80,6 +80,7 @@ def modules_installed(*modules):
 
 NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 NO_CDS = not os.path.exists(os.path.expanduser("~/.cdsapirc"))
+NO_HDA = not os.path.exists(os.path.expanduser("~/.hdarc"))
 IN_GITHUB = os.environ.get("GITHUB_WORKFLOW") is not None
 try:
     import ecmwf.opendata  # noqa
