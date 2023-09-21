@@ -30,6 +30,11 @@ BUFR
 - :py:class:`~data.readers.bufr.bufr.BUFRList`
 - :py:class:`~data.readers.bufr.bufr.BUFRMessage`
 
+CSV
+----
+
+- :py:class:`~data.readers.csv.CSVReader`
+
 Other
 --------
 

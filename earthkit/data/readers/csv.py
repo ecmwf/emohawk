@@ -127,21 +127,65 @@ def is_csv(path, probe_size=4096, compression=None):
 
 
 class CSVReader(Reader):
+    r"""Class representing CSV data"""
+
     def __init__(self, source, path, compression=None):
         super().__init__(source, path)
         self.compression = compression
         self.dialect, self.has_header = probe_csv(path, compression=compression)
 
-    def to_pandas(self, **kwargs):
+    def to_pandas(self, pandas_read_csv_kwargs=None):
+        """Convert CSV data into a :py:class:`pandas.DataFrame` using :py:func:`pandas.read_csv`.
+
+        Parameters
+        ----------
+        pandas_read_csv_kwargs: dict
+            kwargs passed to :func:`pandas.read_csv`.
+
+        Returns
+        -------
+        :py:class:`pandas.DataFrame`
+
+
+        Examples
+        --------
+        >>> import earthkit.data
+        >>> ds = earthkit.data.from_source("file", "data_with_comments.csv")
+        >>> df = ds.to_pandas(pandas_read_csv_kwargs={"comment": "#"})
+
+        """
         import pandas
 
-        pandas_read_csv_kwargs = kwargs.get("pandas_read_csv_kwargs", {})
+        if pandas_read_csv_kwargs is None:
+            pandas_read_csv_kwargs = {}
+
         if self.compression is not None:
             pandas_read_csv_kwargs = dict(**pandas_read_csv_kwargs)
             pandas_read_csv_kwargs["compression"] = self.compression
 
         LOG.debug("pandas.read_csv(%s,%s)", self.path, pandas_read_csv_kwargs)
         return pandas.read_csv(self.path, **pandas_read_csv_kwargs)
+
+    def to_xarray(self, pandas_read_csv_kwargs=None):
+        """Convert CSV data into an xarray object`.
+
+        First, the data is converted into a :py:class:`pandas.DataFrame` with :py:func:`pandas.read_csv`,
+        then :py:meth:`pandas.DataFrame.to_xarray` is called to generate the xarray object.
+
+        Parameters
+        ----------
+        pandas_read_csv_kwargs: dict
+            kwargs passed to :py:func:`pandas.read_csv`.
+
+        Returns
+        -------
+        Xarray object
+
+        """
+        if pandas_read_csv_kwargs is None:
+            pandas_read_csv_kwargs = {}
+
+        return self.to_pandas(pandas_read_csv_kwargs=pandas_read_csv_kwargs).to_xarray()
 
 
 def reader(source, path, magic, deeper_check, fwf=False):

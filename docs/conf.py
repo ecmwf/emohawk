@@ -35,6 +35,7 @@ extensions = [
     "nbsphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
     "autoapi.extension",
     "earthkit.data.sphinxext.xref",
     "earthkit.data.sphinxext.module_output",
@@ -107,6 +108,9 @@ xref_links = {
     "odb": ("ODB", "https://odc.readthedocs.io/en/latest/content/introduction.html"),
     "pyodc": ("pyodc", "https://github.com/ecmwf/pyodc"),
 }
+
+
+intersphinx_mapping = {"pandas": ("https://pandas.pydata.org/docs/", None)}
 
 
 def setup(app):

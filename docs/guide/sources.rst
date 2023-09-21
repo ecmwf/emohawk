@@ -46,6 +46,10 @@ We can get data from a given source by using :func:`from_source`:
       - retrieve `ECMWF open data <https://www.ecmwf.int/en/forecasts/datasets/open-data>`_
     * - :ref:`data-sources-fdb`
       - retrieve data from the `Fields DataBase <https://fields-database.readthedocs.io/en/latest/>`_ (FDB)
+    * - :ref:`data-sources-wekeo`
+      - retrieve data from `WEkEO`_ using the WEkEO grammar
+    * - :ref:`data-sources-wekeocds`
+      - retrieve `CDS <https://cds.climate.copernicus.eu/>`_ data stored on `WEkEO`_ using the `cdsapi`_ grammar
 
 
 ----------------------------------
@@ -525,6 +529,92 @@ fdb
       - :ref:`/examples/fdb.ipynb`
 
 
+.. _data-sources-wekeo:
+
+wekeo
+-----
+
+.. py:function:: from_source("wekeo", dataset, *args, **kwargs)
+  :noindex:
+
+  `WEkEO`_ is the Copernicus DIAS reference service for environmental data and virtual processing environments. The ``wekeo`` source provides access to `WEkEO`_ using the WEkEO grammar. The retrieval is based on the hda_ Python API.
+
+  :param str dataset: the name of the WEkEO dataset
+  :param tuple *args: specifies the request as a dict
+  :param dict **kwargs: other keyword arguments specifying the request
+
+  The following example retrieves Normalized Difference Vegetation Index data derived from EO satellite imagery in NetCDF format:
+
+  .. code-block:: python
+
+      import earthkit.data
+
+      ds = earthkit.data.from_source(
+          "wekeo",
+          "EO:CLMS:DAT:CGLS_GLOBAL_NDVI300_V1_333M",
+          request={
+              "datasetId": "EO:CLMS:DAT:CGLS_GLOBAL_NDVI300_V1_333M",
+              "dateRangeSelectValues": [
+                  {
+                      "name": "dtrange",
+                      "start": "2014-01-01T00:00:00.000Z",
+                      "end": "2014-01-01T23:59:59.999Z",
+                  }
+              ],
+          },
+      )
+
+
+  Data downloaded from WEkEO is stored in the the :ref:`cache <caching>`.
+
+  To access data from WEkEO, you will need to register and set up the Harmonized Data Access (HDA) API client. The process is described `here <https://help.wekeo.eu/en/articles/6751608-what-is-the-hda-api-python-client-and-how-to-use-it>`_.
+
+  Further examples:
+
+      - :ref:`/examples/wekeo.ipynb`
+
+
+.. _data-sources-wekeocds:
+
+wekeocds
+--------
+
+.. py:function:: from_source("wekeocds", dataset, *args, **kwargs)
+  :noindex:
+
+  `WEkEO`_ is the Copernicus DIAS reference service for environmental data and virtual processing environments. The ``wekeocds`` source provides access to `Copernicus Climate Data Store`_ (CDS) datasets served on `WEkEO`_ using the `cdsapi`_ grammar. The retrieval is based on the hda_ Python API.
+
+  :param str dataset: the name of the WEkEO dataset
+  :param tuple *args: specifies the request as a dict
+  :param dict **kwargs: other keyword arguments specifying the request
+
+  The following example retrieves ERA5 surface data for multiple days in GRIB format:
+
+  .. code-block:: python
+
+      import earthkit.data
+
+      ds = earthkit.data.from_source(
+          "wekeocds",
+          "EO:ECMWF:DAT:REANALYSIS_ERA5_SINGLE_LEVELS",
+          variable=["2m_temperature", "mean_sea_level_pressure"],
+          product_type=["reanalysis"],
+          year=["2012"],
+          month=["12"],
+          day=["12", "13", "14", "15"],
+          time=["11:00"],
+          format="grib",
+      )
+
+  Data downloaded from WEkEO is stored in the the :ref:`cache <caching>`.
+
+  To access data from WEkEO, you will need to register and set up the Harmonized Data Access (HDA) API client. The process is described `here <https://help.wekeo.eu/en/articles/6751608-what-is-the-hda-api-python-client-and-how-to-use-it>`_.
+
+  Further examples:
+
+      - :ref:`/examples/wekeo.ipynb`
+
+
 .. _MARS catalog: https://apps.ecmwf.int/archive-catalogue/
 .. _MARS user documentation: https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation
 .. _web API: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
@@ -536,3 +626,6 @@ fdb
 .. _ADS_knowledge base: https://confluence.ecmwf.int/pages/viewpage.action?pageId=151530675
 
 .. _ECMWF open data: https://www.ecmwf.int/en/forecasts/datasets/open-data
+
+.. _WEkEO: https://www.wekeo.eu/
+.. _hda: https://pypi.org/project/hda
