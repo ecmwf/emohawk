@@ -9,15 +9,14 @@
 # nor does it submit to any jurisdiction.
 #
 
-
-import logging
+import pytest
 
 from earthkit.data import from_object, wrappers
+from earthkit.data.testing import earthkit_examples_file
 from earthkit.data.wrappers import xarray as xr_wrapper
 
-LOG = logging.getLogger(__name__)
 
-
+@pytest.mark.no_eccodes
 def test_dataset_wrapper():
     import xarray as xr
 
@@ -29,6 +28,7 @@ def test_dataset_wrapper():
     assert isinstance(_wrapper, xr_wrapper.XArrayDatasetWrapper)
 
 
+@pytest.mark.no_eccodes
 def test_dataarray_wrapper():
     import xarray as xr
 
@@ -38,3 +38,13 @@ def test_dataarray_wrapper():
     assert isinstance(_wrapper, xr_wrapper.XArrayDataArrayWrapper)
     _wrapper = from_object(xr.DataArray())
     assert isinstance(_wrapper, xr_wrapper.XArrayDataArrayWrapper)
+
+
+@pytest.mark.no_eccodes
+def test_xarray_lazy_fieldlist_scan():
+    import xarray as xr
+
+    ds = from_object(xr.open_dataset(earthkit_examples_file("test.nc")))
+    assert ds._fields is None
+    assert len(ds) == 2
+    assert len(ds._fields) == 2

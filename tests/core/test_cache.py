@@ -198,6 +198,69 @@ def test_cache_with_log_debug(caplog):
     # the problem still occurs!
 
 
+def test_cache_zip_file_overwritten_1():
+    with temp_directory() as tmp_dir:
+        import shutil
+        import zipfile
+
+        # copy input data to work dir
+        grb1_path = os.path.join(tmp_dir, "test.grib")
+        shutil.copyfile(earthkit_examples_file("test.grib"), grb1_path)
+
+        grb2_path = os.path.join(tmp_dir, "test6.grib")
+        shutil.copyfile(earthkit_examples_file("test6.grib"), grb2_path)
+
+        # first pass
+        zip_path = os.path.join(tmp_dir, "test.zip")
+        with zipfile.ZipFile(zip_path, "w") as zip_object:
+            zip_object.write(grb1_path)
+
+        ds = from_source("file", zip_path)
+        assert len(ds) == 2
+        ds_path = ds.path
+
+        # second pass - same zip file, the grib should be read
+        #  from the cache
+        ds1 = from_source("file", zip_path)
+        assert len(ds1) == 2
+        assert ds1.path == ds_path
+
+        # third pass - same zipfile path with different contents
+        with zipfile.ZipFile(zip_path, "w") as zip_object:
+            zip_object.write(grb2_path)
+
+        ds2 = from_source("file", zip_path)
+        assert len(ds2) == 6
+        assert ds2.path != ds_path
+
+
+def test_cache_zip_file_changed_modtime():
+    with temp_directory() as tmp_dir:
+        import shutil
+        import zipfile
+
+        # copy input data to work dir
+        grb1_path = os.path.join(tmp_dir, "test.grib")
+        shutil.copyfile(earthkit_examples_file("test.grib"), grb1_path)
+
+        # first pass
+        zip_path = os.path.join(tmp_dir, "test.zip")
+        with zipfile.ZipFile(zip_path, "w") as zip_object:
+            zip_object.write(grb1_path)
+
+        ds = from_source("file", zip_path)
+        assert len(ds) == 2
+        ds_path = ds.path
+
+        # second pass - changed modtime
+        # TODO: here we have to assume more than 1 ns passed since the
+        # zip file was created.
+        os.utime(zip_path, None)
+        ds2 = from_source("file", zip_path)
+        assert len(ds2) == 2
+        assert ds2.path != ds_path
+
+
 if __name__ == "__main__":
     from earthkit.data.testing import main
 

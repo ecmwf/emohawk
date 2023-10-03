@@ -155,10 +155,16 @@ def generate_csv(
     separator=",",
     quote_strings=None,
     none_are_empty=True,
+    comment="#",
+    comment_line=None,
     **kwargs,
 ):
     assert none_are_empty
+
     with open(target, "w") as f:
+        if comment_line is not None:
+            print(f"{comment} {comment_line}", file=f)
+
         if headers:
             print(separator.join(headers), file=f)
 

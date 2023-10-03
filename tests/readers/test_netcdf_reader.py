@@ -248,6 +248,14 @@ def test_netcdf_non_fieldlist():
     ek_ch4_l2.to_xarray()
 
 
+@pytest.mark.no_eccodes
+def test_netcdf_lazy_fieldlist_scan():
+    ds = from_source("file", earthkit_examples_file("test.nc"))
+    assert ds._fields is None
+    assert len(ds) == 2
+    assert len(ds._fields) == 2
+
+
 if __name__ == "__main__":
     from earthkit.data.testing import main
 

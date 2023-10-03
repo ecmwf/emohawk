@@ -36,17 +36,22 @@ We can get data from a given source by using :func:`from_source`:
       - read data from a stream
     * - :ref:`data-sources-memory`
       - read data from a memory buffer
-    * - :ref:`data-sources-mars`
-      - retrieve data from the ECMWF `MARS archive <https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation>`_
-    * - :ref:`data-sources-cds`
-      - retrieve data from the `Copernicus Climate Data Store <https://cds.climate.copernicus.eu/>`_ (CDS)
     * - :ref:`data-sources-ads`
       - retrieve data from the `Copernicus Atmosphere Data Store <https://ads.atmosphere.copernicus.eu/>`_ (ADS)
+    * - :ref:`data-sources-cds`
+      - retrieve data from the `Copernicus Climate Data Store <https://cds.climate.copernicus.eu/>`_ (CDS)
     * - :ref:`data-sources-eod`
       - retrieve `ECMWF open data <https://www.ecmwf.int/en/forecasts/datasets/open-data>`_
     * - :ref:`data-sources-fdb`
       - retrieve data from the `Fields DataBase <https://fields-database.readthedocs.io/en/latest/>`_ (FDB)
-
+    * - :ref:`data-sources-mars`
+      - retrieve data from the ECMWF `MARS archive <https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation>`_
+    * - :ref:`data-sources-polytope`
+      - retrieve data from the `Polytope services <https://polytope-client.readthedocs.io/en/latest/>`_
+    * - :ref:`data-sources-wekeo`
+      - retrieve data from `WEkEO`_ using the WEkEO grammar
+    * - :ref:`data-sources-wekeocds`
+      - retrieve `CDS <https://cds.climate.copernicus.eu/>`_ data stored on `WEkEO`_ using the `cdsapi`_ grammar
 
 ----------------------------------
 
@@ -285,47 +290,43 @@ memory
           print(f.metadata("param"))
 
 
-.. _data-sources-mars:
 
-mars
---------------
+.. _data-sources-ads:
 
-.. py:function:: from_source("mars", *args, **kwargs)
+ads
+---
+
+.. py:function:: from_source("ads", dataset, *args, **kwargs)
   :noindex:
 
-  The ``mars`` source will retrieve data from the ECMWF MARS (Meteorological Archival and Retrieval System) archive. In addition
-  to data retrieval, the request specified as ``*args`` and/or ``**kwargs`` also has GRIB post-processing options such as ``grid`` and ``area`` for regridding and
-  sub-area extraction, respectively.
+  The ``ads`` source accesses the `Copernicus Atmosphere Data Store`_ (ADS), using the cdsapi_ package. In addition to data retrieval, ``request`` also has post-processing options such as ``grid`` and ``area`` for regridding and sub-area extraction respectively.
 
-  To figure out which data you need, or discover relevant data available in MARS, see the publicly accessible `MARS catalog`_ (or this `access restricted catalog <https://apps.ecmwf.int/mars-catalogue/>`_).
-
-  The MARS access is direct when the MARS client is installed (as at ECMWF), otherwise it will use the `web API`_. In order to use the `web API`_ you will need to register and retrieve an access token. For a more extensive documentation about MARS, please refer to the `MARS user documentation`_.
-
-  :param tuple *args: positional arguments specifying the request as a dict
+  :param str dataset: the name of the ADS dataset
+  :param tuple *args: specifies the request as a dict
   :param dict **kwargs: other keyword arguments specifying the request
 
-  The following example retrieves analysis GRIB data for a subarea for 2 surface parameters:
+  The following example retrieves CAMS global reanalysis GRIB data for 2 parameters:
 
   .. code-block:: python
 
       import earthkit.data
 
       ds = earthkit.data.from_source(
-          "mars",
-          {
-              "param": ["2t", "msl"],
-              "levtype": "sfc",
-              "area": [50, -50, 20, 50],
-              "grid": [2, 2],
-              "date": "2023-05-10",
-          },
+          "ads",
+          "cams-global-reanalysis-eac4",
+          variable=["particulate_matter_10um", "particulate_matter_1um"],
+          area=[50, -50, 20, 50],  # N,W,S,E
+          date="2012-12-12",
+          time="12:00",
       )
 
-  Data downloaded from MARS is stored in the :ref:`cache <caching>`.
+  Data downloaded from the ADS is stored in the the :ref:`cache <caching>`.
+
+  To access data from the ADS, you will need to register and retrieve an access token. The process is described `here <https://ads.atmosphere.copernicus.eu/api-how-to>`__. For more information, see the `ADS_knowledge base`_.
 
   Further examples:
 
-      - :ref:`/examples/mars.ipynb`
+      - :ref:`/examples/ads.ipynb`
 
 
 .. _data-sources-cds:
@@ -366,44 +367,6 @@ cds
   Further examples:
 
       - :ref:`/examples/cds.ipynb`
-
-
-.. _data-sources-ads:
-
-ads
----
-
-.. py:function:: from_source("ads", dataset, *args, **kwargs)
-  :noindex:
-
-  The ``ads`` source accesses the `Copernicus Atmosphere Data Store`_ (ADS), using the cdsapi_ package. In addition to data retrieval, ``request`` also has post-processing options such as ``grid`` and ``area`` for regridding and sub-area extraction respectively.
-
-  :param str dataset: the name of the ADS dataset
-  :param tuple *args: specifies the request as a dict
-  :param dict **kwargs: other keyword arguments specifying the request
-
-  The following example retrieves CAMS global reanalysis GRIB data for 2 parameters:
-
-  .. code-block:: python
-
-      import earthkit.data
-
-      ds = earthkit.data.from_source(
-          "ads",
-          "cams-global-reanalysis-eac4",
-          variable=["particulate_matter_10um", "particulate_matter_1um"],
-          area=[50, -50, 20, 50],  # N,W,S,E
-          date="2012-12-12",
-          time="12:00",
-      )
-
-  Data downloaded from the ADS is stored in the the :ref:`cache <caching>`.
-
-  To access data from the ADS, you will need to register and retrieve an access token. The process is described `here <https://ads.atmosphere.copernicus.eu/api-how-to>`__. For more information, see the `ADS_knowledge base`_.
-
-  Further examples:
-
-      - :ref:`/examples/ads.ipynb`
 
 
 .. _data-sources-eod:
@@ -525,6 +488,182 @@ fdb
       - :ref:`/examples/fdb.ipynb`
 
 
+.. _data-sources-mars:
+
+mars
+--------------
+
+.. py:function:: from_source("mars", *args, **kwargs)
+  :noindex:
+
+  The ``mars`` source will retrieve data from the ECMWF MARS (Meteorological Archival and Retrieval System) archive. In addition
+  to data retrieval, the request specified as ``*args`` and/or ``**kwargs`` also has GRIB post-processing options such as ``grid`` and ``area`` for regridding and
+  sub-area extraction, respectively.
+
+  To figure out which data you need, or discover relevant data available in MARS, see the publicly accessible `MARS catalog`_ (or this `access restricted catalog <https://apps.ecmwf.int/mars-catalogue/>`_).
+
+  The MARS access is direct when the MARS client is installed (as at ECMWF), otherwise it will use the `web API`_. In order to use the `web API`_ you will need to register and retrieve an access token. For a more extensive documentation about MARS, please refer to the `MARS user documentation`_.
+
+  :param tuple *args: positional arguments specifying the request as a dict
+  :param dict **kwargs: other keyword arguments specifying the request
+
+  The following example retrieves analysis GRIB data for a subarea for 2 surface parameters:
+
+  .. code-block:: python
+
+      import earthkit.data
+
+      ds = earthkit.data.from_source(
+          "mars",
+          {
+              "param": ["2t", "msl"],
+              "levtype": "sfc",
+              "area": [50, -50, 20, 50],
+              "grid": [2, 2],
+              "date": "2023-05-10",
+          },
+      )
+
+  Data downloaded from MARS is stored in the :ref:`cache <caching>`.
+
+  Further examples:
+
+      - :ref:`/examples/mars.ipynb`
+
+
+.. _data-sources-polytope:
+
+polytope
+--------
+
+.. py:function:: from_source("polytope", collection, *args, **kwargs)
+  :noindex:
+
+  The ``polytope`` source accesses the `Polytope web services <https://polytope-client.readthedocs.io/en/latest/>`_ , using the polytope-client_ package.
+
+  :param str collection: the name of the polytope collection
+  :param tuple *args: specifies the request as a dict
+  :param dict **kwargs: other keyword arguments specifying the request
+
+  The following example retrieves GRIB data from the "ecmwf-mars" polytope collection:
+
+  .. code-block:: python
+
+      import earthkit.data
+
+      request = {
+          "stream": "oper",
+          "levtype": "pl",
+          "levellist": "1",
+          "param": "130.128",
+          "step": "0/12",
+          "time": "00:00:00",
+          "date": "20200915",
+          "type": "fc",
+          "class": "rd",
+          "expver": "hsvs",
+          "domain": "g",
+      }
+
+      ds = earthkit.data.from_source("polytope", "ecmwf-mars", request)
+
+  Data downloaded from the polytope service is stored in the the :ref:`cache <caching>`. However,
+  please note that, in the current version, each call to  :func:`from_source` will download the data again.
+
+  To access data from polytope, you will need to register and retrieve an access token.
+
+  Further examples:
+
+      - :ref:`/examples/polytope.ipynb`
+
+
+
+.. _data-sources-wekeo:
+
+wekeo
+-----
+
+.. py:function:: from_source("wekeo", dataset, *args, **kwargs)
+  :noindex:
+
+  `WEkEO`_ is the Copernicus DIAS reference service for environmental data and virtual processing environments. The ``wekeo`` source provides access to `WEkEO`_ using the WEkEO grammar. The retrieval is based on the hda_ Python API.
+
+  :param str dataset: the name of the WEkEO dataset
+  :param tuple *args: specifies the request as a dict
+  :param dict **kwargs: other keyword arguments specifying the request
+
+  The following example retrieves Normalized Difference Vegetation Index data derived from EO satellite imagery in NetCDF format:
+
+  .. code-block:: python
+
+      import earthkit.data
+
+      ds = earthkit.data.from_source(
+          "wekeo",
+          "EO:CLMS:DAT:CGLS_GLOBAL_NDVI300_V1_333M",
+          request={
+              "datasetId": "EO:CLMS:DAT:CGLS_GLOBAL_NDVI300_V1_333M",
+              "dateRangeSelectValues": [
+                  {
+                      "name": "dtrange",
+                      "start": "2014-01-01T00:00:00.000Z",
+                      "end": "2014-01-01T23:59:59.999Z",
+                  }
+              ],
+          },
+      )
+
+
+  Data downloaded from WEkEO is stored in the the :ref:`cache <caching>`.
+
+  To access data from WEkEO, you will need to register and set up the Harmonized Data Access (HDA) API client. The process is described `here <https://help.wekeo.eu/en/articles/6751608-what-is-the-hda-api-python-client-and-how-to-use-it>`_.
+
+  Further examples:
+
+      - :ref:`/examples/wekeo.ipynb`
+
+
+.. _data-sources-wekeocds:
+
+wekeocds
+--------
+
+.. py:function:: from_source("wekeocds", dataset, *args, **kwargs)
+  :noindex:
+
+  `WEkEO`_ is the Copernicus DIAS reference service for environmental data and virtual processing environments. The ``wekeocds`` source provides access to `Copernicus Climate Data Store`_ (CDS) datasets served on `WEkEO`_ using the `cdsapi`_ grammar. The retrieval is based on the hda_ Python API.
+
+  :param str dataset: the name of the WEkEO dataset
+  :param tuple *args: specifies the request as a dict
+  :param dict **kwargs: other keyword arguments specifying the request
+
+  The following example retrieves ERA5 surface data for multiple days in GRIB format:
+
+  .. code-block:: python
+
+      import earthkit.data
+
+      ds = earthkit.data.from_source(
+          "wekeocds",
+          "EO:ECMWF:DAT:REANALYSIS_ERA5_SINGLE_LEVELS",
+          variable=["2m_temperature", "mean_sea_level_pressure"],
+          product_type=["reanalysis"],
+          year=["2012"],
+          month=["12"],
+          day=["12", "13", "14", "15"],
+          time=["11:00"],
+          format="grib",
+      )
+
+  Data downloaded from WEkEO is stored in the the :ref:`cache <caching>`.
+
+  To access data from WEkEO, you will need to register and set up the Harmonized Data Access (HDA) API client. The process is described `here <https://help.wekeo.eu/en/articles/6751608-what-is-the-hda-api-python-client-and-how-to-use-it>`_.
+
+  Further examples:
+
+      - :ref:`/examples/wekeo.ipynb`
+
+
 .. _MARS catalog: https://apps.ecmwf.int/archive-catalogue/
 .. _MARS user documentation: https://confluence.ecmwf.int/display/UDOC/MARS+user+documentation
 .. _web API: https://www.ecmwf.int/en/forecasts/access-forecasts/ecmwf-web-api
@@ -536,3 +675,8 @@ fdb
 .. _ADS_knowledge base: https://confluence.ecmwf.int/pages/viewpage.action?pageId=151530675
 
 .. _ECMWF open data: https://www.ecmwf.int/en/forecasts/datasets/open-data
+
+.. _WEkEO: https://www.wekeo.eu/
+.. _hda: https://pypi.org/project/hda
+
+.. _polytope-client: https://pypi.org/project/polytope-client

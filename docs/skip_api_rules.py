@@ -65,6 +65,24 @@ _skip_methods = {
         "statistics",
         "xarray_open_dataset_kwargs",
     ],
+    "data.readers.csv.CSVReader": [
+        "bounding_box",
+        "cache_file",
+        "to_numpy",
+        "ignore",
+        "datetime",
+        "index_content",
+        "isel",
+        "merge",
+        "metadata",
+        "mutate",
+        "mutate_source",
+        "order_by",
+        "sel",
+        "filter",
+        "merger",
+        "source",
+    ],
 }
 
 
@@ -81,6 +99,7 @@ def _skip_api_items(app, what, name, obj, skip, options):
         "data.readers.bufr.bufr",
         "data.readers.grib.codes",
         "data.readers.grib.index",
+        "data.readers.csv",
         "data.utils",
         "data.utils.bbox",
     ]:
@@ -93,6 +112,7 @@ def _skip_api_items(app, what, name, obj, skip, options):
         "data.readers.bufr.bufr",
         "data.readers.grib",
         "data.readers.grib.index",
+        "data.readers.csv",
         "data.utils",
         "data.utils.bbox",
     ]:
@@ -107,6 +127,7 @@ def _skip_api_items(app, what, name, obj, skip, options):
         "data.readers.grib.codes.GribField",
         "data.readers.grib.index.GribFieldList",
         "data.readers.grib.metadata.GribMetadata",
+        "data.readers.csv.CSVReader",
         "data.utils.bbox.BoundingBox",
     ]:
         skip = True

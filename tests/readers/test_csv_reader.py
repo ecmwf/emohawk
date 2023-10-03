@@ -13,11 +13,11 @@ import mimetypes
 
 import pytest
 
-import earthkit.data as cml
+from earthkit.data import from_source
 
 
 def test_csv_1():
-    s = cml.from_source(
+    s = from_source(
         "dummy-source",
         "csv",
         headers=["a", "b", "c"],
@@ -28,11 +28,17 @@ def test_csv_1():
         ],
     )
 
-    print(s.to_pandas())
+    df = s.to_pandas()
+    assert len(df) == 3
+    assert list(df.columns) == ["a", "b", "c"]
+
+    ds = s.to_xarray()
+    assert len(ds) == 3
+    assert list(ds.variables) == ["index", "a", "b", "c"]
 
 
 def test_csv_2():
-    s = cml.from_source(
+    s = from_source(
         "dummy-source",
         "csv",
         headers=["a", "b", "c"],
@@ -43,11 +49,13 @@ def test_csv_2():
         ],
     )
 
-    print(s.to_pandas())
+    df = s.to_pandas()
+    assert len(df) == 3
+    assert list(df.columns) == ["a", "b", "c"]
 
 
 def test_csv_3():
-    s = cml.from_source(
+    s = from_source(
         "dummy-source",
         "csv",
         headers=["a", "b", "c"],
@@ -58,11 +66,13 @@ def test_csv_3():
         ],
     )
 
-    print(s.to_pandas())
+    df = s.to_pandas()
+    assert len(df) == 3
+    assert list(df.columns) == ["a", "b", "c"]
 
 
 def test_csv_4():
-    s = cml.from_source(
+    s = from_source(
         "dummy-source",
         "csv",
         headers=["a", "b", "c"],
@@ -74,7 +84,9 @@ def test_csv_4():
         ],
     )
 
-    print(s.to_pandas())
+    df = s.to_pandas()
+    assert len(df) == 3
+    assert list(df.columns) == ["a", "b", "c"]
 
 
 @pytest.mark.skipif(True, reason="Test not yet implemented")
@@ -92,12 +104,12 @@ def test_csv_icoads():
         "type": "ofb",
     }
 
-    source = cml.from_source("mars", **r)
+    source = from_source("mars", **r)
     print(source)
 
 
-def test_csv_text():
-    s = cml.from_source(
+def test_csv_text_file():
+    s = from_source(
         "dummy-source",
         "csv",
         headers=["a", "b", "c"],
@@ -110,7 +122,32 @@ def test_csv_text():
         extension=".txt",
     )
 
-    print(s.to_pandas())
+    df = s.to_pandas()
+    assert len(df) == 3
+    assert list(df.columns) == ["a", "b", "c"]
+
+
+def test_csv_with_comment():
+    s = from_source(
+        "dummy-source",
+        "csv",
+        headers=["a", "b", "c"],
+        quote_strings=True,
+        lines=[
+            [1, "x", 3],
+            [4, "y", 6],
+            [7, "z", 9],
+        ],
+        comment_line="This is a comment",
+    )
+
+    df = s.to_pandas(pandas_read_csv_kwargs={"comment": "#"})
+    assert len(df) == 3
+    assert list(df.columns) == ["a", "b", "c"]
+
+    ds = s.to_xarray(pandas_read_csv_kwargs={"comment": "#"})
+    assert len(ds) == 3
+    assert list(ds.variables) == ["index", "a", "b", "c"]
 
 
 def test_csv_mimetypes():

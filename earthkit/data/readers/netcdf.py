@@ -144,6 +144,122 @@ class DataSet:
         return self._bbox[(lat, lon)]
 
 
+def get_fields_from_ds(
+    ds,
+    field_type=None,
+    check_only=False,
+):  # noqa C901
+    # Select only geographical variables
+    has_lat = False
+    has_lon = False
+
+    fields = []
+
+    skip = set()
+
+    for name in ds.data_vars:
+        v = ds[name]
+        skip.update(getattr(v, "coordinates", "").split(" "))
+        skip.update(getattr(v, "bounds", "").split(" "))
+        skip.update(getattr(v, "grid_mapping", "").split(" "))
+
+    for name in ds.data_vars:
+        if name in skip:
+            continue
+
+        v = ds[name]
+
+        coordinates = []
+
+        # self.log.info('Scanning file: %s var=%s coords=%s', self.path, name, v.coords)
+
+        info = [value for value in v.coords if value not in v.dims]
+        non_dim_coords = {}
+        for coord in v.coords:
+            if coord not in v.dims:
+                non_dim_coords[coord] = ds[coord].values
+                continue
+
+            c = ds[coord]
+
+            # self.log.info("COORD %s %s %s %s", coord, type(coord), hasattr(c, 'calendar'), c)
+
+            standard_name = getattr(c, "standard_name", "")
+            axis = getattr(c, "axis", "")
+            long_name = getattr(c, "long_name", "")
+
+            use = False
+
+            if (
+                standard_name.lower() in GEOGRAPHIC_COORDS["x"]
+                or (long_name == "longitude")
+                or (axis == "X")
+            ):
+                has_lon = True
+                use = True
+
+            if (
+                standard_name.lower() in GEOGRAPHIC_COORDS["y"]
+                or (long_name == "latitude")
+                or (axis == "Y")
+            ):
+                has_lat = True
+                use = True
+
+            # print(f"  standard_name={standard_name}")
+
+            # Of course, not every one sets the standard_name
+            if (
+                standard_name in ["time", "forecast_reference_time"]
+                or long_name in ["time"]
+                or axis == "T"
+            ):
+                # we might not be able to convert time to datetime
+                try:
+                    coordinates.append(TimeCoordinate(c, coord in info))
+                    use = True
+                except ValueError:
+                    break
+
+            # TODO: Support other level types
+            if standard_name in [
+                "air_pressure",
+                "model_level_number",
+                "altitude",
+            ] or long_name in [
+                "pressure_level"
+            ]:  # or axis == 'Z':
+                coordinates.append(LevelCoordinate(c, coord in info))
+                use = True
+
+            if axis in ("X", "Y"):
+                use = True
+
+            if not use:
+                coordinates.append(OtherCoordinate(c, coord in info))
+
+        if not (has_lat and has_lon):
+            # self.log.info("NetCDFReader: skip %s (Not a 2 field)", name)
+            continue
+
+        for values in product(*[c.values for c in coordinates]):
+            slices = []
+            for value, coordinate in zip(values, coordinates):
+                slices.append(coordinate.make_slice(value))
+
+            if check_only:
+                return True
+
+            fields.append(field_type(ds, name, slices, non_dim_coords))
+
+    # if not fields:
+    #     raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
+
+    if check_only:
+        return False
+    return fields
+
+
 class XArrayFieldGeography(Geography):
     def __init__(self, metadata, da, ds, variable):
         self.metadata = metadata
@@ -253,7 +369,6 @@ class XArrayMetadata(RawMetadata):
 class XArrayField(Field):
     def __init__(self, ds, variable, slices, non_dim_coords):
         super().__init__()
-
         self._ds = ds
         self._da = ds[variable]
 
@@ -343,118 +458,20 @@ class XArrayFieldListCore(FieldList):
             self._scan()
         return self._fields
 
+    def has_fields(self):
+        if self._fields is None:
+            return get_fields_from_ds(
+                DataSet(self.ds), field_type=self.FIELD_TYPE, check_only=True
+            )
+        else:
+            return len(self._fields)
+
     def _scan(self):
         if self._fields is None:
             self._fields = self._get_fields()
 
     def _get_fields(self):
-        return self._get_fields_from_ds(DataSet(self.ds))
-
-    def _get_fields_from_ds(self, ds):  # noqa C901
-        # Select only geographical variables
-        has_lat = False
-        has_lon = False
-
-        fields = []
-
-        skip = set()
-
-        for name in ds.data_vars:
-            v = ds[name]
-            skip.update(getattr(v, "coordinates", "").split(" "))
-            skip.update(getattr(v, "bounds", "").split(" "))
-            skip.update(getattr(v, "grid_mapping", "").split(" "))
-
-        for name in ds.data_vars:
-            if name in skip:
-                continue
-
-            v = ds[name]
-
-            coordinates = []
-
-            # self.log.info('Scanning file: %s var=%s coords=%s', self.path, name, v.coords)
-
-            info = [value for value in v.coords if value not in v.dims]
-            non_dim_coords = {}
-            for coord in v.coords:
-                if coord not in v.dims:
-                    non_dim_coords[coord] = ds[coord].values
-                    continue
-
-                c = ds[coord]
-
-                # self.log.info("COORD %s %s %s %s", coord, type(coord), hasattr(c, 'calendar'), c)
-
-                standard_name = getattr(c, "standard_name", "")
-                axis = getattr(c, "axis", "")
-                long_name = getattr(c, "long_name", "")
-
-                use = False
-
-                if (
-                    standard_name.lower() in GEOGRAPHIC_COORDS["x"]
-                    or (long_name == "longitude")
-                    or (axis == "X")
-                ):
-                    has_lon = True
-                    use = True
-
-                if (
-                    standard_name.lower() in GEOGRAPHIC_COORDS["y"]
-                    or (long_name == "latitude")
-                    or (axis == "Y")
-                ):
-                    has_lat = True
-                    use = True
-
-                # print(f"  standard_name={standard_name}")
-
-                # Of course, not every one sets the standard_name
-                if (
-                    standard_name in ["time", "forecast_reference_time"]
-                    or long_name in ["time"]
-                    or axis == "T"
-                ):
-                    # we might not be able to convert time to datetime
-                    try:
-                        coordinates.append(TimeCoordinate(c, coord in info))
-                        use = True
-                    except ValueError:
-                        break
-
-                # TODO: Support other level types
-                if standard_name in [
-                    "air_pressure",
-                    "model_level_number",
-                    "altitude",
-                ] or long_name in [
-                    "pressure_level"
-                ]:  # or axis == 'Z':
-                    coordinates.append(LevelCoordinate(c, coord in info))
-                    use = True
-
-                if axis in ("X", "Y"):
-                    use = True
-
-                if not use:
-                    coordinates.append(OtherCoordinate(c, coord in info))
-
-            if not (has_lat and has_lon):
-                # self.log.info("NetCDFReader: skip %s (Not a 2 field)", name)
-                continue
-
-            for values in product(*[c.values for c in coordinates]):
-                slices = []
-                for value, coordinate in zip(values, coordinates):
-                    slices.append(coordinate.make_slice(value))
-
-                fields.append(self.FIELD_TYPE(ds, name, slices, non_dim_coords))
-
-        # if not fields:
-        #     raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
-
-        return fields
+        return get_fields_from_ds(DataSet(self.ds), field_type=self.FIELD_TYPE)
 
     def to_pandas(self):
         return self.to_xarray().to_pandas()
@@ -489,11 +506,9 @@ class XArrayFieldList(XArrayFieldListCore):
         self.FIELD_TYPE = XArrayField
         super().__init__(ds, **kwargs)
 
-    def __getitem__(self, n):
+    def _getitem(self, n):
         if isinstance(n, int):
             return self.fields[n]
-        else:
-            return super().__getitem__(n)
 
     def __len__(self):
         return len(self.fields)
@@ -524,8 +539,9 @@ class NetCDFField(XArrayField):
 
 
 class NetCDFFieldList(XArrayFieldListCore):
+    FIELD_TYPE = NetCDFField
+
     def __init__(self, path, *args, **kwargs):
-        self.FIELD_TYPE = NetCDFField
         self.path = path
         # self._fields = None
         super().__init__(None, *args, **kwargs)
@@ -536,7 +552,20 @@ class NetCDFFieldList(XArrayFieldListCore):
         with closing(
             xr.open_mfdataset(self.path, combine="by_coords")
         ) as ds:  # or nested
-            return self._get_fields_from_ds(DataSet(ds))
+            return get_fields_from_ds(DataSet(ds), field_type=self.FIELD_TYPE)
+
+    def has_fields(self):
+        if self._fields is None:
+            import xarray as xr
+
+            with closing(
+                xr.open_mfdataset(self.path, combine="by_coords")
+            ) as ds:  # or nested
+                return get_fields_from_ds(
+                    DataSet(ds), field_type=self.FIELD_TYPE, check_only=True
+                )
+        else:
+            return len(self._fields)
 
     @classmethod
     def merge(cls, sources):
@@ -575,6 +604,9 @@ class NetCDFFieldList(XArrayFieldListCore):
             **options,
         )
 
+    def write(self, *args, **kwargs):
+        return self.to_netcdf(*args, **kwargs)
+
 
 class NetCDFFieldListInFiles(NetCDFFieldList):
     pass
@@ -587,11 +619,9 @@ class NetCDFFieldListInOneFile(NetCDFFieldListInFiles):
         assert isinstance(path, str), path
         super().__init__(path, **kwargs)
 
-    def __getitem__(self, n):
+    def _getitem(self, n):
         if isinstance(n, int):
             return self.fields[n]
-        else:
-            return super().__getitem__(n)
 
     def __len__(self):
         return len(self.fields)
@@ -601,15 +631,24 @@ class NetCDFMaskFieldList(NetCDFFieldList, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
 
+    # TODO: Implement this, but discussion required
+    def to_xarray(self, *args, **kwargs):
+        self._not_implemented()
+
 
 class NetCDFMultiFieldList(NetCDFFieldList, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
 
     def to_xarray(self, **kwargs):
-        return NetCDFFieldList.to_xarray_multi_from_paths(
-            [x.path for x in self.indexes], **kwargs
-        )
+        try:
+            return NetCDFFieldList.to_xarray_multi_from_paths(
+                [x.path for x in self.indexes], **kwargs
+            )
+        except AttributeError:
+            # TODO: Implement this, but discussion required
+            #  This catches Multi-MaskFieldLists which cannot be openned in xarray
+            self._not_implemented()
 
 
 class NetCDFFieldListReader(NetCDFFieldListInOneFile, Reader):
@@ -670,7 +709,7 @@ def _match_magic(magic, deeper_check):
 def reader(source, path, magic=None, deeper_check=False):
     if _match_magic(magic, deeper_check):
         fs = NetCDFFieldListReader(source, path)
-        if len(fs) > 0:
+        if fs.has_fields():
             return fs
         else:
             return NetCDFReader(source, path)
