@@ -511,11 +511,9 @@ class XArrayFieldList(XArrayFieldListCore):
         self.FIELD_TYPE = XArrayField
         super().__init__(ds, **kwargs)
 
-    def __getitem__(self, n):
+    def _getitem(self, n):
         if isinstance(n, int):
             return self.fields[n]
-        else:
-            return super().__getitem__(n)
 
     def __len__(self):
         return len(self.fields)
@@ -611,6 +609,9 @@ class NetCDFFieldList(XArrayFieldListCore):
             **options,
         )
 
+    def write(self, *args, **kwargs):
+        return self.to_netcdf(*args, **kwargs)
+
 
 class NetCDFFieldListInFiles(NetCDFFieldList):
     pass
@@ -623,11 +624,9 @@ class NetCDFFieldListInOneFile(NetCDFFieldListInFiles):
         assert isinstance(path, str), path
         super().__init__(path, **kwargs)
 
-    def __getitem__(self, n):
+    def _getitem(self, n):
         if isinstance(n, int):
             return self.fields[n]
-        else:
-            return super().__getitem__(n)
 
     def __len__(self):
         return len(self.fields)
@@ -637,15 +636,24 @@ class NetCDFMaskFieldList(NetCDFFieldList, MaskIndex):
     def __init__(self, *args, **kwargs):
         MaskIndex.__init__(self, *args, **kwargs)
 
+    # TODO: Implement this, but discussion required
+    def to_xarray(self, *args, **kwargs):
+        self._not_implemented()
+
 
 class NetCDFMultiFieldList(NetCDFFieldList, MultiIndex):
     def __init__(self, *args, **kwargs):
         MultiIndex.__init__(self, *args, **kwargs)
 
     def to_xarray(self, **kwargs):
-        return NetCDFFieldList.to_xarray_multi_from_paths(
-            [x.path for x in self.indexes], **kwargs
-        )
+        try:
+            return NetCDFFieldList.to_xarray_multi_from_paths(
+                [x.path for x in self.indexes], **kwargs
+            )
+        except AttributeError:
+            # TODO: Implement this, but discussion required
+            #  This catches Multi-MaskFieldLists which cannot be openned in xarray
+            self._not_implemented()
 
 
 class NetCDFFieldListReader(NetCDFFieldListInOneFile, Reader):

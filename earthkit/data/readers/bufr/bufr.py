@@ -631,14 +631,12 @@ class MultiBUFRList(BUFRList, MultiIndex):
 class BUFRInFiles(BUFRList):
     # Remote BUFRLists (with urls) are also here,
     # as the actual fieldlist is accessed on a file in cache.
-    # This class changes the interface (_getitem__ and __len__)
+    # This class changes the interface (__getitem__ and __len__)
     # into the interface (part and number_of_parts).
-    def __getitem__(self, n):
+    def _getitem(self, n):
         if isinstance(n, int):
             part = self.part(n if n >= 0 else len(self) + n)
             return BUFRMessage(part.path, part.offset, part.length)
-        else:
-            return super().__getitem__(n)
 
     def __len__(self):
         return self.number_of_parts()

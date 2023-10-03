@@ -97,6 +97,8 @@ try:
 except Exception:
     NO_FDB = True
 
+NO_POLYTOPE = not os.path.exists(os.path.expanduser("~/.polytopeapirc"))
+
 
 def MISSING(*modules):
     return not modules_installed(*modules)

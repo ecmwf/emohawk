@@ -20,7 +20,9 @@ IGNORE = [
     "xml2rst.py",
     "actions.py",
     "generate-examples-maps.py",
-    "settings-2-set.py",
+    "settings-set.py",
+    "settings-reset.py",
+    "settings-temporary.py",
     "xref.py",
 ]
 

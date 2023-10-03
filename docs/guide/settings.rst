@@ -6,19 +6,24 @@ Settings
 *earthkit-data* is maintaining a set of global settings which control
 its behaviour.
 
-The settings are saved in ``~/.earthkit-data/settings.yaml``. They can
-be accessed from Python.
+The settings are automatically saved in ``~/.earthkit-data/settings.yaml`` and they can
+be accessed and modified from Python.
+
+.. tip::
+
+    See the :ref:`/examples/settings.ipynb` notebook for examples.
+
 
 Accessing settings
 ------------------
 
 earthkit-data settings can be accessed using the python API:
 
-.. literalinclude:: include/settings-1-get.py
+.. literalinclude:: include/settings-get.py
 
 
 Changing settings
------------------
+------------------
 
 .. note::
 
@@ -27,7 +32,21 @@ Changing settings
 
 earthkit-data settings can be modified using the python API:
 
-.. literalinclude:: include/settings-2-set.py
+.. literalinclude:: include/settings-set.py
+
+
+Temporary settings
+------------------
+
+We can create a temporary settings (as a context manager) as a copy of the original settings. We will still refer to it as “settings”, but it is completely independent from the original object and changes are not saved into the yaml file (even when ``settings.auto_save_settings`` is True).
+
+.. literalinclude:: include/settings-temporary.py
+
+Output::
+
+    8
+    12
+    11
 
 
 Resetting settings
@@ -40,12 +59,14 @@ Resetting settings
 
 earthkit-data settings can be reset using the python API:
 
-.. literalinclude:: include/settings-3-reset.py
+.. literalinclude:: include/settings-reset.py
 
 
 .. _settings_table:
 
-Default values
---------------
+Settings parameters
+-------------------
+
+This is the list of all the settings parameters:
 
 .. module-output:: generate_settings_rst

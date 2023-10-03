@@ -11,8 +11,8 @@ Caching
 Purpose
 -------
 
-eartkit-data caches most of the remote data access on a local cache. Running again
-``earthkit.data.from_source`` will use the cached data instead of
+earthkit-data caches most of the remote data access on a local cache. Running again
+:func:`from_source` will use the cached data instead of
 downloading it again. When the cache is full, cached data is deleted according it cache policy
 (i.e. oldest data is deleted first).
 earthkit-data cache configuration is managed through the :doc:`settings`.
@@ -26,49 +26,94 @@ earthkit-data cache configuration is managed through the :doc:`settings`.
     through using mirrors.
 
 .. _cache_location:
+.. _cache_policies:
 
-Cache location
---------------
+Cache policies and locations
+------------------------------
 
-  The cache location is defined by the ``cache‑directory`` setting. Its default
-  value depends on your system:
+The primary key to control the cache in the settings is ``cache‑policy``, which can take the following values:
 
-    - ``/tmp/earthkit-data-$USER`` for Linux,
-    - ``C:\\Users\\$USER\\AppData\\Local\\Temp\\earthkit-data-$USER`` for Windows
-    - ``/tmp/.../earthkit-data-$USER`` for MacOS
+  - "user" (default)
+  - "temporary"
+  - "off"
+
+The cache location can be read and modified with Python (see the details below).
+
+.. tip::
+
+   See the :ref:`/examples/cache.ipynb` notebook for examples.
+
+.. note::
+
+  It is recommended to restart your Jupyter kernels after changing
+  the cache location.
+
+User cache policy
++++++++++++++++++++
+
+When the ``cache‑policy`` is "user" the cache is created in the directory defined by the ``user-cache-directory`` settings. The user cache directory is not cleaned up on exit. So next time you start earthkit-data it will (probably) be there again. Also, when you run multiple sessions of earthkit-data under the same user they will share the same cache.
+
+The default value of the cache directory depends on your system:
+
+  - ``/tmp/earthkit-data-$USER`` for Linux,
+  - ``C:\\Users\\$USER\\AppData\\Local\\Temp\\earthkit-data-$USER`` for Windows
+  - ``/tmp/.../earthkit-data-$USER`` for MacOS
 
 
-  The cache location can be read and modified either with shell command or within python.
+The following code shows how to change the ``user-cache-directory`` settings:
 
-  .. note::
+.. code:: python
 
-    It is recommended to restart your Jupyter kernels after changing
-    the cache location.
+  >>> from earthkit.data import settings
+  >>> settings.get("user-cache-directory")  # Find the current cache directory
+  /tmp/earthkit-data-$USER
+  >>> # Change the value of the setting
+  >>> settings.set("cache-directory", "/big-disk/earthkit-data-cache")
+
+  # Python kernel restarted
+
+  >>> from earthkit.data import settings
+  >>> settings.get("user-cache-directory")  # Cache directory has been modified
+  /big-disk/earthkit-data-cache
+
+More generally, the earthkit-data settings can be read, modified, reset
+to their default values from Python,
+see the :doc:`Settings documentation <settings>`.
 
 
-  From Python:
+Temporary cache policy
+++++++++++++++++++++++++
 
-  .. code:: python
+When the ``cache‑policy`` is "temporary" the cache will be located in a temporary directory created by ``tempfile.TemporaryDirectory``. This directory will be unique for each earthkit-data session. When the directory object goes out of scope (at the latest on exit) the cache is cleaned up. Due to the temporary nature of this directory path it cannot be queried via the :doc:`settings`, but we need to use :meth:`cache_directory` on the ``cache`` object.
 
-    >>> import earthkit.data
-    >>> earthkit.data.settings.get(
-    ...     "cache-directory"
-    ... )  # Find the current cache directory
-    /tmp/earthkit-data-$USER
-    >>> # Change the value of the setting
-    >>> earthkit.data.settings.set("cache-directory", "/big-disk/earthkit-data-cache")
+.. code-block:: python
 
-    # Python kernel restarted
+  >>> from earthkit.data import cache, settings
+  >>> settings.set("cache-policy", "temporary")
+  >>> cache.cache_directory()
+  '/var/folders/ng/g0zkhc2s42xbslpsywwp_26m0000gn/T/tmp_5bf5kq8'
 
-    >>> import earthkit.data
-    >>> earthkit.data.settings.get(
-    ...     "cache-directory"
-    ... )  # Cache directory has been modified
-    /big-disk/earthkit-data-cache
+We can specify the parent directory for the the temporary cache by using the ``temporary-cache-directory-root`` settings. By default it is set to None (no parent directory specified).
 
-  More generally, the earthkit-data settings can be read, modified, reset
-  to their default values from python,
-  see the :doc:`Settings documentation <settings>`.
+.. code-block:: python
+
+  >>> from earthkit.data import cache, setting
+  >>> s = {
+  ...     "cache-policy": "temporary",
+  ...     "temporary-cache-directory-root": "~/my_demo_cache",
+  ... }
+  >>> settings.set(s)
+  >>> cache.cache_directory()
+  '~/my_demo_cache/tmp0iiuvsz5'
+
+Off cache policy
+++++++++++++++++++++++++
+
+It is also possible to turn caching off completely by setting the ``cache-policy`` to “off”.
+
+.. warning::
+
+  At the moment, when the cache is disabled none of the sources downloading data  (e.g. :ref:`data-sources-mars`) will work. On top of that the  :ref:`data-sources-file` source will not be able to handle archive input (e.g. tar, zip).
 
 Cache limits
 ------------
@@ -100,9 +145,9 @@ Maximum-cache-disk-usage
     and ``maximum-cache-disk-usage`` to ``None``.
 
 
-Caching settings default values
+Caching settings parameters
 -------------------------------
 
-.. module-output:: generate_settings_rst .*-cache-.* cache-.*
+.. module-output:: generate_settings_rst .*-cache-.* cache-.* .*-cache
 
 Other earthkit-data settings can be found :ref:`here <settings_table>`.

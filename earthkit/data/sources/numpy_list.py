@@ -144,11 +144,9 @@ class ListMerger:
 
 
 class NumpyFieldList(NumpyFieldListCore):
-    def __getitem__(self, n):
+    def _getitem(self, n):
         if isinstance(n, int):
             return NumpyField(self._array[n], self._metadata[n])
-        else:
-            return super().__getitem__(n)
 
     def __len__(self):
         return (

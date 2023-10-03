@@ -66,9 +66,17 @@ class ArchiveReader(Reader):
                     continue
                 archive.extract(member=member, path=target, **kwargs)
 
+        try:
+            r = os.stat(self.path)
+            fsize = r.st_size
+            mtime = r.st_mtime_ns
+        except Exception:
+            fsize = 0
+            mtime = 0
+
         self.path = self.cache_file(
             unpack,
-            self.path,
+            [self.path, fsize, mtime],
             extension=".d",
             replace=self.path,
         )

@@ -25,6 +25,7 @@ dependencies:
   - git+https://github.com/ecmwf/multiurl
   - git+https://github.com/ecmwf/pyfdb
   - ecmwf-opendata>=0.1.2
+  - polytope-client>=0.7.1
 - tqdm
 - markdown
 - jsonschema
@@ -37,8 +38,9 @@ dependencies:
 - pytest-cov
 - pytest-forked
 - pytest-timeout
-- sphinx
-- sphinx-autoapi
+- sphinx>=7.2.6
+- pip:
+  - sphinx-autoapi>=3.0.0
 - sphinx_rtd_theme
 - sphinxcontrib-apidoc
 - nbformat
