@@ -1,0 +1,72 @@
+latitude:
+  first: 73.0
+  last: 33.0
+  mean: 53.0
+sin_latitude:
+  first: 0.9563047559630354
+  last: 0.5446390350150271
+  mean: 0.7793134730178092
+cos_latitude:
+  first: 0.29237170472273677
+  last: 0.838670567945424
+  mean: 0.5872548238922449
+longitude:
+  first: -27.0
+  last: 45.0
+  mean: 9.0
+sin_longitude:
+  first: -0.45399049973954675
+  last: 0.7071067811865475
+  mean: 0.14524515528184773
+cos_longitude:
+  first: 0.8910065241883679
+  last: 0.7071067811865476
+  mean: 0.917041819159978
+local_time:
+  first: 16.2
+  last: 21.0
+  mean: 18.599999999999998
+sin_local_time:
+  first: -0.8910065241883678
+  last: -0.7071067811865477
+  mean: -0.9170418191599782
+cos_local_time:
+  first: -0.4539904997395469
+  last: 0.7071067811865475
+  mean: 0.1452451552818477
+julian_day:
+  first: 133.75
+  last: 133.75
+  mean: 133.75
+sin_julian_day:
+  first: 0.7451558219567406
+  last: 0.7451558219567406
+  mean: 0.7451558219567408
+cos_julian_day:
+  first: -0.6668903965450202
+  last: -0.6668903965450202
+  mean: -0.66689039654502
+ecef_x:
+  first: 0.26050509639603353
+  last: 0.5930296457757825
+  mean: 0.5385372320126167
+ecef_y:
+  first: -0.13273397633677847
+  last: 0.5930296457757824
+  mean: 0.08529591808624325
+ecef_z:
+  first: 0.9563047559630354
+  last: 0.5446390350150271
+  mean: 0.7793134730178092
+insolation:
+  first: 0.4264389015663102
+  last: 0.0
+  mean: 0.19460357640356757
+toa_incident_solar_radiation:
+  first: 2183576.3863176806
+  last: 0.0
+  mean: 1189881.2891506872
+cos_solar_zenith_angle:
+  first: 0.4264389015663102
+  last: 0.0
+  mean: 0.19460357640356757

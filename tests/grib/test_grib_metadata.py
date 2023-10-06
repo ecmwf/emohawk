@@ -129,9 +129,9 @@ def test_grib_metadata_astype_18(mode, key, astype, expected_value):
 @pytest.mark.parametrize(
     "key,expected_value",
     [
-        ("max", 307.18560791015625),
-        ("max:d", 307.18560791015625),
-        ("max:float", 307.18560791015625),
+        ("latitudeOfFirstGridPointInDegrees", 90.0),
+        ("latitudeOfFirstGridPointInDegrees:d", 90.0),
+        ("latitudeOfFirstGridPointInDegrees:float", 90.0),
     ],
 )
 def test_grib_metadata_double_1(mode, key, expected_value):
@@ -145,35 +145,15 @@ def test_grib_metadata_double_1(mode, key, expected_value):
 @pytest.mark.parametrize(
     "key",
     [
-        ("max"),
-        ("max:d"),
-        ("max:float"),
+        ("latitudeOfFirstGridPointInDegrees"),
+        ("latitudeOfFirstGridPointInDegrees:d"),
+        ("latitudeOfFirstGridPointInDegrees:float"),
     ],
 )
 def test_grib_metadata_double_18(mode, key):
     f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
-    ref = [
-        320.5641784667969,
-        17.713119506835938,
-        11.833480834960938,
-        304.53916931152344,
-        27.10162353515625,
-        12.660964965820312,
-        287.26531982421875,
-        28.145523071289062,
-        15.6385498046875,
-        271.8430633544922,
-        36.74000549316406,
-        15.009902954101562,
-        264.00323486328125,
-        46.213775634765625,
-        23.949615478515625,
-        250.6531524658203,
-        58.45549011230469,
-        36.92034912109375,
-    ]
-
+    ref = [90.0] * 18
     r = f.metadata(key)
     np.testing.assert_allclose(r, ref, 0.001)
 
@@ -182,33 +162,14 @@ def test_grib_metadata_double_18(mode, key):
 @pytest.mark.parametrize(
     "key,astype",
     [
-        ("max", None),
-        ("max", float),
+        ("latitudeOfFirstGridPointInDegrees", None),
+        ("latitudeOfFirstGridPointInDegrees", float),
     ],
 )
 def test_grib_metadata_double_astype_18(mode, key, astype):
     f = load_file_or_numpy_fs("tuv_pl.grib", mode)
 
-    ref = [
-        320.5641784667969,
-        17.713119506835938,
-        11.833480834960938,
-        304.53916931152344,
-        27.10162353515625,
-        12.660964965820312,
-        287.26531982421875,
-        28.145523071289062,
-        15.6385498046875,
-        271.8430633544922,
-        36.74000549316406,
-        15.009902954101562,
-        264.00323486328125,
-        46.213775634765625,
-        23.949615478515625,
-        250.6531524658203,
-        58.45549011230469,
-        36.92034912109375,
-    ]
+    ref = [90.0] * 18
 
     r = f.metadata(key, astype=astype)
     np.testing.assert_allclose(r, ref, 0.001)
@@ -435,7 +396,7 @@ def test_grib_metadata_missing_key(mode):
     assert v == 0
 
 
-@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+@pytest.mark.parametrize("mode", ["file"])
 def test_grib_metadata_namespace(mode):
     f = load_file_or_numpy_fs("test6.grib", mode)
 

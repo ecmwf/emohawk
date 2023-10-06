@@ -27,6 +27,7 @@ dependencies:
   - git+https://github.com/ecmwf/pyfdb
   - ecmwf-opendata>=0.1.2
   - polytope-client>=0.7.1
+  - earthkit-meteo>=0.0.1
 - tqdm
 - markdown
 - jsonschema

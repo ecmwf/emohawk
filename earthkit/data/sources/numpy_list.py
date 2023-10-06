@@ -13,7 +13,6 @@ import numpy as np
 
 from earthkit.data.core.fieldlist import Field, FieldList
 from earthkit.data.core.index import MaskIndex, MultiIndex
-from earthkit.data.core.metadata import Metadata
 from earthkit.data.readers.grib.pandas import PandasMixIn
 from earthkit.data.readers.grib.xarray import XarrayMixIn
 
@@ -51,10 +50,6 @@ class NumpyFieldListCore(PandasMixIn, XarrayMixIn, FieldList):
         if not isinstance(self._metadata, list):
             self._metadata = [self._metadata]
 
-        for md in self._metadata:
-            if not isinstance(md, Metadata):
-                raise TypeError("metadata must be a subclass of MetaData")
-
         if isinstance(self._array, np.ndarray):
             if self._array.shape[0] != len(self._metadata):
                 # we have a single array and a single metadata
@@ -86,6 +81,9 @@ class NumpyFieldListCore(PandasMixIn, XarrayMixIn, FieldList):
 
         else:
             raise TypeError("array must be an ndarray or a list of ndarrays")
+
+        # hide internal metadata related to values
+        self._metadata = [md._hide_internal_keys() for md in self._metadata]
 
         super().__init__(*args, **kwargs)
 

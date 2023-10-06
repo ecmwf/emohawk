@@ -27,7 +27,7 @@ class Writer(metaclass=ABCMeta):
 
 
 def write(f, values, metadata, **kwargs):
-    x = _writers(metadata.__class__.__name__)
+    x = _writers(metadata.data_format())
     c = x()
     c.write(f, values, metadata, **kwargs)
 
@@ -46,7 +46,7 @@ def _writers(method_name):
                     module = import_module(f".{name}", package=__name__)
                     if hasattr(module, "Writer"):
                         w = getattr(module, "Writer")
-                        _WRITERS[w.METADATA_TYPE] = w
+                        _WRITERS[w.DATA_FORMAT] = w
                         _WRITERS[name] = w
                 except Exception:
                     LOG.exception("Error loading writer %s", name)

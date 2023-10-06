@@ -431,10 +431,10 @@ class Field(Base):
             default = kwargs.pop("default", None)
 
             r = [
-                self._metadata._get_key(
+                self._metadata.get(
                     k,
-                    astype=kt,
                     default=default,
+                    astype=kt,
                     raise_on_missing=raise_on_missing,
                     **kwargs,
                 )

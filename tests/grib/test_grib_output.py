@@ -163,7 +163,6 @@ def test_grib_output_pl():
     sys.version_info < (3, 10),
     reason="ignore_cleanup_errors requires Python 3.10 or later",
 )
-@pytest.mark.skipif(True, reason="grib_set_values fails")
 def test_grib_output_tp():
     data = np.random.random((181, 360))
 
@@ -171,7 +170,8 @@ def test_grib_output_tp():
         path = os.path.join(tmp, "a.grib")
 
         f = earthkit.data.new_grib_output(path, date=20010101)
-        f.write(data, param="tp", step=48)
+        # TODO: make it work for edition=2
+        f.write(data, param="tp", step=48, edition=1)
         f.close()
 
         ds = earthkit.data.from_source("file", path)
@@ -180,7 +180,7 @@ def test_grib_output_tp():
         assert ds[0].metadata("date") == 20010101
         assert ds[0].metadata("param") == "tp"
         assert ds[0].metadata("levtype") == "sfc"
-        assert ds[0].metadata("edition") == 2
+        assert ds[0].metadata("edition") == 1
         assert ds[0].metadata("step") == 48
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)

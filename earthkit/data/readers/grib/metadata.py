@@ -206,6 +206,8 @@ class GribMetadata(Metadata):
         "vertical",
     ]
 
+    DATA_FORMAT = "grib"
+
     __handle_type = None
 
     def __init__(self, handle):
@@ -228,32 +230,18 @@ class GribMetadata(Metadata):
         return GribMetadata.__handle_type
 
     def __len__(self):
-        return sum(map(lambda i: 1, self._handle.keys()))
+        return sum(map(lambda i: 1, self.keys()))
 
     def __contains__(self, key):
         return self._handle.__contains__(key)
 
     def keys(self):
-        r"""Return a new view of the metadata keys.
-
-        Returns
-        -------
-        Iterable of str
-
-        """
         return self._handle.keys()
 
     def items(self):
-        r"""Return a new view of the metadata items.
-
-        Returns
-        -------
-        Iterable of :obj:`(key,value)` pairs
-
-        """
         return self._handle.items()
 
-    def _get_internal_key(self, key, astype=None, default=None, raise_on_missing=False):
+    def _get(self, key, astype=None, default=None, raise_on_missing=False):
         def _key_name(key):
             if key == "param":
                 key = "shortName"
@@ -267,22 +255,10 @@ class GribMetadata(Metadata):
 
         return self._handle.get(_key_name(key), ktype=astype, **_kwargs)
 
+    def _is_custom_key(self, key):
+        return key in self.CUSTOM_KEYS
+
     def override(self, *args, **kwargs):
-        r"""Change the metadata values and return a new object.
-
-        :obj:`override` accepts another :obj:`Metadata` or a dict or
-        an iterable of key/value pairs (as tuples or other iterables of length two).
-        If keyword arguments are specified, the metadata is then updated with those
-        key/value pairs.
-
-        Examples
-        --------
-        >>> other = RawMetadata({"key1": 1, "key2": 2})
-        >>> m1 = m.override(other)
-        >>> m1 = m.override({"key1": 1, "key2": 2})
-        >>> m1 = m.override([("key1", 1), ("key2", 2)])
-        >>> m1 = m.override(key1=1, key2=2)
-        """
         d = dict(*args, **kwargs)
 
         new_value_size = None
@@ -336,36 +312,6 @@ class GribMetadata(Metadata):
             self._geo = GribFieldGeography(self)
         return self._geo
 
-    def namespaces(self):
-        r"""Return the available namespaces.
-
-        Returns
-        -------
-        list of str
-        """
-        return self.NAMESPACES
-
-    def datetime(self):
-        r"""Return the date and time of the field.
-
-        Returns
-        -------
-        dict of datatime.datetime
-            Dict with items "base_time" and "valid_time".
-
-
-        >>> import earthkit.data
-        >>> ds = earthkit.data.from_source("file", "tests/data/t_time_series.grib")
-        >>> ds[4].datetime()
-        {'base_time': datetime.datetime(2020, 12, 21, 12, 0),
-        'valid_time': datetime.datetime(2020, 12, 21, 18, 0)}
-
-        """
-        return {
-            "base_time": self._base_datetime(),
-            "valid_time": self._valid_datetime(),
-        }
-
     def _base_datetime(self):
         date = self.get("date", None)
         time = self.get("time", None)
@@ -418,27 +364,133 @@ class GribMetadata(Metadata):
         from earthkit.data.utils.summary import format_namespace_dump
 
         namespace = self.NAMESPACES if namespace is all else [namespace]
-        r = [
-            {
-                "title": ns if ns else "default",
-                "data": self.as_namespace(ns),
-                "tooltip": f"Keys in the ecCodes {ns} namespace",
-            }
-            for ns in namespace
-        ]
+        r = []
+        for ns in namespace:
+            v = self.as_namespace(ns)
+            if v:
+                r.append(
+                    {
+                        "title": ns if ns else "default",
+                        "data": v,
+                        "tooltip": f"Keys in the ecCodes {ns} namespace",
+                    }
+                )
 
         return format_namespace_dump(
             r, selected="parameter", details=self.__class__.__name__, **kwargs
         )
 
-    def ls_keys(self):
-        r"""Return the keys to be used with the :meth:`ls` method."""
-        return self.LS_KEYS
+    def _hide_internal_keys(self):
+        return RestrictedGribMetadata(self)
 
-    def describe_keys(self):
-        r"""Return the keys to be used with the :meth:`describe` method."""
-        return self.DESCRIBE_KEYS
 
-    def index_keys(self):
-        r"""Return the keys to be used with the :meth:`indices` method."""
-        return self.INDEX_KEYS
+# TODO: this is a temporary solution
+class RestrictedGribMetadata(GribMetadata):
+    """Hide internal keys and namespaces in GRIB metadata"""
+
+    EKD_NAMESPACE = "grib"
+    INTERNAL_KEYS = [
+        "min",
+        "max",
+        "avg",
+        "sd",
+        "skew",
+        "kurt",
+        "const",
+        "isConstant",
+        "numberOfMissing",
+        "numberOfCodedValues",
+        "bitmapPresent",
+        "offsetValuesBy",
+        "packingError",
+        "referenceValue",
+        "referenceValueError",
+        "unpackedError",
+    ]
+    INTERNAL_NAMESPACES = ["statistics"]
+
+    def __init__(self, md):
+        super().__init__(md._handle)
+
+    def __len__(self):
+        if self.INTERNAL_KEYS:
+            return len(self.keys())
+        else:
+            return super().__len__()
+
+    def _is_internal(self, key):
+        ns, _, name = key.partition(".")
+        if name == "":
+            name = key
+            ns = ""
+
+        if ns == self.EKD_NAMESPACE:
+            return False
+        else:
+            return name in self.INTERNAL_KEYS
+
+    def __contains__(self, key):
+        if self.INTERNAL_KEYS:
+            return not self._is_internal(key) and super().__contains__(key)
+        else:
+            return super().__contains__(key)
+
+    def keys(self):
+        if self.INTERNAL_KEYS:
+            r = []
+            for k in super().keys():
+                if k not in self.INTERNAL_KEYS:
+                    r.append(k)
+            return r
+        else:
+            return super().keys()
+
+    def items(self):
+        if self.INTERNAL_KEYS:
+            r = {}
+            for k, v in super().items():
+                if k not in self.INTERNAL_KEYS:
+                    r[k] = v
+            return r.items()
+        else:
+            return super().items()
+
+    def get(self, key, default=None, *, astype=None, raise_on_missing=False):
+        ns, _, name = key.partition(".")
+        if name == "":
+            name = key
+            ns = ""
+
+        if ns == self.EKD_NAMESPACE:
+            key = name
+        else:
+            if name in self.INTERNAL_KEYS:
+                if raise_on_missing:
+                    raise KeyError(key)
+                else:
+                    return default
+
+        return super().get(
+            key, default=default, astype=astype, raise_on_missing=raise_on_missing
+        )
+
+    def namespaces(self):
+        if self.INTERNAL_NAMESPACES:
+            return [
+                x for x in super().namespaces() if x not in self.INTERNAL_NAMESPACES
+            ]
+        else:
+            return super().namespaces()
+
+    def as_namespace(self, namespace):
+        if namespace in self.INTERNAL_NAMESPACES:
+            return {}
+
+        r = super().as_namespace(namespace)
+        for k in list(r.keys()):
+            if k in self.INTERNAL_KEYS:
+                del r[k]
+        return r
+
+    def _hide_internal_keys(self):
+        return self
