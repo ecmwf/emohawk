@@ -249,14 +249,14 @@ class GridSpecConverter(metaclass=ABCMeta):
         if spec_type is None:
             grid = spec["grid"]
             # regular_ll: the grid is in the form of [dx, dy]
-            if isinstance(spec, list) and len(grid) == 2:
+            if isinstance(grid, list) and len(grid) == 2:
                 spec_type = "regular_ll"
             # gaussian: the grid=N as a str or int
             elif isinstance(spec, (str, int)):
                 spec_type = GridSpecConverter.infer_gaussian_type(grid)
 
         if spec_type is None:
-            raise ValueError("Could not determine type of gridspec={spec}")
+            raise ValueError(f"Could not determine type of gridspec={spec}")
 
         return spec_type
 
