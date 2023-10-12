@@ -439,7 +439,7 @@ class RegularGaussianGridSpecConverter(GridSpecConverter):
         if isinstance(N, str):
             try:
                 if N[0] == "F":
-                    N = int(N[:1])
+                    N = int(N[1:])
                 else:
                     N = int(N)
             except Exception:
@@ -461,10 +461,10 @@ class ReducedGaussianGridSpecConverter(GridSpecConverter):
         if isinstance(N, str):
             try:
                 if N[0] == "N":
-                    N = int(N[:1])
+                    N = int(N[1:])
                     octahedral = 0
                 elif N[0] == "O":
-                    N = int(N[:1])
+                    N = int(N[1:])
                     octahedral = 1
                 else:
                     N = int(N)
