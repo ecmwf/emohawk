@@ -443,11 +443,11 @@ class RegularGaussianGridSpecConverter(GridSpecConverter):
                 else:
                     N = int(N)
             except Exception:
-                raise ValueError("Invalid N={N}")
+                raise ValueError(f"Invalid N={N}")
         elif not isinstance(N, int):
-            raise ValueError("Invalid N={N}")
+            raise ValueError(f"Invalid N={N}")
         if N < 1 or N > 1000000:
-            raise ValueError("Invalid N={N}")
+            raise ValueError(f"Invalid N={N}")
         d = dict(N=N)
         return d
 
@@ -469,11 +469,11 @@ class ReducedGaussianGridSpecConverter(GridSpecConverter):
                 else:
                     N = int(N)
             except Exception:
-                raise ValueError("Invalid N={N}")
+                raise ValueError(f"Invalid N={N}")
         elif not isinstance(N, int):
-            raise ValueError("Invalid N={N}")
+            raise ValueError(f"Invalid N={N}")
         if N < 1 or N > 1000000:
-            raise ValueError("Invalid N={N}")
+            raise ValueError(f"Invalid N={N}")
         d = dict(N=N, octahedral=octahedral)
         return d
 
