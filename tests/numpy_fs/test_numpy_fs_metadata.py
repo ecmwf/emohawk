@@ -68,12 +68,15 @@ def test_numpy_fs_values_metadata_internal():
 def test_numpy_fs_metadata_keys():
     ds, _ = load_numpy_fs(1)
 
-    num = 183
+    # The number/order of metadata keys can vary with the ecCodes version.
+    # The same is true for the namespaces.
+
     md = ds[0].metadata()
-    assert len(md) == num
+    md_num = len(md)
+    assert md_num > 100
 
     keys = md.keys()
-    assert len(keys) == num
+    assert len(keys) == md_num
 
     for k in md.keys():
         assert isinstance(k, str)
@@ -81,7 +84,7 @@ def test_numpy_fs_metadata_keys():
         break
 
     items = md.items()
-    assert len(items) == num
+    assert len(items) == md_num
 
     for k, v in md.items():
         assert isinstance(k, str)
@@ -90,6 +93,7 @@ def test_numpy_fs_metadata_keys():
         break
 
     assert "max" not in md
+    assert "maximum" not in md
     assert "statistics.max" not in md
     assert "validityDate" in md
 
@@ -118,27 +122,31 @@ def test_numpy_fs_metadata_namespace():
     }
     assert r == ref
 
+    # The number/order of metadata keys can vary with the ecCodes version.
+    # The same is true for the namespaces.
+
     r = f[0].metadata(namespace=None)
     assert isinstance(r, dict)
-    assert len(r) == 177
+    md_num = len(r)
+    assert md_num > 100
     assert r["level"] == 1000
     assert r["stepType"] == "instant"
 
     r = f[0].metadata(namespace=[None])
     assert isinstance(r, dict)
-    assert len(r) == 177
+    assert len(r) == md_num
     assert r["level"] == 1000
     assert r["stepType"] == "instant"
 
     r = f[0].metadata(namespace="")
     assert isinstance(r, dict)
-    assert len(r) == 177
+    assert len(r) == md_num
     assert r["level"] == 1000
     assert r["stepType"] == "instant"
 
     r = f[0].metadata(namespace=[""])
     assert isinstance(r, dict)
-    assert len(r) == 177
+    assert len(r) == md_num
     assert r["level"] == 1000
     assert r["stepType"] == "instant"
 

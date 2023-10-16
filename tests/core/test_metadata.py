@@ -122,19 +122,22 @@ def test_grib_metadata_get():
     ds = from_source("file", earthkit_examples_file("test.grib"))
     md = ds[0].metadata()
 
-    assert len(md) == 192
+    # the number/order of metadata keys can vary with the ecCodes version
+    md_num = len(md)
+    assert md_num > 100
+
     keys = list(md.keys())
-    assert len(keys) == 192
-    assert keys[0] == "globalDomain"
-    assert keys[10] == "wrongPadding"
+    assert len(keys) == md_num
+    assert "shortName" in keys
+    assert "maximum" in keys
 
     keys = [k for k in md]
-    assert len(keys) == 192
-    assert keys[0] == "globalDomain"
-    assert keys[10] == "wrongPadding"
+    assert len(keys) == md_num
+    assert "shortName" in keys
+    assert "maximum" in keys
 
     items = {k: v for k, v in md.items()}
-    assert len(items) == 192
+    assert len(items) == md_num
     assert items["shortName"] == "2t"
     assert items["typeOfLevel"] == "surface"
 

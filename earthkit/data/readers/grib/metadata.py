@@ -390,6 +390,12 @@ class RestrictedGribMetadata(GribMetadata):
 
     EKD_NAMESPACE = "grib"
     INTERNAL_KEYS = [
+        "minimum",
+        "maximum",
+        "average",
+        "standardDeviation",
+        "skewness",
+        "kurtosis",
         "min",
         "max",
         "avg",

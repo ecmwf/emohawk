@@ -6,6 +6,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import collections.abc
+import itertools
 
 import cdsapi
 import yaml
@@ -16,6 +18,12 @@ from earthkit.data.utils import tqdm
 
 from .file import FileSource
 from .prompt import APIKeyPrompt
+
+
+def ensure_iterable(obj):
+    if isinstance(obj, str) or not isinstance(obj, collections.abc.Iterable):
+        return [obj]
+    return obj
 
 
 class CDSAPIKeyPrompt(APIKeyPrompt):
@@ -111,39 +119,17 @@ class CdsRetriever(FileSource):
     @normalize("area", "bounding-box(list)")
     def requests(self, **kwargs):
         split_on = kwargs.pop("split_on", None)
-        if split_on is None or not isinstance(kwargs.get(split_on), (list, tuple)):
+        if split_on is None:
             return [kwargs]
+        split_on = ensure_iterable(split_on)
 
         result = []
-
-        for v in kwargs[split_on]:
-            r = dict(**kwargs)
-            r[split_on] = v
-            result.append(r)
-
-        return result
-
-    def to_pandas(self, **kwargs):
-        pandas_read_csv_kwargs = dict(
-            comment="#",
-            parse_dates=["report_timestamp"],
-            skip_blank_lines=True,
-            compression="zip",
-        )
-
-        pandas_read_csv_kwargs.update(kwargs.get("pandas_read_csv_kwargs", {}))
-
-        odc_read_odb_kwargs = dict(
-            # TODO
-        )
-
-        odc_read_odb_kwargs.update(kwargs.get("odc_read_odb_kwargs", {}))
-
-        return super().to_pandas(
-            pandas_read_csv_kwargs=pandas_read_csv_kwargs,
-            odc_read_odb_kwargs=odc_read_odb_kwargs,
-            **kwargs,
-        )
+        for values in itertools.product(
+            *[ensure_iterable(kwargs[k]) for k in split_on]
+        ):
+            subrequest = dict(zip(split_on, values))
+            result.append(kwargs | subrequest)
+        return result or [kwargs]
 
 
 source = CdsRetriever

@@ -421,27 +421,31 @@ def test_grib_metadata_namespace(mode):
     }
     assert r == ref
 
+    # The number/order of metadata keys can vary with the ecCodes version.
+    # The same is true for the namespaces.
+
     r = f[0].metadata(namespace=None)
     assert isinstance(r, dict)
-    assert len(r) == 186
+    md_num = len(r)
+    assert md_num > 100
     assert r["level"] == 1000
     assert r["stepType"] == "instant"
 
     r = f[0].metadata(namespace=[None])
     assert isinstance(r, dict)
-    assert len(r) == 186
+    assert len(r) == md_num
     assert r["level"] == 1000
     assert r["stepType"] == "instant"
 
     r = f[0].metadata(namespace="")
     assert isinstance(r, dict)
-    assert len(r) == 186
+    assert len(r) == md_num
     assert r["level"] == 1000
     assert r["stepType"] == "instant"
 
     r = f[0].metadata(namespace=[""])
     assert isinstance(r, dict)
-    assert len(r) == 186
+    assert len(r) == md_num
     assert r["level"] == 1000
     assert r["stepType"] == "instant"
 
