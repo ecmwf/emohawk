@@ -11,7 +11,7 @@ from . import Writer
 
 
 class GribWriter(Writer):
-    METADATA_TYPE = "GribMetadata"
+    DATA_FORMAT = "grib"
 
     def write(self, f, values, metadata, check_nans=True):
         handle = metadata._handle

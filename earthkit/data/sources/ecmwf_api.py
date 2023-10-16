@@ -99,23 +99,18 @@ class ECMWFApi(FileSource):
     def to_pandas(self, **kwargs):
         pandas_read_csv_kwargs = dict(
             sep="\t",
-            comment="#",
-            # parse_dates=["report_timestamp"],
-            skip_blank_lines=True,
             skipinitialspace=True,
-            compression="zip",
         )
 
         pandas_read_csv_kwargs.update(kwargs.get("pandas_read_csv_kwargs", {}))
 
-        odc_read_odb_kwargs = dict(
-            # TODO
-        )
-
-        odc_read_odb_kwargs.update(kwargs.get("odc_read_odb_kwargs", {}))
+        # odc_read_odb_kwargs = dict(
+        #     # TODO
+        # )
+        # odc_read_odb_kwargs.update(kwargs.get("odc_read_odb_kwargs", {}))
 
         return super().to_pandas(
             pandas_read_csv_kwargs=pandas_read_csv_kwargs,
-            odc_read_odb_kwargs=odc_read_odb_kwargs,
+            # odc_read_odb_kwargs=odc_read_odb_kwargs,
             **kwargs,
         )

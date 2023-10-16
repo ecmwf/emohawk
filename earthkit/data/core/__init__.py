@@ -8,6 +8,7 @@
 
 import logging
 from abc import abstractmethod
+from collections import defaultdict
 
 LOG = logging.getLogger(__name__)
 
@@ -96,6 +97,37 @@ class Base(metaclass=MetaBase):
     def order_by(self, *args, **kwargs):
         """Reorder the elements of the object."""
         self._not_implemented()
+
+    def unique_values(self, *coords, remapping=None, progress_bar=True):
+        """
+        Given a list of metadata attributes, such as date, param, levels,
+        returns the list of unique values for each attributes
+        """
+        from earthkit.data.core.order import build_remapping
+        from earthkit.data.utils import progress_bar
+
+        assert len(coords)
+        assert all(isinstance(k, str) for k in coords), coords
+
+        remapping = build_remapping(remapping)
+        iterable = self
+
+        if progress_bar:
+            iterable = progress_bar(
+                iterable=self,
+                desc=f"Finding coords in dataset for {coords}",
+            )
+
+        dic = defaultdict(dict)
+        for f in iterable:
+            metadata = remapping(f.metadata)
+            for k in coords:
+                v = metadata(k)
+                dic[k][v] = True
+
+        dic = {k: tuple(values.keys()) for k, values in dic.items()}
+
+        return dic
 
     # @abstractmethod
     # def to_points(self, *args, **kwargs):

@@ -41,12 +41,28 @@ def load_numpy_fs(num):
     return (*ds, md)
 
 
+def load_numpy_fs_file(fname):
+    ds_in = from_source("file", earthkit_examples_file(fname))
+    md = ds_in.metadata("param")
+
+    ds = FieldList.from_numpy(
+        ds_in.values, [m.override(edition=1) for m in ds_in.metadata()]
+    )
+
+    return (ds, md)
+
+
 def check_numpy_fs(ds, ds_input, md_full):
     assert len(ds_input) in [1, 2, 3]
 
     assert len(ds) == len(md_full)
     assert ds.metadata("param") == md_full
     assert np.allclose(ds[0].values, ds_input[0][0].values)
+
+    # # values metadata
+    # keys = ["min", "max"]
+    # for k in keys:
+    #     assert np.isclose(ds[0].metadata(k), ds_input[0][0].metadata(k))
 
     # check slice
     r = ds[1]

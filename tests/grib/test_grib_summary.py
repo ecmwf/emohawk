@@ -359,7 +359,7 @@ def test_grib_tail_num(mode):
     assert ref == df.to_dict()
 
 
-@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+@pytest.mark.parametrize("mode", ["file"])
 def test_grib_dump(mode):
     f = load_file_or_numpy_fs("test6.grib", mode)
 

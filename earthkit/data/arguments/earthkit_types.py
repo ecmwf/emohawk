@@ -168,7 +168,17 @@ class IntType(_IntType, NonListMixin):
 
 
 class IntListType(_IntType, ListMixin):
-    pass
+    def cast(self, value):
+        if isinstance(value, str) and "/" in value:
+            bits = value.split("/")
+            if len(bits) == 3 and bits[1].lower() == "to":
+                value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
+
+            elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
+                value = list(
+                    range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4]))
+                )
+        return super().cast(value)
 
 
 class IntSingleOrListType(_IntType, SingleOrListMixin):
@@ -194,6 +204,10 @@ class FloatSingleOrListType(_FloatType, SingleOrListMixin):
 
 class _DateType(Type):
     def _format(self, value, format):
+        if format == "datetime.datetime":
+            return value
+        if format == datetime.datetime:
+            return value
         return value.strftime(format)
 
     def include_args(self, decorator, args):
