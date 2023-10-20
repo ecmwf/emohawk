@@ -8,6 +8,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
+import pytest
 
 from earthkit.data import from_source
 from earthkit.data.testing import earthkit_file
@@ -21,6 +22,7 @@ def test_geojson():
         assert _s.geometry
 
 
+@pytest.mark.with_proj
 def test_geojson_bounding_box():
     s = from_source("file", earthkit_file("tests/data/NUTS_RG_20M_2021_3035.geojson"))
     bb = s.bounding_box()
