@@ -8,6 +8,8 @@
 
 import logging
 
+import numpy as np
+
 from earthkit.data.utils.bbox import BoundingBox
 from earthkit.data.wrappers import Wrapper
 
@@ -137,6 +139,12 @@ class GeoPandasDataFrameWrapper(PandasDataFrameWrapper):
             ) = self.data.crs.area_of_use.bounds
         except AttributeError:
             logger.warn("Bounding box not found in geopandas object")
+            (
+                self.east,
+                self.south,
+                self.west,
+                self.north,
+            ) = (np.nan, np.nan, np.nan, np.nan)
         self.fields = None
 
     def __iter__(self):

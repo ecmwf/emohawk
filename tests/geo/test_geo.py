@@ -100,28 +100,57 @@ def test_haversine_distance_invalid(p_ref):
 
 
 @pytest.mark.parametrize(
-    "p_ref,index_ref",
+    "p_ref,index_ref,dist_ref",
     [
-        ((0, 0), 0),
-        ((15, 22), 0),
-        ((44, 10), 6),
-        ((44, -10), 7),
-        ((89, -120), 4),
-        ((-50, -18), 8),
-        ((-50, 18), 9),
+        ((0, 0), 0, 0),
+        ((15, 22), 0, 2937383.915942687),
+        ((44, 10), 6, 890348.1323086087),
+        ((44, -10), 7, 890348.1323086087),
+        ((89, -120), 4, 111198.92344854656),
+        ((-50, -18), 8, 265965.0757389435),
+        ((-50, 18), 9, 265965.0757389435),
     ],
 )
-def test_haversine_nearest(p_ref, index_ref):
+def test_haversine_nearest_single_ref(p_ref, index_ref, dist_ref):
     lats = np.array([0.0, 0, 0, 0, 90, -90, 48, 48, -48, -48, np.nan])
     lons = np.array([0, 90, -90, 180, 0, 0, 20, -20, -20, 20, 1.0])
 
-    index = nearest_point_haversine(p_ref, (lats, lons))
-    assert index == index_ref, p_ref
+    index, distance = nearest_point_haversine(p_ref, (lats, lons))
+    assert np.allclose(index_ref, index)
+    assert np.allclose(distance, dist_ref)
+
+
+def test_haversine_nearest_multi_ref_single_point():
+    p_ref = [(15, 44, 44), (22, 10, -10)]
+
+    index_ref = np.array([0, 0, 0])
+    dist_ref = np.array([3669564.47380201, 1026629.42232992, 2492883.80828643])
+
+    lats = 48
+    lons = 22
+
+    index, distance = nearest_point_haversine(p_ref, (lats, lons))
+    assert np.allclose(index, index_ref)
+    assert np.allclose(distance, dist_ref)
+
+
+def test_haversine_nearest_multi_ref_multi_points():
+    p_ref = [(15, 44, 44), (22, 10, -10)]
+
+    index_ref = np.array([0, 6, 7])
+    dist_ref = np.array([2937383.915942687, 890348.1323086087, 890348.1323086087])
+
+    lats = np.array([0.0, 0, 0, 0, 90, -90, 48, 48, -48, -48, np.nan])
+    lons = np.array([0, 90, -90, 180, 0, 0, 20, -20, -20, 20, 1.0])
+
+    index, distance = nearest_point_haversine(p_ref, (lats, lons))
+    assert np.allclose(index, index_ref)
+    assert np.allclose(distance, dist_ref)
 
 
 def test_haversine_nearest_invalid():
-    # p_ref must be a single point
-    p_ref = ([15, 21], [22, 7])
+    # checks: p_ref must have a (2,) shape
+    p_ref = ([15, 21], [22, 7], [44, 12])
     p = ([0.0, 0], [0, 90])
 
     with pytest.raises(ValueError):

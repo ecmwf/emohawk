@@ -37,6 +37,9 @@ Here is a list of example notebooks to illustrate how to use earthkit-data.
     examples/grib_url.ipynb
     examples/grib_to_netcdf.ipynb
     examples/numpy_fieldlist.ipynb
+    examples/grib_nearest_gridpoint.ipynb
+    examples/grib_time_series.ipynb
+
 
 .. toctree::
     :maxdepth: 1
