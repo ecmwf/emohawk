@@ -22,6 +22,7 @@ dependencies:
 - ecmwf-api-client>=1.6.1
 - cdsapi
 - hda
+- scipy
 - pip:
   - git+https://github.com/ecmwf/multiurl
   - git+https://github.com/ecmwf/pyfdb
