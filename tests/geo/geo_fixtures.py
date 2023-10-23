@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # (C) Copyright 2020 ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
@@ -7,9 +9,13 @@
 # nor does it submit to any jurisdiction.
 #
 
-from .distance import (  # noqa
-    GeoKDTree,
-    haversine_distance,
-    nearest_point_haversine,
-    nearest_point_kdtree,
-)
+from earthkit.data.geo import nearest_point_haversine, nearest_point_kdtree
+
+
+def get_nearest_method(mode):
+    if mode == "haversine":
+        return nearest_point_haversine
+    elif mode == "kdtree":
+        return nearest_point_kdtree
+    else:
+        raise ValueError(f"Invalid mode={mode}")
