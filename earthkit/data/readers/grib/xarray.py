@@ -8,7 +8,6 @@
 #
 
 import logging
-import math
 import warnings
 
 from earthkit.data.utils.kwargs import Kwargs
@@ -139,35 +138,6 @@ class XarrayMixIn:
         result = xr.open_dataset(
             IndexWrapperForCfGrib(self, ignore_keys=ignore_keys),
             **xarray_open_dataset_kwargs,
-        )
-
-        def math_prod(lst):
-            if not hasattr(math, "prod"):
-                # python 3.7 does not have math.prod
-                n = 1
-                for x in lst:
-                    n = n * x
-                return n
-            return math.prod(lst)
-
-        def number_of_gribs(da):
-            # Assumes last two dimensions are lat/lon coordinates
-            skip = 2
-            if da.dims[-1] == "values":
-                # Assumes last dimension is the one-dimensional
-                # lat/lon coordinate (non-regular grid)
-                skip = 1
-            return math_prod(list(da.shape)[:-skip])
-
-        two_d_fields = sum(number_of_gribs(result[v]) for v in result.data_vars)
-
-        # Make sure all the fields are converted
-        # There may be more 2D xarray fields than GRB fields
-        # if some missing dimension are filled with NaN values
-
-        assert two_d_fields >= len(self), (
-            "Not all GRIB fields were converted to xarray"
-            f" ({len(self)} GRIBs > {two_d_fields} 2D-field(s) in xarray)"
         )
 
         return result

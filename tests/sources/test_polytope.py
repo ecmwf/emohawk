@@ -25,6 +25,7 @@ def test_no_polytope_client(monkeypatch):
         assert "pip install polytope-client" in str(excinfo.value)
 
 
+@pytest.mark.skip("Data not available?")
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_POLYTOPE, reason="No access to Polytope Web API")
@@ -49,6 +50,7 @@ def test_polytope_odb():
     assert len(df) == 52
 
 
+# @pytest.mark.skip("Data not available?")
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_POLYTOPE, reason="No access to Polytope Web API")

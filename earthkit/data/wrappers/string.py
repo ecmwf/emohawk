@@ -45,6 +45,9 @@ class StrWrapper(Wrapper):
     def datetime(self):
         return parse_date(self.data)
 
+    def to_datetime(self):
+        return self.datetime()
+
     def to_datetime_list(self):
         from earthkit.data.utils.dates import mars_like_date_list
 
