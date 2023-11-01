@@ -34,6 +34,23 @@ def test_icon_to_xarray(mode):
 
 
 @pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+def test_to_xarray_filter_by_keys(mode):
+    g = load_file_or_numpy_fs("tuv_pl.grib", mode)
+    g = g.sel(param="t", level=500) + g.sel(param="u")
+    assert len(g) > 1
+
+    # see github #250
+    r = g.to_xarray(
+        xarray_open_dataset_kwargs={
+            "backend_kwargs": {"filter_by_keys": {"shortName": "t"}}
+        }
+    )
+
+    assert len(r.data_vars) == 1
+    assert r["t"].sizes["isobaricInhPa"] == 1
+
+
+@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
 def test_grib_to_pandas(mode):
     f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 

@@ -39,14 +39,14 @@ def test_normalize_dates_from_source():
         assert dates_list_3(source[0]) == [datetime.datetime(2020, 5, 13, 12, 0)]
 
 
-def test_dates_formatted_1():
+def test_normalize_dates_formatted_1():
     date_formatted = normalize("d", "date", format="%Y.%m.%d")(f)
 
     assert date_formatted("20200513") == "2020.05.13"
 
 
 @pytest.mark.skip(reason="Not implemented yet.")
-def test_enum_dates_formatted():
+def test_normalize_enum_dates_formatted():
     date_formatted = normalize(
         "d", values=["20010512", "20020512"], type="date", format="%Y.%m.%d"
     )(f)
@@ -54,8 +54,7 @@ def test_enum_dates_formatted():
     assert date_formatted("20200513") == "2020.05.13"
 
 
-@pytest.mark.xfail
-def test_dates_formatted():
+def test_normalize_dates_formatted():
     date_formatted = normalize("d", "date-list(%Y.%m.%d)")(f)
 
     assert date_formatted(["20200513", "20200514"]) == ["2020.05.13", "2020.05.14"]
@@ -64,7 +63,7 @@ def test_dates_formatted():
     assert date_formatted([datetime.datetime(2020, 5, 13, 23, 59)]) == ["2020.05.13"]
 
 
-def test_dates_multiple():
+def test_normalize_dates_multiple():
     date_1 = normalize("d", "date-list(%Y.%m.%d)")(f)
     date_2 = normalize("d", "date(%Y.%m.%d)", multiple=True)(f)
     date_3 = normalize("d", "date(%Y.%m.%d)", multiple=False)(f)
@@ -78,8 +77,60 @@ def test_dates_multiple():
         date_4("20200514")
 
 
+@pytest.mark.parametrize(
+    "date,expected",
+    [
+        (
+            "20200511/TO/20200512",
+            [
+                "2020.05.11",
+                "2020.05.12",
+            ],
+        ),
+        (
+            "20200511/to/20200512",
+            [
+                "2020.05.11",
+                "2020.05.12",
+            ],
+        ),
+        (
+            "20200511/TO/20200513/BY/2",
+            [
+                "2020.05.11",
+                "2020.05.13",
+            ],
+        ),
+        (
+            "20200511/to/20200513/by/2",
+            [
+                "2020.05.11",
+                "2020.05.13",
+            ],
+        ),
+        (
+            ["20200511", "20200513"],
+            [
+                "2020.05.11",
+                "2020.05.13",
+            ],
+        ),
+        (
+            ["2020-05-11", "2020-05-13"],
+            [
+                "2020.05.11",
+                "2020.05.13",
+            ],
+        ),
+    ],
+)
+def test_normalize_date_list(date, expected):
+    n = normalize("d", "date-list(%Y.%m.%d)")(f)
+    assert n(date) == expected
+
+
 @pytest.mark.xfail
-def test_dates_formatted_from_pandas():
+def test_normalize_dates_formatted_from_pandas():
     import pandas as pd
 
     df1 = pd.DataFrame(
@@ -113,7 +164,7 @@ def test_dates_formatted_from_pandas():
 
 
 @pytest.mark.skip("Not implemented (yet?).")
-def test_dates_formatted_from_object():
+def test_normalize_dates_formatted_from_object():
     date_formatted = normalize("d", "date", format="%Y.%m.%d")(f)
 
     class CustomDateObject:
@@ -133,7 +184,7 @@ def test_dates_formatted_from_object():
     assert date_formatted(obj) == "2020.05.13"
 
 
-def test_date_none_1():
+def test_normalize_date_none_1():
     @normalize(
         "name",
         "date(%Y%m%d)",
@@ -145,7 +196,7 @@ def test_date_none_1():
     assert date_default_none() is None
 
 
-def test_date_list_none_1():
+def test_normalize_date_list_none_1():
     @normalize(
         "name",
         "date-list(%Y%m%d)",
@@ -157,7 +208,7 @@ def test_date_list_none_1():
     assert date_default_none() is None
 
 
-def test_date_default_1():
+def test_normalize_date_default_1():
     @normalize(
         "name",
         "date",
