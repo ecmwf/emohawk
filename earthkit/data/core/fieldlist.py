@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import math
 from abc import abstractmethod
 from collections import defaultdict
 
@@ -24,7 +25,7 @@ class Field(Base):
 
     @abstractmethod
     def _values(self, dtype=None):
-        r"""Return the values stored in the field as a 1D ndarray.
+        r"""Return the values stored in the field as an ndarray.
 
         Parameters
         ----------
@@ -44,7 +45,11 @@ class Field(Base):
     @property
     def values(self):
         r"""ndarray: Get the values stored in the field as a 1D ndarray."""
-        return self._values()
+        v = self._values()
+        if len(v.shape) != 1:
+            n = math.prod(v.shape)
+            return v.reshape(n)
+        return v
 
     def _make_metadata(self):
         r"""Create a field metadata object."""
@@ -75,13 +80,18 @@ class Field(Base):
             Field values
 
         """
-        values = self.values
-        if not flatten:
-            # values = self.values.reshape(self.shape)
-            values = self._values(dtype=dtype).reshape(self.shape)
-        if dtype is not None:
-            values = values.astype(dtype)
-        return values
+        v = self._values(dtype=dtype)
+        shape = self._required_shape(flatten)
+        if shape != v.shape:
+            return v.reshape(shape)
+        return v
+
+    def _required_shape(self, flatten):
+        return self.shape if not flatten else (math.prod(self.shape),)
+
+    def _array_matches(self, array, flatten=False, dtype=None):
+        shape = self._required_shape(flatten)
+        return shape == array.shape and (dtype is None or dtype == array.dtype)
 
     def data(self, keys=("lat", "lon", "value"), flatten=False, dtype=None):
         r"""Return the values and/or the geographical coordinates for each grid point.
@@ -150,9 +160,10 @@ class Field(Base):
                 raise ValueError(f"data: invalid argument: {k}")
 
         r = [_keys[k](dtype=dtype) for k in keys]
-        if not flatten:
-            shape = self.shape
+        shape = self._required_shape(flatten)
+        if shape != r[0].shape:
             r = [x.reshape(shape) for x in r]
+
         if len(r) == 1:
             return r[0]
         else:
@@ -193,8 +204,8 @@ class Field(Base):
         x = self._metadata.geography.x(dtype=dtype)
         y = self._metadata.geography.y(dtype=dtype)
         if x is not None and y is not None:
-            if not flatten:
-                shape = self.shape
+            shape = self._required_shape(flatten)
+            if shape != x.shape:
                 x = x.reshape(shape)
                 y = y.reshape(shape)
             return dict(x=x, y=y)
@@ -1178,3 +1189,60 @@ class FieldList(Index):
         """
         for s in self:
             s.write(f)
+
+    def to_fieldlist(self, backend, **kwargs):
+        r"""Convert to a new :class:`FieldList` based on the ``backend``.
+
+        When the :class:`FieldList` is already in the required format no new
+        :class:`FieldList` is created but the current one is returned.
+
+        Parameters
+        ----------
+        backend: str
+            Specifies the backend for the generated fieldlist. The supported values are as follows:
+
+            - "numpy": the generated fieldlist is a :class:`NumpyFieldList`, which represents
+              each field by an ndarray storing the field values and a :class:`MetaData` object holding
+              the field metadata. The shape and dtype of the ndarray is controlled by the ``kwargs``.
+              Please note that generated :class:`NumpyFieldList` stores all the field values in
+              a single ndarray.
+
+        **kwargs: dict, optional
+            When ``backend`` is "numpy" ``kwargs`` are passed to :obj:`to_numpy` to
+            extract the field values the resulting object will store.
+
+        Returns
+        -------
+        :class:`FieldList`
+            - the current :class:`FieldList` if it is already in the required format
+            - :class:`NumpyFieldList` when ``backend`` is "numpy"
+
+        Examples
+        --------
+        The following example will convert a fieldlist read from a file into a
+        :class:`NumpyFieldList` storing single precision field values.
+
+        >>> import numpy as np
+        >>> import earthkit.data
+        >>> ds = earthkit.data.from_source("file", "docs/examples/tuv_pl.grib")
+        >>> ds.path
+        'docs/examples/tuv_pl.grib'
+        >>> r = ds.to_fieldlist("numpy", dtype=np.float32)
+        >>> r
+        NumpyFieldList(fields=18)
+        >>> hasattr(r, "path")
+        False
+        >>> r.to_numpy().dtype
+        dtype('float32')
+
+        """
+        converter = fieldlist_converters.get(backend, None)
+        if converter is not None:
+            return getattr(self, converter)(**kwargs)
+
+    def _to_numpy_fieldlist(self, **kwargs):
+        md = [f.metadata() for f in self]
+        return self.from_numpy(self.to_numpy(**kwargs), md)
+
+
+fieldlist_converters = {"numpy": "_to_numpy_fieldlist"}

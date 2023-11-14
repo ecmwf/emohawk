@@ -11,12 +11,18 @@ Fields
 - :py:class:`~data.core.fieldlist.Field`
 - :py:class:`~data.core.fieldlist.FieldList`
 
+
 Metadata
 ----------
 
 - :py:class:`~data.core.metadata.Metadata`
 - :py:class:`~data.core.metadata.RawMetadata`
 - :py:class:`~data.readers.grib.metadata.GribMetadata`
+
+Numpy fields
+---------------
+- :py:class:`~data.sources.numpy_list.NumpyField`
+- :py:class:`~data.sources.numpy_list.NumpyFieldList`
 
 GRIB
 -------
@@ -34,6 +40,8 @@ CSV
 ----
 
 - :py:class:`~data.readers.csv.CSVReader`
+
+
 
 Other
 --------

@@ -29,6 +29,7 @@ SKIP = [
     "ads.ipynb",
     "wekeo.ipynb",
     "polytope.ipynb",
+    "grib_fdb_write.ipynb",
 ]
 
 

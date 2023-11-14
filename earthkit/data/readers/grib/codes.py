@@ -267,11 +267,6 @@ class GribField(Field):
     def _values(self, dtype=None):
         return self.handle.get_values(dtype=dtype)
 
-    # @property
-    # def values(self):
-    #     r"""ndarray: Gets the values stored in the GRIB field as a 1D ndarray."""
-    #     return self.handle.get_values()
-
     @property
     def offset(self):
         r"""number: Gets the offset (in bytes) of the GRIB field within the GRIB file."""
