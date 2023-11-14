@@ -430,18 +430,10 @@ class XArrayField(Field):
         return self.to_xarray().to_numpy()
 
     def _values(self, dtype=None):
-        return self._to_numpy().flatten()
-
-    def to_numpy(self, flatten=False, dtype=None):
-        values = self._to_numpy()
-        if not flatten:
-            values = values.reshape(self.shape)
+        if dtype is None:
+            return self._to_numpy()
         else:
-            values = values.flatten()
-        if dtype is not None:
-            values = values.astype(dtype)
-
-        return values
+            return self._to_numpy().astype(dtype, copy=False)
 
 
 class XArrayFieldListCore(FieldList):

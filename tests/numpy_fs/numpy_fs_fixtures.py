@@ -93,6 +93,55 @@ def check_numpy_fs(ds, ds_input, md_full):
         assert r[2].metadata("param") == "u"
 
 
+def check_numpy_fs_from_to_fieldlist(ds, ds_input, md_full, flatten=False, dtype=None):
+    assert len(ds_input) in [1, 2, 3]
+    assert len(ds) == len(md_full)
+    assert ds.metadata("param") == md_full
+
+    np_kwargs = {"flatten": flatten, "dtype": dtype}
+
+    assert np.allclose(
+        ds[0].to_numpy(**np_kwargs), ds_input[0][0].to_numpy(**np_kwargs)
+    )
+
+    assert ds.to_numpy(**np_kwargs).shape == ds_input[0].to_numpy(**np_kwargs).shape
+    assert ds._array.shape == ds_input[0].to_numpy(**np_kwargs).shape
+
+    # check slice
+    r = ds[1]
+    assert r.metadata("param") == "msl"
+
+    if len(ds_input) > 1:
+        r = ds[1:3]
+        assert len(r) == 2
+        assert r.metadata("param") == ["msl", "t"]
+        assert r[0].metadata("param") == "msl"
+        assert r[1].metadata("param") == "t"
+        assert np.allclose(
+            r[0].to_numpy(**np_kwargs), ds_input[0][1].to_numpy(**np_kwargs)
+        )
+        assert np.allclose(
+            r[1].to_numpy(**np_kwargs), ds_input[1][0].to_numpy(**np_kwargs)
+        )
+
+        # check sel
+        r = ds.sel(shortName="msl")
+        assert len(r) == 1
+        assert r.metadata("shortName") == ["msl"]
+        assert r[0].metadata("param") == "msl"
+        assert np.allclose(
+            r[0].to_numpy(**np_kwargs), ds_input[0][1].to_numpy(**np_kwargs)
+        )
+
+    if len(ds_input) == 3:
+        r = ds[1:13:4]
+        assert len(r) == 3
+        assert r.metadata("param") == ["msl", "t", "u"]
+        assert r[0].metadata("param") == "msl"
+        assert r[1].metadata("param") == "t"
+        assert r[2].metadata("param") == "u"
+
+
 def check_save_to_disk(ds, len_ref, meta_ref):
     tmp = temp_file()
     ds.save(tmp.path)

@@ -41,6 +41,6 @@ def stream_reader(source, stream, magic=None, deeper_check=False):
         from .memory import GribFieldListInMemory, GribStreamReader
 
         r = GribStreamReader(stream)
-        if source.batch_size == 0:
+        if not source.group_by and source.batch_size == 0:
             r = GribFieldListInMemory(source, r)
         return r

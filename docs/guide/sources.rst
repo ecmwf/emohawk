@@ -486,6 +486,7 @@ fdb
   Further examples:
 
       - :ref:`/examples/fdb.ipynb`
+      - :ref:`/examples/grib_fdb_write.ipynb`
 
 
 .. _data-sources-mars:

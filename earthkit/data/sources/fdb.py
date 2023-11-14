@@ -38,11 +38,12 @@ class FDBSource(Source):
         self.request.update(kwargs)
 
         fdb_home = os.environ.get("FDB_HOME", None)
-        if fdb_home is None:
+        fdb_conf = os.environ.get("FDB5_CONFIG", None)
+        if fdb_home is None and fdb_conf is None:
             raise ValueError(
-                """No FDB_HOME environment variable was set! Please define it to
-                make the FDB access work. See:
-                https://fields-database.readthedocs.io for details about FDB."""
+                """Neither FDB_HOME nor FDB5_CONFIG environment variable
+                was set! Please define either one to access FDB.
+                See: https://fields-database.readthedocs.io for details about FDB."""
             )
 
     def mutate(self):

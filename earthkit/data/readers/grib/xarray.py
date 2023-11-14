@@ -60,7 +60,7 @@ class XarrayMixIn:
 
     def to_xarray(self, **kwargs):
         """
-        Converts the fieldset into an xarray DataSet using :xref:`cfgrib`.
+        Convert the FieldList into an xarray DataSet using :xref:`cfgrib`.
 
         Parameters
         ----------

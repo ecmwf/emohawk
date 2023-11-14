@@ -48,6 +48,9 @@ class MemoryBaseSource(Source):
     def values(self):
         return self._reader.values
 
+    def to_fieldlist(self, *args, **kwargs):
+        return self._reader.to_fieldlist(*args, **kwargs)
+
     def save(self, path):
         return self._reader.save(path)
 
