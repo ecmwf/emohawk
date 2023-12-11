@@ -48,6 +48,12 @@ reference systems and bounding boxes.
    development
    licence
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Plugins
+
+   plugins/index
+
 
 Indices and tables
 ==================

@@ -12,6 +12,8 @@
 import os
 import sys
 
+import pytest
+
 from earthkit.data import from_source
 
 here = os.path.dirname(__file__)
@@ -19,6 +21,7 @@ sys.path.insert(0, here)
 from indexing_fixtures import get_tmp_fixture  # noqa: E402
 
 
+@pytest.mark.cache
 def test_indexing_db_file():
     tmp, path = get_tmp_fixture("file")
     ds = from_source("file", path, indexing=True)
@@ -26,17 +29,19 @@ def test_indexing_db_file():
     assert ds.db.count() == 18
 
 
+@pytest.mark.cache
 def test_indexing_db_file_multi():
     tmp, path = get_tmp_fixture("multi")
     ds = from_source("file", path, indexing=True)
 
     counts = [6, 6, 6]
-    assert len(counts) == len(ds.indexes)
-    for i, d in enumerate(ds.indexes):
+    assert len(counts) == len(ds._indexes)
+    for i, d in enumerate(ds._indexes):
         assert hasattr(d, "db"), f"db,{i}"
         assert d.db.count() == counts[i]
 
 
+@pytest.mark.cache
 def test_indexing_db_directory():
     tmp, path = get_tmp_fixture("directory")
     ds = from_source("file", path, indexing=True)

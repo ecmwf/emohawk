@@ -23,7 +23,6 @@ from typing import List, Union
 import entrypoints
 
 import earthkit.data
-from earthkit.data.core.settings import SETTINGS
 from earthkit.data.utils.humanize import did_you_mean
 
 LOG = logging.getLogger(__name__)
@@ -34,7 +33,7 @@ PLUGINS = {}
 
 REGISTERED = defaultdict(dict)
 
-AVAILABLE_KINDS = ["dataset", "source"]
+AVAILABLE_KINDS = ["source"]
 
 
 def refresh(kind=None):
@@ -169,18 +168,7 @@ def directories(owner: bool = False) -> list:
 
     """
     result = []
-    for conf in (
-        "styles-directories",
-        "projections-directories",
-        "layers-directories",
-        "datasets-directories",
-        "dask-directories",
-    ):
-        for d in SETTINGS.get(conf):
-            if os.path.exists(d) and os.path.isdir(d):
-                result.append(("user-settings", d))
-
-    for kind in ("dataset", "source"):
+    for kind in ["source"]:
         for name, v in load_plugins(kind).items():
             try:
                 module = import_module(v.module_name)

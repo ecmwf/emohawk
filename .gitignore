@@ -214,6 +214,7 @@ docs/examples/_*
 docs/examples/earthkit_use_cases/*.grib
 docs/experimental/*.grib*
 docs/examples/_fdb
+docs/examples/*.db
 
 # PyBuilder
 .pybuilder/
@@ -359,3 +360,5 @@ notebooks/data/*/
 
 # local code
 _dev
+
+test.db

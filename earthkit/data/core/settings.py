@@ -156,12 +156,19 @@ SETTINGS_AND_HELP = {
         getter="_as_str",
         none_ok=True,
     ),
+    "temporary-directory-root": _(
+        None,
+        """Parent of the temporary directory when ``cache-policy`` is ``off``.
+        See :doc:`/guide/caching` for more information.""",
+        getter="_as_str",
+        none_ok=True,
+    ),
     "number-of-download-threads": _(
         5,
         """Number of threads used to download data.""",
     ),
     "cache-policy": _(
-        "user",
+        "off",
         """Caching policy. {validator}
         See :doc:`/guide/caching` for more information. """,
         validator=ListValidator(["off", "temporary", "user"]),
@@ -172,16 +179,18 @@ SETTINGS_AND_HELP = {
     ),
     "maximum-cache-size": _(
         None,
-        """Maximum disk space used by the earthkit-data cache (ex: 100G or 2T).""",
+        """Maximum disk space used by the earthkit-data cache (e.g.: 100G or 2T).
+        Can be set to None.""",
         getter="_as_bytes",
         none_ok=True,
     ),
     "maximum-cache-disk-usage": _(
         "95%",
         """Disk usage threshold after which earthkit-data expires older cached
-        entries (% of the full disk capacity).
-        See :doc:`/guide/caching` for more information.""",
+        entries (% of the full disk capacity). Can be set to None.
+        See :ref:`caching` for more information.""",
         getter="_as_percent",
+        none_ok=True,
     ),
     "url-download-timeout": _(
         "30s",

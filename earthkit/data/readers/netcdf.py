@@ -523,7 +523,7 @@ class XArrayMultiFieldList(XArrayFieldListCore, MultiIndex):
     def to_xarray(self, **kwargs):
         import xarray as xr
 
-        return xr.merge([x.ds for x in self.indexes], **kwargs)
+        return xr.merge([x.ds for x in self._indexes], **kwargs)
 
 
 class NetCDFMetadata(XArrayMetadata):
@@ -640,7 +640,7 @@ class NetCDFMultiFieldList(NetCDFFieldList, MultiIndex):
     def to_xarray(self, **kwargs):
         try:
             return NetCDFFieldList.to_xarray_multi_from_paths(
-                [x.path for x in self.indexes], **kwargs
+                [x.path for x in self._indexes], **kwargs
             )
         except AttributeError:
             # TODO: Implement this, but discussion required

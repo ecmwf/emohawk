@@ -29,6 +29,7 @@ dependencies:
   - ecmwf-opendata>=0.1.2
   - polytope-client>=0.7.1
   - earthkit-meteo>=0.0.1
+  - git+https://github.com/ecmwf/earthkit-data-demo-source
 - tqdm
 - markdown
 - jsonschema

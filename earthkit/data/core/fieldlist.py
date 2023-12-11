@@ -537,7 +537,7 @@ class Field(Base):
 class FieldList(Index):
     r"""Represents a list of :obj:`Field` \s."""
 
-    _indices = {}
+    _md_indices = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -622,12 +622,12 @@ class FieldList(Index):
         used in :obj:`indices`.
 
         """
-        if not self._indices:
-            self._indices = self._find_all_index_dict()
+        if not self._md_indices:
+            self._md_indices = self._find_all_index_dict()
         if squeeze:
-            return {k: v for k, v in self._indices.items() if len(v) > 1}
+            return {k: v for k, v in self._md_indices.items() if len(v) > 1}
         else:
-            return self._indices
+            return self._md_indices
 
     def index(self, key):
         r"""Return the unique, sorted values of the specified metadata ``key`` from all the fields.
@@ -659,8 +659,8 @@ class FieldList(Index):
         if key in self.indices():
             return self.indices()[key]
 
-        self._indices[key] = self._find_index_values(key)
-        return self._indices[key]
+        self._md_indices[key] = self._find_index_values(key)
+        return self._md_indices[key]
 
     def to_numpy(self, **kwargs):
         r"""Return the field values as an ndarray. It is formed as the array of the

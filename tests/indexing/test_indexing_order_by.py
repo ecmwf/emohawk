@@ -34,6 +34,7 @@ class _CustomOrder:
             return -1
 
 
+@pytest.mark.cache
 @pytest.mark.parametrize("mode", ["file", "multi", "directory"])
 @pytest.mark.parametrize(
     "params,expected_meta",

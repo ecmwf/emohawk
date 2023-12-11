@@ -105,13 +105,21 @@ def test_settings_set_cache_numbers():
                 ("maximum-cache-size", "1T", 1024 * 1024 * 1024 * 1024, None),
                 ("maximum-cache-size", "1P", 1024 * 1024 * 1024 * 1024 * 1024, None),
                 ("maximum-cache-size", None, None, None),
+                ("maximum-cache-size", "-1", None, ValueError),
                 ("maximum-cache-disk-usage", "2%", 2, None),
+                ("maximum-cache-disk-usage", None, None, None),
+                ("maximum-cache-disk-usage", "-2%", None, ValueError),
+                ("maximum-cache-disk-usage", "102%", 102, None),
+                ("maximum-cache-disk-usage", "0%", 0, None),
             ]
 
             for param, set_value, stored_value, raise_error in data:
                 if raise_error is None:
                     settings.set(param, set_value)
-                    assert settings.get(param) == stored_value
+                    if stored_value is not None:
+                        assert settings.get(param) == stored_value
+                    else:
+                        assert settings.get(param) is None
                 else:
                     with pytest.raises(raise_error):
                         settings.set(param, set_value)

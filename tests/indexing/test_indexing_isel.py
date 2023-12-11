@@ -21,6 +21,7 @@ sys.path.insert(0, here)
 from indexing_fixtures import get_tmp_fixture  # noqa
 
 
+@pytest.mark.cache
 @pytest.mark.parametrize("mode", ["file", "multi", "directory"])
 @pytest.mark.parametrize(
     "params,expected_meta,metadata_keys",
@@ -75,6 +76,7 @@ def test_indexing_isel_grib_file(mode, params, expected_meta, metadata_keys):
         assert g.metadata(keys) == expected_meta
 
 
+@pytest.mark.cache
 def test_indexing_isel_grib_file_invalid_key():
     tmp, path = get_tmp_fixture("file")
     ds = from_source("file", path, indexing=True)

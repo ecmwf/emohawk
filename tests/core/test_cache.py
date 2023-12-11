@@ -19,44 +19,46 @@ from earthkit.data.core.temporary import temp_directory
 from earthkit.data.testing import earthkit_examples_file
 
 
-def check_cache_files(dir_path):
+def check_cache_files(dir_path, managed=True):
     def touch(target, args):
         assert args["foo"] in (1, 2)
         with open(target, "w"):
             pass
 
-        path1 = cache_file(
-            "test_cache",
-            touch,
-            {"foo": 1},
-            extension=".test",
-        )
+    path1 = cache_file(
+        "test_cache",
+        touch,
+        {"foo": 1},
+        extension=".test",
+    )
 
-        path2 = cache_file(
-            "test_cache",
-            touch,
-            {"foo": 2},
-            extension=".test",
-        )
+    path2 = cache_file(
+        "test_cache",
+        touch,
+        {"foo": 2},
+        extension=".test",
+    )
 
-        assert os.path.exists(path1)
-        assert os.path.exists(path2)
-        assert os.path.dirname(path1) == dir_path
-        assert os.path.dirname(path1) == dir_path
-        assert path1 != path2
+    assert os.path.exists(path1)
+    assert os.path.exists(path2)
+    assert os.path.dirname(path1) == dir_path
+    assert os.path.dirname(path1) == dir_path
+    assert path1 != path2
 
+    if managed:
         cnt = 0
-        for f in cache.cache_entries():
+        for f in cache.entries():
             if f["owner"] == "test_cache":
                 cnt += 1
 
         assert cnt == 2
 
 
+@pytest.mark.cache
 def test_cache_1():
     with settings.temporary():
         settings.set("maximum-cache-disk-usage", "99%")
-        cache.purge_cache(matcher=lambda e: ["owner"] == "test_cache")
+        cache.purge(matcher=lambda e: ["owner"] == "test_cache")
         check_cache_files(settings.get("user-cache-directory"))
 
 
@@ -78,8 +80,8 @@ def test_cache_policy():
             settings.set({"cache-policy": "user", "user-cache-directory": user_dir})
             assert settings.get("cache-policy") == "user"
             assert settings.get("user-cache-directory") == user_dir
-            assert cache.policy.has_cache() is True
-            cache_dir = cache.policy.cache_directory()
+            assert cache.policy.managed() is True
+            cache_dir = cache.policy.directory()
             assert cache_dir == user_dir
             assert os.path.exists(cache_dir)
             check_cache_files(cache_dir)
@@ -90,16 +92,16 @@ def test_cache_policy():
             ):
                 assert settings.get("cache-policy") == "temporary"
                 assert settings.get("temporary-cache-directory-root") is None
-                assert cache.policy.has_cache() is True
-                cache_dir = cache.policy.cache_directory()
+                assert cache.policy.managed() is True
+                cache_dir = cache.policy.directory()
                 assert os.path.exists(cache_dir)
                 check_cache_files(cache_dir)
 
             # cache = user dir (again)
             assert settings.get("cache-policy") == "user"
             assert settings.get("user-cache-directory") == user_dir
-            assert cache.policy.has_cache() is True
-            cache_dir = cache.policy.cache_directory()
+            assert cache.policy.managed() is True
+            cache_dir = cache.policy.directory()
             assert cache_dir == user_dir
             assert os.path.exists(cache_dir)
             check_cache_files(cache_dir)
@@ -114,8 +116,8 @@ def test_cache_policy():
                 ):
                     assert settings.get("cache-policy") == "temporary"
                     assert settings.get("temporary-cache-directory-root") == root_dir
-                    assert cache.policy.has_cache() is True
-                    cache_dir = cache.policy.cache_directory()
+                    assert cache.policy.managed() is True
+                    cache_dir = cache.policy.directory()
                     assert os.path.exists(cache_dir)
                     os.path.dirname(cache_dir) == root_dir
                     check_cache_files(cache_dir)
@@ -124,22 +126,17 @@ def test_cache_policy():
             with settings.temporary("cache-policy", "off"):
                 assert settings.get("cache-policy") == "off"
                 assert settings.get("user-cache-directory") == user_dir
-                assert cache.policy.has_cache() is False
-                assert cache.policy.cache_directory() is None
+                assert cache.policy.managed() is False
 
-                with pytest.raises(RuntimeError):
-                    cache_file(
-                        "dummy_test_cache",
-                        None,
-                        {"foo": 1},
-                        extension=".test",
-                    )
+                cache_dir = cache.policy.directory()
+                assert os.path.exists(cache_dir)
+                check_cache_files(cache_dir, managed=False)
 
             # cache = user dir (again)
             assert settings.get("cache-policy") == "user"
             assert settings.get("user-cache-directory") == user_dir
-            assert cache.policy.has_cache() is True
-            cache_dir = cache.policy.cache_directory()
+            assert cache.policy.managed() is True
+            cache_dir = cache.policy.directory()
             assert cache_dir == user_dir
             assert os.path.exists(cache_dir)
             check_cache_files(cache_dir)
@@ -147,11 +144,11 @@ def test_cache_policy():
 
 def test_url_source_no_cache():
     with settings.temporary("cache-policy", "off"):
-        with pytest.raises(RuntimeError):
-            from_source(
-                "url",
-                "https://get.ecmwf.int/repository/test-data/earthkit-data/examples/test.grib",
-            )
+        ds = from_source(
+            "url",
+            "https://get.ecmwf.int/repository/test-data/earthkit-data/examples/test.grib",
+        )
+        assert len(ds) == 2
 
 
 def test_grib_no_cache():
@@ -189,7 +186,7 @@ def test_cache_with_log_debug(caplog):
 
     class A:
         def __repr__(self):
-            d = cache.cache_directory()
+            d = cache.directory()
             return d
 
     a = A()
@@ -198,6 +195,7 @@ def test_cache_with_log_debug(caplog):
     # the problem still occurs!
 
 
+@pytest.mark.cache
 def test_cache_zip_file_overwritten_1():
     with temp_directory() as tmp_dir:
         import shutil
@@ -234,6 +232,7 @@ def test_cache_zip_file_overwritten_1():
         assert ds2.path != ds_path
 
 
+@pytest.mark.cache
 def test_cache_zip_file_changed_modtime():
     with temp_directory() as tmp_dir:
         import shutil
@@ -253,12 +252,80 @@ def test_cache_zip_file_changed_modtime():
         ds_path = ds.path
 
         # second pass - changed modtime
-        # TODO: here we have to assume more than 1 ns passed since the
-        # zip file was created.
-        os.utime(zip_path, None)
+        st = os.stat(zip_path)
+        m_time = (st.st_atime_ns + 10, st.st_mtime_ns + 10)
+        os.utime(zip_path, ns=m_time)
         ds2 = from_source("file", zip_path)
         assert len(ds2) == 2
         assert ds2.path != ds_path
+
+
+@pytest.mark.parametrize("policy", ["user", "temporary"])
+def test_cache_management(policy):
+    with temp_directory() as tmp_dir_path:
+        with settings.temporary():
+            if policy == "user":
+                settings.set(
+                    {"cache-policy": "user", "user-cache-directory": tmp_dir_path}
+                )
+                assert cache.directory() == tmp_dir_path
+            elif policy == "temporary":
+                settings.set(
+                    {
+                        "cache-policy": "temporary",
+                        "temporary-cache-directory-root": tmp_dir_path,
+                    }
+                )
+                assert os.path.dirname(cache.directory()) == tmp_dir_path
+            else:
+                assert False
+
+            data_size = 10 * 1024
+
+            # create 3 files existing only in the cache
+            r = []
+            for n in range(3):
+                r.append(from_source("dummy-source", "zeros", size=data_size, n=n))
+
+            for ds in r:
+                assert os.path.exists(ds.path)
+                assert os.path.dirname(ds.path) == cache.directory()
+
+            # check cache contents
+            num, size = cache.summary_dump_database()
+            assert num == 3
+            assert size == 3 * data_size
+            assert len(cache.entries()) == 3
+
+            for i, x in enumerate(cache.entries()):
+                assert x["size"] == data_size
+                assert x["owner"] == "dummy-source"
+                assert x["args"] == {"size": data_size, "n": i}
+                latest_path = x["path"]
+
+            # limit cache size so that only one file should remain
+            settings.set(
+                {"maximum-cache-size": "12K", "maximum-cache-disk-usage": None}
+            )
+
+            num, size = cache.summary_dump_database()
+            assert num == 1
+            assert size == data_size
+            assert len(cache.entries()) == 1
+            for x in cache.entries():
+                assert x["size"] == data_size
+                assert x["owner"] == "dummy-source"
+                assert x["args"] == {"size": data_size, "n": 2}
+                x["path"] == latest_path
+                break
+
+            # purge the cache
+            r = None
+            cache.purge()
+            num, size = cache.summary_dump_database()
+            assert num == 0
+            assert size == 0
+            assert len(cache.entries()) == 0
 
 
 if __name__ == "__main__":
