@@ -27,6 +27,7 @@ from indexing_fixtures import get_tmp_fixture  # noqa E402
 
 
 # TODO: add test for mode=multi
+@pytest.mark.cache
 @pytest.mark.parametrize("mode", ["file", "directory"])
 @pytest.mark.parametrize("params", (["t", "u"], ["u", "t"]))
 @pytest.mark.parametrize("levels", ([500, 850], [850, 500]))

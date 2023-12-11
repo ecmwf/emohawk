@@ -86,7 +86,7 @@ def test_cds_grib_split_on_var():
     assert len(s) == 2
     assert s.metadata("param") == ["2t", "msl"]
     assert not hasattr(s, "path")
-    assert len(s.indexes) == 2
+    assert len(s._indexes) == 2
 
 
 @pytest.mark.parametrize(
@@ -152,10 +152,10 @@ def test_cds_split_on(split_on, expected_file_num, expected_param, expected_time
 
     if expected_file_num == 1:
         assert hasattr(s, "path")
-        assert not hasattr(s, "indexes")
+        assert not hasattr(s, "_indexes")
     else:
         assert not hasattr(s, "path")
-        assert len(s.indexes) == expected_file_num
+        assert len(s._indexes) == expected_file_num
 
     assert len(s) == 4
     assert s.metadata("param") == expected_param
@@ -188,7 +188,7 @@ def test_cds_multiple_requests(
         base_request | {"variable": "2t", "split_on": split_on1},
         base_request | {"variable": "msl", "split_on": split_on2},
     )
-    assert len(s.indexes) == expected_file_num
+    assert len(s._indexes) == expected_file_num
     assert len(s) == 4
     assert s.metadata("param") == expected_param
     assert s.metadata("time") == expected_time

@@ -550,8 +550,8 @@ class Index(Source):
 
 class MaskIndex(Index):
     def __init__(self, index, indices):
-        self.index = index
-        self.indices = list(indices)
+        self._index = index
+        self._indices = list(indices)
         # super().__init__(
         #     *self.index._init_args,
         #     order_by=self.index._init_order_by,
@@ -559,19 +559,19 @@ class MaskIndex(Index):
         # )
 
     def _getitem(self, n):
-        n = self.indices[n]
-        return self.index[n]
+        n = self._indices[n]
+        return self._index[n]
 
     def __len__(self):
-        return len(self.indices)
+        return len(self._indices)
 
     def __repr__(self):
-        return "MaskIndex(%r,%s)" % (self.index, self.indices)
+        return "MaskIndex(%r,%s)" % (self._index, self._indices)
 
 
 class MultiIndex(Index):
     def __init__(self, indexes, *args, **kwargs):
-        self.indexes = list(indexes)
+        self._indexes = list(indexes)
         super().__init__(*args, **kwargs)
         # self.indexes = list(i for i in indexes if len(i))
         # TODO: propagate  index._init_args, index._init_order_by, index._init_kwargs, for each i in indexes?
@@ -579,36 +579,36 @@ class MultiIndex(Index):
     def sel(self, *args, **kwargs):
         if not args and not kwargs:
             return self
-        return self.__class__(i.sel(*args, **kwargs) for i in self.indexes)
+        return self.__class__(i.sel(*args, **kwargs) for i in self._indexes)
 
     def _getitem(self, n):
         k = 0
-        while n >= len(self.indexes[k]):
-            n -= len(self.indexes[k])
+        while n >= len(self._indexes[k]):
+            n -= len(self._indexes[k])
             k += 1
-        return self.indexes[k][n]
+        return self._indexes[k][n]
 
     def __len__(self):
-        return sum(len(i) for i in self.indexes)
+        return sum(len(i) for i in self._indexes)
 
     def graph(self, depth=0):
         print(" " * depth, self.__class__.__name__)
-        for s in self.indexes:
+        for s in self._indexes:
             s.graph(depth + 3)
 
     def __repr__(self):
         return "%s(%s)" % (
             self.__class__.__name__,
-            ",".join(repr(i) for i in self.indexes),
+            ",".join(repr(i) for i in self._indexes),
         )
 
 
 class ForwardingIndex(Index):
     def __init__(self, index):
-        self.index = index
+        self._index = index
 
     def __len__(self):
-        return len(self.index)
+        return len(self._index)
 
 
 class ScaledField:
@@ -635,7 +635,7 @@ class FullIndex(Index):
     def __init__(self, index, *coords):
         import numpy as np
 
-        self.index = index
+        self._index = index
 
         # Pass1, unique values
         unique = index.unique_values(*coords)
@@ -663,4 +663,4 @@ class FullIndex(Index):
 
     def _getitem(self, n):
         assert self.holes[n], f"Attempting to access hole {n}"
-        return self.index[sum(self.holes[:n])]
+        return self._index[sum(self.holes[:n])]

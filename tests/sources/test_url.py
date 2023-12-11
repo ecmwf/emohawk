@@ -40,6 +40,7 @@ def test_url_source_1():
     )
 
 
+@pytest.mark.cache
 def test_url_source_check_out_of_date():
     def load():
         from_source(

@@ -10,7 +10,7 @@ import inspect
 import json
 import re
 
-# import requests
+import requests
 import yaml
 
 try:
@@ -22,16 +22,16 @@ except ImportError:
     from tqdm import tqdm  # noqa F401
 
 
-# def download_and_cache(url, return_none_on_404=False, **kwargs):
-#     from earthkit.data.sources.url import download_and_cache
+def download_and_cache(url, return_none_on_404=False, **kwargs):
+    from earthkit.data.sources.url import download_and_cache
 
-#     try:
-#         return download_and_cache(url, **kwargs)
-#     except requests.HTTPError as e:
-#         if return_none_on_404:
-#             if e.response is not None and e.response.status_code == 404:
-#                 return None
-#         raise
+    try:
+        return download_and_cache(url, **kwargs)
+    except requests.HTTPError as e:
+        if return_none_on_404:
+            if e.response is not None and e.response.status_code == 404:
+                return None
+        raise
 
 
 # def get_json(url: str, cache=False):

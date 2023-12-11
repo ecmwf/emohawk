@@ -80,3 +80,4 @@ Here is a list of example notebooks to illustrate how to use earthkit-data.
     examples/cache.ipynb
     examples/projection.ipynb
     examples/metadata.ipynb
+    examples/demo_sources_plugin.ipynb

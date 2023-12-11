@@ -129,7 +129,7 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     def __repr__(self):
         path = getattr(self, "path", None)
         if isinstance(path, str):
-            cache_dir = CACHE.cache_directory()
+            cache_dir = CACHE.directory()
             path = path.replace(cache_dir, "CACHE:")
         try:
             reader_class_name = str(self._reader.__class__.__name__)

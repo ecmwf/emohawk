@@ -55,7 +55,7 @@ class FieldListInFilesWithDBIndex(GribFieldListInFiles):
             db = cls.DBCLASS(target)
             db.load_iterator(iterator)
 
-        if not CACHE.policy.has_cache():
+        if not CACHE.policy.managed():
             raise RuntimeError("Cannot perform grib indexing when caching is disabled")
 
         db_name = cache_file(

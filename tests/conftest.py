@@ -47,6 +47,8 @@ def pytest_runtest_setup(item):
             "test is skipped because marked as no_cache_init but --forked is not used"
         )
 
+    need_cache = "cache" in marks_in_items
+
     # settings
     from earthkit.data import settings
 
@@ -60,5 +62,8 @@ def pytest_runtest_setup(item):
         settings._notify_enabled = False
         settings.reset()
         settings._notify_enabled = True
+    elif need_cache:
+        settings.reset()
+        settings.set("cache-policy", "user")
     else:
         settings.reset()
