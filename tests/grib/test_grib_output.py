@@ -138,14 +138,17 @@ def test_grib_output_mars_labeling():
     sys.version_info < (3, 10),
     reason="ignore_cleanup_errors requires Python 3.10 or later",
 )
-def test_grib_output_pl():
+@pytest.mark.parametrize("levtype", [{}, {"levtype": "pl"}])
+def test_grib_output_pl(levtype):
     data = np.random.random((40320,))
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         path = os.path.join(tmp, "a.grib")
 
         f = earthkit.data.new_grib_output(path, date=20010101)
-        f.write(data, param="t", level=850)
+        _kwargs = dict(param="t", level=850)
+        _kwargs.update(levtype)
+        f.write(data, **_kwargs)
         f.close()
 
         ds = earthkit.data.from_source("file", path)
