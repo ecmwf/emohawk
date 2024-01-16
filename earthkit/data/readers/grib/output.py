@@ -123,6 +123,9 @@ class GribOutput:
             k: v for k, v in sorted(metadata.items(), key=lambda x: order(x[0]))
         }
 
+        if "generatingProcessIdentifier" not in metadata:
+            metadata["generatingProcessIdentifier"] = 255
+
         LOG.debug("GribOutput.metadata %s", metadata)
 
         for k, v in metadata.items():
@@ -196,6 +199,18 @@ class GribOutput:
                 metadata["paramId"] = int(param)
             except ValueError:
                 metadata["shortName"] = param
+
+        # levtype is a readOnly key in ecCodes >= 2.33.0
+        levtype_remap = {
+            "pl": "isobaricInhPa",
+            "ml": "hybrid",
+            "pt": "theta",
+            "pv": "potentialVorticity",
+            "sfc": "surface",
+        }
+        if "levtype" in metadata:
+            v = metadata.pop("levtype")
+            metadata["typeOfLevel"] = levtype_remap[v]
 
     def handle_from_metadata(self, values, metadata, compulsory):
         from .codes import GribCodesHandle  # Lazy loading of eccodes

@@ -13,7 +13,9 @@ from .multi import MultiSource
 
 
 class MultiUrl(MultiSource):
-    def __init__(self, urls, *args, filter=None, merger=None, force=None, **kwargs):
+    def __init__(
+        self, urls, *args, filter=None, merger=None, force=None, lazily=True, **kwargs
+    ):
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
 
@@ -21,6 +23,9 @@ class MultiUrl(MultiSource):
         #     urls = [url for url in urls if filter(url)]
 
         assert len(urls)
+
+        if len(urls) > 1 and isinstance(urls[0], str):
+            urls = sorted(urls)
 
         sources = [
             from_source(
@@ -30,9 +35,10 @@ class MultiUrl(MultiSource):
                 merger=merger,
                 force=force,
                 # Load lazily so we can do parallel downloads
-                lazily=True,
+                lazily=lazily,
+                **kwargs
             )
-            for url in sorted(urls)
+            for url in urls
         ]
 
         super().__init__(sources, filter=filter, merger=merger)

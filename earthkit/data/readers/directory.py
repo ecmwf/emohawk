@@ -83,10 +83,10 @@ class DirectoryReader(Reader):
             merger=self.merger,
         )
 
-    def save(self, path):
+    def save(self, path, **kwargs):
         shutil.copytree(self.path, path)
 
-    def write(self, f):
+    def write(self, f, **kwargs):
         raise NotImplementedError()
 
 

@@ -1,0 +1,5 @@
+recursive-include  earthkit *.yaml
+recursive-include  earthkit *.yml
+recursive-include  earthkit *.csv
+recursive-include  earthkit *.css
+recursive-include  earthkit *.grib

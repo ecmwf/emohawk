@@ -84,10 +84,10 @@ class MultiSource(Source):
         string = ",".join(repr(s) for s in self.sources)
         return f"{self.__class__.__name__}({string})"
 
-    def save(self, path):
+    def save(self, path, **kwargs):
         with open(path, "wb") as f:
             for s in self.sources:
-                s.write(f)
+                s.write(f, **kwargs)
 
     def graph(self, depth=0):
         print(" " * depth, self.__class__.__name__, self.merger)

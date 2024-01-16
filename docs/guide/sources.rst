@@ -67,10 +67,10 @@ file
 
   :param path: input path(s)
   :type path: str, list
-  :param bool expand_user: replaces the leading ~ or ~user in ``path`` by that user's home directory. See ``os.path.expanduser``
-  :param bool expand_vars:  expands shell environment variables in ``path``. See ``os.path.expandpath``
-  :param bool unix_glob: allows UNIX globbing in ``path``
-  :param bool recursive_glob: allows recursive scanning of directories. Only used when ``uxix_glob`` is True
+  :param bool expand_user: replace the leading ~ or ~user in ``path`` by that user's home directory. See ``os.path.expanduser``
+  :param bool expand_vars:  expand shell environment variables in ``path``. See ``os.path.expandpath``
+  :param bool unix_glob: allow UNIX globbing in ``path``
+  :param bool recursive_glob: allow recursive scanning of directories. Only used when ``uxix_glob`` is True
 
   *earthkit-data* will inspect the content of the files to check for any of the
   supported :ref:`data formats <data-format>`.
@@ -144,7 +144,7 @@ file-pattern
 url
 ---
 
-.. py:function:: from_source("url", url, unpack=True)
+.. py:function:: from_source("url", url, unpack=True, stream=False, batch_size=1, group_by=None)
   :noindex:
 
   The ``url`` source will download the data from the address specified and store it in the :ref:`cache <caching>`. The supported data formats are the same as for the :ref:`file <data-sources-file>` data source above.
@@ -152,15 +152,30 @@ url
   :param url: the URL to download
   :type url: str
   :param bool unpack: for archive formats such as ``.zip``, ``.tar``, ``.tar.gz``, etc, *earthkit-data* will attempt to open it and extract any usable file. To keep the downloaded file as is use ``unpack=False``
+  :param bool stream: when it is ``True`` the data is read as a stream. Otherwise the data is retrieved into a file and stored in the :ref:`cache <caching>`. This option only works for GRIB data. No archive formats supported (``unpack`` is ignored). ``stream`` only works for ``http`` and ``https`` URLs.
+  :param int batch_size: used when ``stream=True`` and ``group_by`` is unset. It defines how many GRIB messages are consumed from the stream and kept in memory at a time. For details see :ref:`stream source <data-sources-stream>`.
+  :param group_by: used when ``stream=True`` and can specify one or more metadata keys to control how GRIB messages are read from the stream. For details see :ref:`stream source <data-sources-stream>`.
+  :type group_by: str, list of str
+  :param dict **kwargs: other keyword arguments specifying the request
 
   .. code-block:: python
 
-      import earthkit.data
+      >>> import earthkit.data
+      >>> ds = earthkit.data.from_source(
+      ...     "url",
+      ...     "https://get.ecmwf.int/repository/test-data/earthkit-data/examples/test4.grib",
+      ... )
+      >>> len(ds)
+      4
 
-      ds = earthkit.data.from_source("url", "https://www.example.com/data.csv")
+  Further examples:
+
+    - :ref:`/examples/grib_url.ipynb`
+    - :ref:`/examples/grib_url_stream.ipynb`
 
 
 .. _data-sources-url-pattern:
+
 
 url-pattern
 -----------
@@ -205,13 +220,17 @@ url-pattern
 stream
 --------------
 
-.. py:function:: from_source("stream", stream, batch_size=1)
+.. py:function:: from_source("stream", stream, batch_size=1, group_by=None)
   :noindex:
 
   The ``stream`` will read data from a stream, which can be an FDB stream, a standard Python IO stream or any object implementing the necessary stream methods. At the moment it only works for GRIB data.
 
   :param stream: the stream
-  :param bool batch_size: defines how many GRIB messages are consumed from the stream and kept in memory at a time. ``batch_size=0`` means all the messages will be loaded and stored in memory. When ``batch_size`` is not zero ``from_source`` gives us a stream iterator object. During the iteration temporary objects are created for each message then get deleted when going out of scope.
+  :param int batch_size: used when ``group_by`` is unset. It defines how many GRIB messages are consumed from the stream and kept in memory at a time. ``batch_size=0`` means all the messages will be loaded and stored in memory.  When ``batch_size`` is not zero ``from_source`` gives us a stream iterator object. During the iteration temporary objects are created for each message then get deleted when going out of scope. Used when ``group_by`` is unset.
+  :param group_by: specify one or more metadata keys to control how GRIB messages are read from the stream. When it is set ``from_source`` gives us a stream iterator object. Each iteration step results in a Fieldlist object, which is built by consuming GRIB messages from the stream until the values of the ``group_by`` metadata keys change. The generated Fieldlist keeps GRIB messages in memory then gets deleted when going out of scope. When ``group_by`` is set ``batch_size`` is ignored.
+  :type group_by: str, list of str
+  :param dict **kwargs: other keyword arguments specifying the request
+
 
   In the examples below, for simplicity, we create a file stream from a :ref:`grib` file and read it as a "stream". By default (``batch_size=1``) we will consume one message at a time:
 
@@ -223,14 +242,36 @@ stream
 
       # f is a GribField
       >>> for f in ds:
-      ...     print(len(f))
+      ...     print(f)
       ...
-      1
-      1
+      GribField(t,500,20070101,1200,0,0)
+      GribField(z,500,20070101,1200,0,0)
+      GribField(t,850,20070101,1200,0,0)
+      GribField(z,850,20070101,1200,0,0)
+
+
+  We can use ``group_by`` to read fields with a matching level. ``ds`` is still just an iterator, but ``f`` is now a :obj:`FieldList <data.readers.grib.index.FieldList>`:
+
+    .. code-block:: python
+
+      >>> import earthkit.data
+      >>> stream = open("docs/examples/test4.grib", "rb")
+      >>> ds = earthkit.data.from_source("stream", stream, group_by="level")
+      >>> for f in ds:
+      ...     print(len(f))
+      ...     for g in f:
+      ...         print(f" {g}")
+      ...
+      2
+       GribField(t,500,20070101,1200,0,0)
+       GribField(z,500,20070101,1200,0,0)
+      2
+       GribField(t,850,20070101,1200,0,0)
+       GribField(z,850,20070101,1200,0,0)
 
   We can use ``batch_size=2`` to read 2 messages at a time:
 
-  .. code-block:: python
+    .. code-block:: python
 
       >>> import earthkit.data
       >>> stream = open("docs/examples/test4.grib", "rb")
@@ -239,13 +280,19 @@ stream
       # f is a FieldList containing 2 GribFields
       >>> for f in ds:
       ...     print(len(f))
+      ...     for g in f:
+      ...         print(f" {g}")
       ...
       2
+       GribField(t,500,20070101,1200,0,0)
+       GribField(z,500,20070101,1200,0,0)
       2
+       GribField(t,850,20070101,1200,0,0)
+       GribField(z,850,20070101,1200,0,0)
 
   With ``batch_size=0`` the whole stream will be consumed resulting in a FieldList object storing all the messages in memory. **Use this option carefully!**
 
-  .. code-block:: python
+    .. code-block:: python
 
       >>> import earthkit.data
       >>> stream = open("docs/examples/test4.grib", "rb")
@@ -262,6 +309,7 @@ stream
 
     - :ref:`/examples/grib_from_stream.ipynb`
     - :ref:`/examples/fdb.ipynb`
+    - :ref:`/examples/grib_url_stream.ipynb`
 
 
 .. _data-sources-memory:
@@ -299,10 +347,10 @@ ads
 .. py:function:: from_source("ads", dataset, *args, **kwargs)
   :noindex:
 
-  The ``ads`` source accesses the `Copernicus Atmosphere Data Store`_ (ADS), using the cdsapi_ package. In addition to data retrieval, ``request`` also has post-processing options such as ``grid`` and ``area`` for regridding and sub-area extraction respectively.
+  The ``ads`` source accesses the `Copernicus Atmosphere Data Store`_ (ADS), using the cdsapi_ package. In addition to data retrieval, ``request`` also has post-processing options such as ``grid`` and ``area`` for re-gridding and sub-area extraction respectively.
 
   :param str dataset: the name of the ADS dataset
-  :param tuple *args: specifies the request as a dict
+  :param tuple *args: specify the request as a dict
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves CAMS global reanalysis GRIB data for 2 parameters:
@@ -340,7 +388,7 @@ cds
   The ``cds`` source accesses the `Copernicus Climate Data Store`_ (CDS), using the cdsapi_ package. In addition to data retrieval, ``request`` also has post-processing options such as ``grid`` and ``area`` for regridding and sub-area extraction respectively.
 
   :param str dataset: the name of the CDS dataset
-  :param tuple *args: specifies the request as a dict
+  :param tuple *args: specify the request as a dict
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves ERA5 reanalysis GRIB data for a subarea for 2 surface parameters:
@@ -379,7 +427,7 @@ ecmwf-open-data
 
   The ``ecmwf-open-data`` source provides access to the `ECMWF open data`_, which is a subset of ECMWF real-time forecast data made available to the public free of charge.  It uses the `ecmwf-opendata <https://github.com/ecmwf/ecmwf-opendata>`_ package.
 
-  :param tuple *args: specifies the request as a dict
+  :param tuple *args: specify the request as a dict
   :param dict **kwargs: other keyword arguments specifying the request
 
   Details about the request format can be found `here <https://github.com/ecmwf/ecmwf-opendata>`__.
@@ -407,16 +455,16 @@ ecmwf-open-data
 fdb
 ---
 
-.. py:function:: from_source("fdb", *args, stream=True, group_by=None, batch_size=1, **kwargs)
+.. py:function:: from_source("fdb", *args, stream=True,  batch_size=1, group_by=None, **kwargs)
   :noindex:
 
   The ``fdb`` source accesses the `FDB (Fields DataBase) <https://fields-database.readthedocs.io/en/latest/>`_, which is a domain-specific object store developed at ECMWF for storing, indexing and retrieving GRIB data. earthkit-data uses the `pyfdb <https://pyfdb.readthedocs.io/en/latest>`_ package to retrieve data from FDB.
 
   :param tuple *args: positional arguments specifying the request as a dict
   :param bool stream: when it is ``True`` the data is read as a stream. Otherwise the data is retrieved into a file and stored in the :ref:`cache <caching>`.
-  :param group_by: used when ``stream=True`` and can specify one or more metadata keys to control how GRIB messages are read from the stream. When it is set ``from_source`` gives us a stream iterator object. Each iteration step results in a Fieldlist object, which is built by consuming GRIB messages from the stream until the values of the ``group_by`` metadata keys change. The generated Fieldlist keeps GRIB messages in memory then gets deleted when going out of scope. When ``group_by`` is set ``batch_size`` cannot be used.
+  :param int batch_size: used when ``stream=True`` and ``group_by`` is unset. It defines how many GRIB messages are consumed from the stream and kept in memory at a time. For details see :ref:`stream source <data-sources-stream>`.
+  :param group_by: used when ``stream=True`` and can specify one or more metadata keys to control how GRIB messages are read from the stream. For details see :ref:`stream source <data-sources-stream>`.
   :type group_by: str, list of str
-  :param bool batch_size: used when ``stream=True`` and ``group_by`` is unset. It defines how many GRIB messages are consumed from the stream and kept in memory at a time. ``batch_size=0`` means all the messages will be loaded and stored in memory.  When ``batch_size`` is not zero ``from_source`` gives us a stream iterator object. During the iteration temporary objects are created for each message then get deleted when going out of scope.
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves analysis :ref:`grib` data for 3 surface parameters as stream.
@@ -543,7 +591,7 @@ polytope
   The ``polytope`` source accesses the `Polytope web services <https://polytope-client.readthedocs.io/en/latest/>`_ , using the polytope-client_ package.
 
   :param str collection: the name of the polytope collection
-  :param tuple *args: specifies the request as a dict
+  :param tuple *args: specify the request as a dict
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves GRIB data from the "ecmwf-mars" polytope collection:
@@ -590,7 +638,7 @@ wekeo
   `WEkEO`_ is the Copernicus DIAS reference service for environmental data and virtual processing environments. The ``wekeo`` source provides access to `WEkEO`_ using the WEkEO grammar. The retrieval is based on the hda_ Python API.
 
   :param str dataset: the name of the WEkEO dataset
-  :param tuple *args: specifies the request as a dict
+  :param tuple *args: specify the request as a dict
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves Normalized Difference Vegetation Index data derived from EO satellite imagery in NetCDF format:
@@ -635,7 +683,7 @@ wekeocds
   `WEkEO`_ is the Copernicus DIAS reference service for environmental data and virtual processing environments. The ``wekeocds`` source provides access to `Copernicus Climate Data Store`_ (CDS) datasets served on `WEkEO`_ using the `cdsapi`_ grammar. The retrieval is based on the hda_ Python API.
 
   :param str dataset: the name of the WEkEO dataset
-  :param tuple *args: specifies the request as a dict
+  :param tuple *args: specify the request as a dict
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves ERA5 surface data for multiple days in GRIB format:

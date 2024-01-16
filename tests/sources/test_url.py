@@ -80,7 +80,7 @@ def test_url_source_tar():
     assert len(ds) == 6
 
 
-def test_part_url():
+def test_parts_url():
     ds = from_source(
         "url",
         "https://get.ecmwf.int/repository/test-data/earthkit-data/test-data/temp.bufr",
@@ -109,6 +109,62 @@ def test_part_url():
 
     with open(ds.path, "rb") as f:
         assert f.read()[:4] == b"BUFR"
+
+
+def test_parts_as_arg_url_1():
+    ds = from_source(
+        "url",
+        [
+            "https://get.ecmwf.int/repository/test-data/earthkit-data/test-data/temp.bufr",
+            [(0, 4)],
+        ],
+    )
+
+    assert os.path.getsize(ds.path) == 4
+
+    with open(ds.path, "rb") as f:
+        assert f.read() == b"BUFR"
+
+
+def test_parts_as_arg_url_2():
+    ds = from_source(
+        "url",
+        [
+            "https://get.ecmwf.int/repository/test-data/earthkit-data/test-data/temp.bufr",
+            None,
+        ],
+    )
+
+    assert os.path.getsize(ds.path) > 4
+
+    with open(ds.path, "rb") as f:
+        assert f.read(4) == b"BUFR"
+
+
+def test_multi_url_parts_as_arg_invalid_1():
+    with pytest.raises(ValueError):
+        from_source(
+            "url",
+            [
+                "https://get.ecmwf.int/repository/test-data/earthkit-data/test-data/temp.bufr",
+                [(0, 4)],
+            ],
+            parts=[(0, 5)],
+        )
+
+
+def test_multi_url_parts_invalid():
+    parts1 = [(240, 150)]
+    parts2 = [(0, 526)]
+    with pytest.raises(ValueError):
+        from_source(
+            "url",
+            [
+                [earthkit_remote_test_data_file("examples/test6.grib"), parts1],
+                [earthkit_remote_test_data_file("examples/test.grib"), parts2],
+            ],
+            parts=[(0, 240)],
+        )
 
 
 @pytest.mark.skipif(  # TODO: fix
@@ -146,7 +202,6 @@ def test_url_netcdf_source_save():
 
 
 if __name__ == "__main__":
-    test_part_url()
-    # from earthkit.data.testing import main
+    from earthkit.data.testing import main
 
-    # main(__file__)
+    main(__file__)
