@@ -14,6 +14,19 @@ class GribWriter(Writer):
     DATA_FORMAT = "grib"
 
     def write(self, f, values, metadata, check_nans=True):
+        r"""Write a GRIB field to a file object.
+
+        Parameters
+        ----------
+        f: file object
+            The target file object.
+        values: ndarray
+            Values of the GRIB field/message.
+        values: :class:`GribMetadata`
+            Metadata of the GRIB field/message.
+        check_nans: bool
+            Replace nans in ``values`` with GRIB missing values when writing to``f``.
+        """
         handle = metadata._handle
         if check_nans:
             import numpy as np

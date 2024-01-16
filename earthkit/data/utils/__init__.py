@@ -167,3 +167,11 @@ def progress_bar(*, total=None, iterable=None, initial=0, desc=None):
         desc=desc,
         # dynamic_ncols=True, # make this the default?
     )
+
+
+def ensure_iterable(obj):
+    import collections.abc
+
+    if isinstance(obj, str) or not isinstance(obj, collections.abc.Iterable):
+        return [obj]
+    return obj

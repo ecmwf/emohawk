@@ -51,7 +51,15 @@ class GribMemoryReader(Reader):
         return self._peeked
 
     def read_batch(self, n):
-        fields = [self.__next__() for _ in range(n)]
+        fields = []
+        for _ in range(n):
+            try:
+                fields.append(self.__next__())
+            except StopIteration:
+                break
+        if not fields:
+            raise StopIteration
+
         return GribFieldListInMemory.from_fields(fields)
 
     def read_group(self, group):
@@ -115,10 +123,14 @@ class GribStreamReader(GribMemoryReader):
 
     def __init__(self, stream):
         super().__init__()
-        self._stream = eccodes.StreamReader(stream)
+        self._stream = stream
+        self._reader = eccodes.StreamReader(stream)
+
+    def __del__(self):
+        self._stream.close()
 
     def _next_handle(self):
-        return self._stream._next_handle()
+        return self._reader._next_handle()
 
     def mutate(self):
         return self
@@ -169,13 +181,26 @@ class GribFieldListInMemory(GribFieldList, Reader):
         self._load()
         return len(self._fields)
 
-    def __getitem__(self, n):
+    def _getitem(self, n):
         self._load()
-        return self._fields[n]
+        if isinstance(n, int):
+            n = n if n >= 0 else len(self) + n
+            return self._fields[n]
 
     def _load(self):
         if not self._loaded:
-            for f in self._reader:
-                self._fields.append(f)
+            self._fields = [f for f in self._reader]
             self._loaded = True
             self._reader = None
+
+    def mutate_source(self):
+        return self
+
+    @classmethod
+    def merge(cls, readers):
+        assert all(isinstance(s, GribFieldListInMemory) for s in readers), readers
+        assert len(readers) > 1
+
+        from itertools import chain
+
+        return GribFieldListInMemory.from_fields(list(chain(*[f for f in readers])))

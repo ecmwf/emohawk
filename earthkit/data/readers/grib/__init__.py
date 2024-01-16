@@ -35,12 +35,12 @@ def memory_reader(source, buf, magic=None, deeper_check=False):
         return GribFieldListInMemory(source, GribMessageMemoryReader(buf))
 
 
-def stream_reader(source, stream, magic=None, deeper_check=False):
+def stream_reader(source, stream, magic=None, deeper_check=False, memory=False):
     # by default we assume the stream is grib data
     if magic is None or _match_magic(magic, deeper_check):
         from .memory import GribFieldListInMemory, GribStreamReader
 
         r = GribStreamReader(stream)
-        if not source.group_by and source.batch_size == 0:
+        if memory:
             r = GribFieldListInMemory(source, r)
         return r

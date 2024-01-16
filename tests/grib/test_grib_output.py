@@ -55,6 +55,7 @@ def test_grib_output_latlon():
         assert ds[0].metadata("param") == "2t"
         assert ds[0].metadata("levtype") == "sfc"
         assert ds[0].metadata("edition") == 2
+        assert ds[0].metadata("generatingProcessIdentifier") == 255
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
@@ -79,6 +80,7 @@ def test_grib_output_o96():
         assert ds[0].metadata("param") == "2t"
         assert ds[0].metadata("levtype") == "sfc"
         assert ds[0].metadata("edition") == 2
+        assert ds[0].metadata("generatingProcessIdentifier") == 255
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
@@ -103,6 +105,7 @@ def test_grib_output_o160():
         assert ds[0].metadata("edition") == 2
         assert ds[0].metadata("levtype") == "sfc"
         assert ds[0].metadata("param") == "2t"
+        assert ds[0].metadata("generatingProcessIdentifier") == 255
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
@@ -130,6 +133,7 @@ def test_grib_output_mars_labeling():
         assert ds[0].metadata("levtype") == "sfc"
         assert ds[0].metadata("param") == "msl"
         assert ds[0].metadata("type") == "fc"
+        assert ds[0].metadata("generatingProcessIdentifier") == 255
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
@@ -158,6 +162,7 @@ def test_grib_output_pl(levtype):
         assert ds[0].metadata("level") == 850
         assert ds[0].metadata("levtype") == "pl"
         assert ds[0].metadata("param") == "t"
+        assert ds[0].metadata("generatingProcessIdentifier") == 255
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 
@@ -185,6 +190,7 @@ def test_grib_output_tp():
         assert ds[0].metadata("levtype") == "sfc"
         assert ds[0].metadata("edition") == 1
         assert ds[0].metadata("step") == 48
+        assert ds[0].metadata("generatingProcessIdentifier") == 255
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)
 

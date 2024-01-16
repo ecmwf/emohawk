@@ -20,7 +20,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NumpyField(Field):
-    r"""Represents a field consisting of an ndarray and metadata object.
+    r"""Represent a field consisting of an ndarray and metadata object.
 
     Parameters
     ----------
@@ -46,10 +46,19 @@ class NumpyField(Field):
     def __repr__(self):
         return f"{self.__class__.__name__}()"
 
-    def write(self, f):
+    def write(self, f, **kwargs):
+        r"""Write the field to a file object.
+
+        Parameters
+        ----------
+        f: file object
+            The target file object.
+        **kwargs: dict, optional
+            Other keyword arguments passed to :meth:`data.writers.grib.GribWriter.write`.
+        """
         from earthkit.data.writers import write
 
-        write(f, self.values, self._metadata, check_nans=True)
+        write(f, self.values, self._metadata, **kwargs)
 
 
 class NumpyFieldListCore(PandasMixIn, XarrayMixIn, FieldList):
@@ -158,7 +167,7 @@ class ListMerger:
 
 
 class NumpyFieldList(NumpyFieldListCore):
-    r"""Represents a list of :obj:`NumpyField <data.sources.numpy_list.NumpyField>`\ s.
+    r"""Represent a list of :obj:`NumpyField <data.sources.numpy_list.NumpyField>`\ s.
 
     The preferred way to create a NumpyFieldList is to use either the
     static :obj:`from_numpy` method or the :obj:`to_fieldlist` method.

@@ -123,6 +123,9 @@ class GribOutput:
             k: v for k, v in sorted(metadata.items(), key=lambda x: order(x[0]))
         }
 
+        if "generatingProcessIdentifier" not in metadata:
+            metadata["generatingProcessIdentifier"] = 255
+
         LOG.debug("GribOutput.metadata %s", metadata)
 
         for k, v in metadata.items():

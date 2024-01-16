@@ -35,6 +35,7 @@ Here is a list of example notebooks to illustrate how to use earthkit-data.
     examples/grib_file_pattern.ipynb
     examples/grib_tar.ipynb
     examples/grib_url.ipynb
+    examples/grib_url_stream.ipynb
     examples/grib_to_netcdf.ipynb
     examples/numpy_fieldlist.ipynb
     examples/grib_nearest_gridpoint.ipynb
