@@ -11,25 +11,25 @@
 
 import os
 
-import earthkit.data as cml
+import earthkit.data
 
 
 def test_unknown_reader():
-    s = cml.from_source(
+    s = earthkit.data.from_source(
         "file",
         os.path.join(os.path.dirname(__file__), "unknown_file.unknown_ext"),
     )
     print(s)
-    assert isinstance(s._reader, cml.readers.unknown.Unknown)
+    assert isinstance(s._reader, earthkit.data.readers.unknown.UnknownReader)
 
 
 def test_text_reader():
-    s = cml.from_source(
+    s = earthkit.data.from_source(
         "file",
         os.path.join(os.path.dirname(__file__), "unknown_text_file.unknown_ext"),
     )
     print(s)
-    assert isinstance(s._reader, cml.readers.text.TextReader)
+    assert isinstance(s._reader, earthkit.data.readers.text.TextReader)
 
 
 if __name__ == "__main__":

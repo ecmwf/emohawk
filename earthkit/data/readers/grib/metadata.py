@@ -260,7 +260,6 @@ class GribMetadata(Metadata):
 
     def override(self, *args, **kwargs):
         d = dict(*args, **kwargs)
-
         new_value_size = None
         if "gridspec" in d:
             gridspec = d.pop("gridspec")
@@ -271,7 +270,7 @@ class GribMetadata(Metadata):
             )
             d.update(md)
 
-        handle = self._handle.clone()
+        handle = self._handle.clone(headers_only=True)
         handle.set_multiple(d)
 
         if new_value_size is not None and new_value_size > 0:
@@ -407,11 +406,13 @@ class RestrictedGribMetadata(GribMetadata):
         "numberOfMissing",
         "numberOfCodedValues",
         "bitmapPresent",
+        "bitsPerValue",
         "offsetValuesBy",
         "packingError",
         "referenceValue",
         "referenceValueError",
         "unpackedError",
+        "values",
     ]
     INTERNAL_NAMESPACES = ["statistics"]
 

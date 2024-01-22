@@ -33,7 +33,7 @@ class NumpyZipReader(Reader):
         return np.load(self.path, **numpy_load_kwargs)
 
 
-def reader(source, path, magic=None, deeper_check=False):
+def reader(source, path, *, magic=None, deeper_check=False, **kwargs):
     if magic is None:  # Bypass check and force
         return NumpyReader(source, path)
 

@@ -16,6 +16,7 @@ from earthkit.data.core.metadata import RawMetadata
 from earthkit.data.readers.grib.index import GribFieldList
 from earthkit.data.readers.grib.metadata import GribMetadata
 from earthkit.data.utils.bbox import BoundingBox
+from earthkit.data.utils.dates import step_to_delta
 from earthkit.data.utils.projections import Projection
 
 LOG = logging.getLogger(__name__)
@@ -43,16 +44,15 @@ class VirtualGribMetadata(RawMetadata):
         ("dataTime", "time"),
         ("level", "levelist"),
         ("step", "endStep", "stepRange"),
+        ("param", "shortName"),
     }
 
     def __init__(self, m):
         super().__init__(m)
 
-    def _get_internal_key(self, key, astype=None, default=None, raise_on_missing=True):
+    def _get(self, key, astype=None, default=None, raise_on_missing=True):
         def _key_name(key):
-            if key == "param":
-                key = "shortName"
-            elif key == "_param_id":
+            if key == "_param_id":
                 key = "paramId"
             return key
 
@@ -71,13 +71,16 @@ class VirtualGribMetadata(RawMetadata):
                             key = k
                             break
 
+            if key not in self and key in ("step", "endStep", "stepRange"):
+                return self._default_step(astype=astype)
+
         if key_type is None:
             key_type = astype
 
         if key == "stepRange" and key_type is None:
             key_type = str
 
-        return super()._get_internal_key(
+        return super()._get(
             key, astype=key_type, default=default, raise_on_missing=raise_on_missing
         )
 
@@ -132,8 +135,8 @@ class VirtualGribMetadata(RawMetadata):
         }
 
     def _base_datetime(self):
-        date = self.get("date", None)
-        time = self.get("time", None)
+        date = int(self.get("date", None))
+        time = int(self.get("time", None))
         return datetime.datetime(
             date // 10000,
             date % 10000 // 100,
@@ -144,7 +147,14 @@ class VirtualGribMetadata(RawMetadata):
 
     def _valid_datetime(self):
         step = self.get("endStep", None)
-        return self._base_datetime() + datetime.timedelta(hours=step)
+        return self._base_datetime() + step_to_delta(step)
+
+    def _default_step(self, astype=None):
+        step = "0"
+        if astype is None:
+            return step
+        else:
+            return astype(step)
 
     def projection(self):
         return Projection.from_proj_string(self.get("projTargetString", None))

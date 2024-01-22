@@ -31,6 +31,7 @@ class FileSourceMeta(type(Source), type(os.PathLike)):
 
 class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     _reader_ = None
+    content_type = None
 
     def __init__(self, path=None, filter=None, merger=None, **kwargs):
         Source.__init__(self, **kwargs)
@@ -79,7 +80,7 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     @property
     def _reader(self):
         if self._reader_ is None:
-            self._reader_ = reader(self, self.path)
+            self._reader_ = reader(self, self.path, content_type=self.content_type)
         return self._reader_
 
     def __iter__(self):

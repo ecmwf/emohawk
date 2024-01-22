@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import functools
 import json
 import logging
 import os
@@ -20,6 +21,8 @@ from earthkit.data.core.caching import CACHE, auxiliary_cache_file
 
 LOG = logging.getLogger(__name__)
 
+os.environ["ECCODES_GRIB_SHOW_HOUR_STEPUNIT"] = "1"
+
 # For some reason, cffi can get stuck in the GC if that function
 # needs to be called defined for the first time in a GC thread.
 try:
@@ -29,6 +32,44 @@ try:
     eccodes.codes_release(_h)
 except Exception:
     pass
+
+
+class EccodesFeatures:
+    def __init__(self):
+        v = eccodes.codes_get_version_info()
+        try:
+            self._version = tuple([int(x) for x in v["eccodes"].split(".")])
+        except Exception:
+            self._version = (0, 0, 0)
+
+        try:
+            self._py_version = tuple([int(x) for x in v["bindings"].split(".")])
+        except Exception:
+            self._py_version = (0, 0, 0)
+
+        LOG.debug(f"ecCodes versions: {self.versions}")
+
+    def check_clone_kwargs(self, **kwargs):
+        if not (self._py_version >= (1, 7, 0) and self._version >= (2, 34, 0)):
+            kwargs = dict(**kwargs)
+            kwargs.pop("headers_only", None)
+        return kwargs
+
+    @property
+    def versions(self):
+        return f"ecCodes: {self._version} eccodes-python: {self._py_version}"
+
+
+ECC_FEATURES = EccodesFeatures()
+
+
+def check_clone_kwargs(func):
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        kwargs = ECC_FEATURES.check_clone_kwargs(**kwargs)
+        return func(*args, **kwargs)
+
+    return wrapped
 
 
 class CodesMessagePositionIndex:
@@ -145,8 +186,9 @@ class CodesHandle(eccodes.Message):
     def get_long(self, name):
         return self.get(name, ktype=int)
 
-    def clone(self):
-        return self._from_raw_handle(eccodes.codes_clone(self._handle))
+    @check_clone_kwargs
+    def clone(self, **kwargs):
+        return self._from_raw_handle(eccodes.codes_clone(self._handle, **kwargs))
 
     def set_multiple(self, values):
         try:

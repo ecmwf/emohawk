@@ -28,7 +28,7 @@ class TarReader(ArchiveReader):
             )
 
 
-def reader(source, path, magic=None, deeper_check=False):
+def reader(source, path, *, magic=None, deeper_check=False, **kwargs):
     # We don't use tarfile.is_tarfile() because is
     # returns true given a file of zeros
 

@@ -8,10 +8,15 @@
 #
 
 import datetime
+import re
 
 import numpy as np
 
 from earthkit.data.wrappers import get_wrapper
+
+ECC_SECONDS_FACTORS = {"s": 1, "m": 60, "h": 3600}
+NUM_STEP_PATTERN = re.compile(r"\d+")
+SUFFIX_STEP_PATTERN = re.compile(r"\d+[a-zA-Z]{1}")
 
 
 def to_datetime(dt):
@@ -99,3 +104,21 @@ def to_datetime_list(datetimes):  # noqa C901
 
 def to_date_list(obj):
     return sorted(set(to_datetime_list(obj)))
+
+
+def step_to_delta(step):
+    # TODO: make it work for all the ecCodes step formats
+    if isinstance(step, int):
+        return datetime.timedelta(hours=step)
+    elif isinstance(step, str):
+        if re.fullmatch(NUM_STEP_PATTERN, step):
+            sec = int(step) * 3600
+            return datetime.timedelta(seconds=sec)
+        elif re.fullmatch(SUFFIX_STEP_PATTERN, step):
+            factor = ECC_SECONDS_FACTORS.get(step[-1], None)
+            if factor is None:
+                raise ValueError(f"Unsupported ecCodes step units in step: {step}")
+            sec = int(step[:-1]) * factor
+            return datetime.timedelta(seconds=sec)
+
+    raise ValueError(f"Unsupported ecCodes step: {step}")

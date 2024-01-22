@@ -193,7 +193,7 @@ def test_grib_get_long_array_1(mode):
     assert pl[72] == 312
 
 
-@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+@pytest.mark.parametrize("mode", ["file"])
 def test_grib_get_double_array_values_1(mode):
     f = load_file_or_numpy_fs("test_single.grib", mode, folder="data")
 
@@ -212,7 +212,7 @@ def test_grib_get_double_array_values_1(mode):
     )
 
 
-@pytest.mark.parametrize("mode", ["file", "numpy_fs"])
+@pytest.mark.parametrize("mode", ["file"])
 def test_grib_get_double_array_values_18(mode):
     f = load_file_or_numpy_fs("tuv_pl.grib", mode)
     v = f.metadata("values")

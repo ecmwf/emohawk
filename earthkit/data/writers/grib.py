@@ -27,7 +27,7 @@ class GribWriter(Writer):
         check_nans: bool
             Replace nans in ``values`` with GRIB missing values when writing to``f``.
         """
-        handle = metadata._handle
+        handle = metadata._handle.clone()
         if check_nans:
             import numpy as np
 

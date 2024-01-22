@@ -249,6 +249,11 @@ class Url(UrlBase):
                 force=force,
             )
 
+            # cache data may contain the result of the http HEAD request
+            h = self.downloader.cache_data()
+            if isinstance(h, dict):
+                self.content_type = h.get("content-type")
+
     def mutate(self):
         if self.stream:
             # create one stream source per url

@@ -42,7 +42,7 @@ class TextReader(Reader):
         return self
 
 
-def reader(source, path, magic=None, deeper_check=False):
+def reader(source, path, *, magic=None, deeper_check=False, **kwargs):
     if magic is None:  # Bypass check and force
         return TextReader(source, path)
 

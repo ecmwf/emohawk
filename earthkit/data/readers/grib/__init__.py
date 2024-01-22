@@ -21,21 +21,23 @@ def _match_magic(magic, deeper_check):
     return False
 
 
-def reader(source, path, magic=None, deeper_check=False):
+def reader(source, path, *, magic=None, deeper_check=False, **kwargs):
     if _match_magic(magic, deeper_check):
         from .reader import GRIBReader
 
         return GRIBReader(source, path)
 
 
-def memory_reader(source, buf, magic=None, deeper_check=False):
+def memory_reader(source, buffer, *, magic=None, deeper_check=False, **kwargs):
     if _match_magic(magic, deeper_check):
         from .memory import GribFieldListInMemory, GribMessageMemoryReader
 
-        return GribFieldListInMemory(source, GribMessageMemoryReader(buf))
+        return GribFieldListInMemory(source, GribMessageMemoryReader(buffer))
 
 
-def stream_reader(source, stream, magic=None, deeper_check=False, memory=False):
+def stream_reader(
+    source, stream, magic=None, *, deeper_check=False, memory=False, **kwargs
+):
     # by default we assume the stream is grib data
     if magic is None or _match_magic(magic, deeper_check):
         from .memory import GribFieldListInMemory, GribStreamReader

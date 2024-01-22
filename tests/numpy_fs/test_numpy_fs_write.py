@@ -128,7 +128,7 @@ def test_numpy_fs_grib_write_generating_proc_id():
 
     r1 = FieldList.from_numpy([v1, v2], [md1, md2])
 
-    # save to disk: using generatingProcessIdentifier=255 (default)
+    # save to disk
     with temp_file() as tmp:
         r1.save(tmp)
         assert os.path.exists(tmp)
@@ -139,6 +139,9 @@ def test_numpy_fs_grib_write_generating_proc_id():
             255,
             150,
         ]
+
+        assert np.allclose(r_tmp.values[0], v1)
+        assert np.allclose(r_tmp.values[1], v2)
 
 
 if __name__ == "__main__":
