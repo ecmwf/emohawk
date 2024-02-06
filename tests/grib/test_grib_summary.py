@@ -203,20 +203,20 @@ def test_grib_ls_keys(mode):
 
     # default keys
     # positive num (=head)
-    df = f.ls(n=2, keys=["shortName", "bitsPerValue", "gridType"])
+    df = f.ls(n=2, keys=["shortName", "bottomLevel", "gridType"])
     ref = {
         "shortName": {0: "t", 1: "u"},
-        "bitsPerValue": {0: 4, 1: 4},
+        "bottomLevel": {0: 1000, 1: 1000},
         "gridType": {0: "regular_ll", 1: "regular_ll"},
     }
 
     assert ref == df.to_dict()
 
     # negative num (=tail)
-    df = f.ls(n=-2, keys=["shortName", "bitsPerValue", "gridType"])
+    df = f.ls(n=-2, keys=["shortName", "bottomLevel", "gridType"])
     ref = {
         "shortName": {0: "u", 1: "v"},
-        "bitsPerValue": {0: 4, 1: 4},
+        "bottomLevel": {0: 300, 1: 300},
         "gridType": {0: "regular_ll", 1: "regular_ll"},
     }
 

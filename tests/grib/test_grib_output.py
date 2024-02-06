@@ -128,7 +128,7 @@ def test_grib_output_mars_labeling():
 
         assert ds[0].metadata("date") == 20010101
         assert ds[0].metadata("edition") == 2
-        assert ds[0].metadata("step") == 24
+        assert ds[0].metadata("step", astype=int) == 24
         assert ds[0].metadata("expver") == "test"
         assert ds[0].metadata("levtype") == "sfc"
         assert ds[0].metadata("param") == "msl"
@@ -189,7 +189,7 @@ def test_grib_output_tp():
         assert ds[0].metadata("param") == "tp"
         assert ds[0].metadata("levtype") == "sfc"
         assert ds[0].metadata("edition") == 1
-        assert ds[0].metadata("step") == 48
+        assert ds[0].metadata("step", astype=int) == 48
         assert ds[0].metadata("generatingProcessIdentifier") == 255
 
         assert np.allclose(ds[0].to_numpy(), data, rtol=EPSILON, atol=EPSILON)

@@ -101,11 +101,11 @@ class GeojsonReader(Reader):
         return GeoPandasDataFrameWrapper(self.to_pandas(**kwargs))
 
 
-def reader(source, path, magic=None, deeper_check=False):
+def reader(source, path, *, magic=None, deeper_check=False, **kwargs):
     kind, compression = mimetypes.guess_type(path)
     ext = path.split(".")[-1]
 
     geojson_extensions = ["geojson"]
     geojson_mimetypes = ["application/geo+json"]
-    if magic is None or ext in geojson_extensions or kind in geojson_mimetypes:
+    if ext in geojson_extensions or kind in geojson_mimetypes:
         return GeojsonReader(source, path)

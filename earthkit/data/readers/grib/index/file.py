@@ -25,21 +25,24 @@ class GribFieldListInOneFile(GribFieldListInFiles):
     def availability_path(self):
         return os.path.join(self.path, ".availability.pickle")
 
-    def __init__(self, path, **kwargs):
+    def __init__(self, path, parts=None, **kwargs):
         assert isinstance(path, str), path
 
         self.path = path
+        self._file_parts = parts
         self.__positions = None
         super().__init__(**kwargs)
 
     @property
     def _positions(self):
         if self.__positions is None:
-            self.__positions = GribCodesMessagePositionIndex(self.path)
+            self.__positions = GribCodesMessagePositionIndex(
+                self.path, self._file_parts
+            )
         return self.__positions
 
     def part(self, n):
         return Part(self.path, self._positions.offsets[n], self._positions.lengths[n])
 
     def number_of_parts(self):
-        return len(self._positions.offsets)
+        return len(self._positions)

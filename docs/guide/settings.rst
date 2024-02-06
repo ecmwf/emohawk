@@ -13,6 +13,7 @@ be accessed and modified from Python.
 
     See the :ref:`/examples/settings.ipynb` notebook for examples.
 
+.. _settings_get:
 
 Accessing settings
 ------------------
@@ -21,6 +22,8 @@ earthkit-data settings can be accessed using the python API:
 
 .. literalinclude:: include/settings-get.py
 
+
+.. _settings_set:
 
 Changing settings
 ------------------
@@ -34,6 +37,7 @@ earthkit-data settings can be modified using the python API:
 
 .. literalinclude:: include/settings-set.py
 
+.. _settings_temporary:
 
 Temporary settings
 ------------------
@@ -48,6 +52,8 @@ Output::
     12
     11
 
+
+.. _settings_reset:
 
 Resetting settings
 ------------------

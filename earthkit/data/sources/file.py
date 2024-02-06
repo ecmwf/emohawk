@@ -15,6 +15,7 @@ import os
 from earthkit.data import from_source
 from earthkit.data.core.caching import CACHE
 from earthkit.data.readers import reader
+from earthkit.data.utils.parts import check_urls_and_parts, ensure_urls_and_parts
 
 from . import Source
 
@@ -31,12 +32,17 @@ class FileSourceMeta(type(Source), type(os.PathLike)):
 
 class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     _reader_ = None
+    content_type = None
 
-    def __init__(self, path=None, filter=None, merger=None, **kwargs):
+    def __init__(self, path=None, filter=None, merger=None, parts=None, **kwargs):
         Source.__init__(self, **kwargs)
-        self.path = path
         self.filter = filter
         self.merger = merger
+        self.path, self.parts = self._paths_and_parts(path, parts)
+
+        if self._kwargs.get("indexing", False):
+            if self.parts is not None and any(x is not None for x in self.parts):
+                raise ValueError("Cannot specify parts when indexing is enabled!")
 
     def mutate(self):
         if isinstance(self.path, (list, tuple)):
@@ -45,7 +51,10 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
             else:
                 return from_source(
                     "multi",
-                    [from_source("file", p, **self._kwargs) for p in self.path],
+                    [
+                        from_source("file", p, parts=part, **self._kwargs)
+                        for p, part in zip(self.path, self.parts)
+                    ],
                     filter=self.filter,
                     merger=self.merger,
                 )
@@ -79,7 +88,9 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     @property
     def _reader(self):
         if self._reader_ is None:
-            self._reader_ = reader(self, self.path)
+            self._reader_ = reader(
+                self, self.path, content_type=self.content_type, parts=self.parts
+            )
         return self._reader_
 
     def __iter__(self):
@@ -175,6 +186,45 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
 
     def statistics(self, **kwargs):
         return self._reader.statistics(**kwargs)
+
+    @staticmethod
+    def _paths_and_parts(paths, parts):
+        """Preprocess paths and parts.
+
+        Parameters
+        ----------
+        paths: str or list/tuple
+            The path(s). When it is a sequence either each
+            item is a path (str), or a pair of a path and :ref:`parts <parts>`.
+        parts: part,list/tuple of parts or None.
+            The :ref:`parts <parts>`.
+
+        Returns
+        -------
+        str or list of str
+            The path or paths.
+        SimplePart, list or tuple, None
+            The parts (one for each path). A part can be a single
+            SimplePart, a list/tuple of SimpleParts or None.
+
+        """
+        if parts is None:
+            if isinstance(paths, str):
+                return paths, None
+            elif isinstance(paths, (list, tuple)) and all(
+                isinstance(p, str) for p in paths
+            ):
+                return paths, [None] * len(paths)
+
+        paths = check_urls_and_parts(paths, parts)
+        paths_and_parts = ensure_urls_and_parts(paths, parts, compress=True)
+
+        paths, parts = zip(*paths_and_parts)
+        assert len(paths) == len(parts)
+        if len(paths) == 1:
+            return paths[0], parts[0]
+        else:
+            return paths, parts
 
 
 class IndexedFileSource(FileSource):

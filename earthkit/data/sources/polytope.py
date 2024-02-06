@@ -12,6 +12,7 @@ import logging
 from . import Source
 from .multi_url import MultiUrl
 from .prompt import APIKeyPrompt
+from .url import Url
 
 LOG = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class Polytope(Source):
     >>> src.to_xarray()  # if datacube
     """
 
-    def __init__(self, dataset, request) -> None:
+    def __init__(self, dataset, request, address=None, stream=True, **kwargs) -> None:
         try:
             import polytope
         except ImportError:
@@ -66,10 +67,21 @@ class Polytope(Source):
         super().__init__()
         assert isinstance(dataset, str)
 
+        self._stream_kwargs = dict()
+        for k in ["group_by", "batch_size"]:
+            if k in kwargs:
+                self._stream_kwargs[k] = kwargs.pop(k)
+
+        self.stream = stream
+
         self.request = dict(dataset=dataset, request=request)
 
         credentials = PolytopeWebKeyPrompt().check(load=True)
-        self.client = polytope.api.Client(**credentials)
+
+        client_kwargs = {}
+        if address is not None:
+            client_kwargs = {"address": address}
+        self.client = polytope.api.Client(**credentials, **client_kwargs)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.request['dataset']}, {self.request['request']})"
@@ -83,7 +95,16 @@ class Polytope(Source):
         )
 
         urls = [p["location"] for p in pointers]
-        return MultiUrl(urls)
+        LOG.debug(f"{urls=}")
+
+        if self.stream:
+            return Url(
+                urls,
+                stream=True,
+                **self._stream_kwargs,
+            )
+        else:
+            return MultiUrl(urls)
 
 
 source = Polytope

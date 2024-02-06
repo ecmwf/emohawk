@@ -100,6 +100,7 @@ except Exception:
     NO_FDB = True
 
 NO_POLYTOPE = not os.path.exists(os.path.expanduser("~/.polytopeapirc"))
+NO_ECCOVJSON = not modules_installed("eccovjson")
 
 
 def MISSING(*modules):

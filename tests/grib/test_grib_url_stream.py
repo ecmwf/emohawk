@@ -522,13 +522,55 @@ def test_request_iter_streamer(chunk_size, read_size):
     stream = RequestIterStreamer(iter_stream(chunk_size, data))
 
     assert not stream.closed
-    assert stream.read(-1) == bytes()
+    assert stream.read(-2) == bytes()
     assert stream.read(0) == bytes()
     assert stream.peek(4) == data[:4]
     assert not stream.closed
 
     for i in range(0, len(data), read_size):
         assert stream.read(read_size) == data[i : min(i + read_size, len(data))], i
+
+    assert stream.read(1) == bytes()
+    assert stream.closed
+    assert stream.read(0) == bytes()
+    assert stream.read() == bytes()
+    assert stream.read(-1) == bytes()
+    assert stream.peek(4) == bytes()
+
+
+@pytest.mark.parametrize("chunk_size", [1, 2, 3, 4, 5, 10, 12, 14])
+def test_request_iter_streamer_read_all_1(chunk_size):
+    from earthkit.data.sources.url import RequestIterStreamer
+
+    data = str.encode("0123456789abc")
+
+    stream = RequestIterStreamer(iter_stream(chunk_size, data))
+
+    assert not stream.closed
+    assert stream.read(-2) == bytes()
+    assert stream.read(0) == bytes()
+    assert stream.peek(4) == data[:4]
+    assert not stream.closed
+
+    assert stream.read() == data
+
+    assert stream.read(1) == bytes()
+    assert stream.closed
+    assert stream.read(0) == bytes()
+    assert stream.read(-1) == bytes()
+    assert stream.peek(4) == bytes()
+
+
+@pytest.mark.parametrize("chunk_size", [1, 2, 3, 4, 5, 10, 12, 14])
+def test_request_iter_streamer_read_all_2(chunk_size):
+    from earthkit.data.sources.url import RequestIterStreamer
+
+    data = str.encode("0123456789abc")
+
+    stream = RequestIterStreamer(iter_stream(chunk_size, data))
+
+    assert not stream.closed
+    assert stream.read() == data
 
     assert stream.read(1) == bytes()
     assert stream.closed

@@ -21,8 +21,8 @@ def _match_magic(magic, deeper_check):
     return False
 
 
-def reader(source, path, magic=None, deeper_check=False):
+def reader(source, path, *, magic=None, deeper_check=False, parts=None, **kwargs):
     if _match_magic(magic, deeper_check):
         from .bufr import BUFRReader
 
-        return BUFRReader(source, path)
+        return BUFRReader(source, path, parts=parts)

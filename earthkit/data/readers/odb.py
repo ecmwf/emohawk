@@ -37,6 +37,6 @@ def _match_magic(magic, deeper_check):
     return False
 
 
-def reader(source, path, magic=None, deeper_check=False):
+def reader(source, path, *, magic=None, deeper_check=False, **kwargs):
     if _match_magic(magic, deeper_check):
         return ODBReader(source, path)

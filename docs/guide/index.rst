@@ -10,3 +10,4 @@ User guide
    data_format/index.rst
    settings
    caching
+   misc/index.rst

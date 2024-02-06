@@ -12,7 +12,6 @@
 import os
 import sys
 
-import numpy as np
 import pytest
 
 here = os.path.dirname(__file__)
@@ -38,6 +37,7 @@ def test_numpy_fs_values_metadata():
         "const",
         "bitmapPresent",
         "numberOfMissing",
+        "values",
     ]
     for k in keys:
         assert ds[0].metadata(k, default=None) is None, k
@@ -55,14 +55,6 @@ def test_numpy_fs_values_metadata_internal():
 
     for k, v in keys.items():
         assert ds[0].metadata(k) == v, k
-
-    keys = {
-        "grib.min": 262.7802734375,
-        "grib.max": 315.4599609375,
-    }
-
-    for k, v in keys.items():
-        assert np.isclose(ds[0].metadata(k), v), k
 
 
 def test_numpy_fs_metadata_keys():

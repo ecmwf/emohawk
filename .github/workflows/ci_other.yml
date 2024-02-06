@@ -93,25 +93,25 @@ jobs:
       run: |
         make docs-build
 
-  # distribution:
-  #   needs: [integration-tests, type-check, documentation]
-  #   if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
-  #   runs-on: ubuntu-latest
+  distribution:
+    needs: [documentation]
+    if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #     with:
-  #       ref: ${{ github.event.pull_request.head.sha || github.ref }}
-  #   - name: Build distributions
-  #     run: |
-  #       $CONDA/bin/python -m pip install build
-  #       $CONDA/bin/python -m build
-  #   - name: Publish a Python distribution to PyPI
-  #     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-  #     uses: pypa/gh-action-pypi-publish@release/v1
-  #     with:
-  #       user: __token__
-  #       password: ${{ secrets.PYPI_API_TOKEN }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
+    - name: Build distributions
+      run: |
+        $CONDA/bin/python -m pip install build
+        $CONDA/bin/python -m build
+    - name: Publish a Python distribution to PyPI
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
 
   notify:
     if: always() && ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}

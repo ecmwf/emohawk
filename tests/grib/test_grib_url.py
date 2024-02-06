@@ -15,12 +15,23 @@ from earthkit.data import from_source
 from earthkit.data.testing import earthkit_remote_test_data_file
 
 
+# TODO: the disabled tests require a fix in multiurl
 @pytest.mark.parametrize(
     "parts,expected_meta",
     [
-        ([(0, 150)], [("t", 1000)]),
+        ([(0, 150)], [("t", 1000)]),  # message length
+        ([(0, 154)], [("t", 1000)]),  # message length + extra bytes
+        ([(0, 240)], [("t", 1000)]),  # message length + padding
+        (
+            [(0, 240)],
+            [("t", 1000)],
+        ),  # message length + padding + bytes from next message
+        # ([(0, 15)], []),  # shorter than message
         ([(240, 150)], [("u", 1000)]),
         ([(240, 480)], [("u", 1000), ("v", 1000)]),
+        ([(240, 240), (720, 240)], [("u", 1000), ("t", 850)]),
+        ([(240, 240), (720, 243)], [("u", 1000), ("t", 850)]),
+        # ([(240, 240), (720, 16)], [("u", 1000)]),  # second part shorter than message
     ],
 )
 def test_grib_single_url_parts(parts, expected_meta):
@@ -29,13 +40,8 @@ def test_grib_single_url_parts(parts, expected_meta):
     )
 
     assert len(ds) == len(expected_meta)
-
-    cnt = 0
-    for i, f in enumerate(ds):
-        assert f.metadata(("param", "level")) == expected_meta[i], i
-        cnt += 1
-
-    assert cnt == len(expected_meta)
+    if len(ds) > 0:
+        assert ds.metadata(("param", "level")) == expected_meta
 
 
 @pytest.mark.parametrize(
@@ -76,13 +82,7 @@ def test_grib_multi_url_parts(parts1, parts2, expected_meta):
     )
 
     assert len(ds) == len(expected_meta)
-
-    cnt = 0
-    for i, f in enumerate(ds):
-        assert f.metadata(("param", "level")) == expected_meta[i], i
-        cnt += 1
-
-    assert cnt == len(expected_meta)
+    assert ds.metadata(("param", "level")) == expected_meta
 
 
 if __name__ == "__main__":

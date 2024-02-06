@@ -254,7 +254,7 @@ class GribMetadata(Metadata):
 
     def override(self, *args, **kwargs):
         d = dict(*args, **kwargs)
-        handle = self._handle.clone()
+        handle = self._handle.clone(headers_only=True)
         handle.set_multiple(d)
         return GribMetadata(handle)
 
@@ -383,11 +383,13 @@ class RestrictedGribMetadata(GribMetadata):
         "numberOfMissing",
         "numberOfCodedValues",
         "bitmapPresent",
+        "bitsPerValue",
         "offsetValuesBy",
         "packingError",
         "referenceValue",
         "referenceValueError",
         "unpackedError",
+        "values",
     ]
     INTERNAL_NAMESPACES = ["statistics"]
 

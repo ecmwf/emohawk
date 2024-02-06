@@ -198,7 +198,7 @@ class CSVReader(Reader):
         )
 
 
-def reader(source, path, magic, deeper_check, fwf=False):
+def reader(source, path, *, magic=None, deeper_check=False, fwf=False, **kwargs):
     kind, compression = mimetypes.guess_type(path)
 
     if kind == "text/csv":

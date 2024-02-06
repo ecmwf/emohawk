@@ -7,6 +7,7 @@
 # nor does it submit to any jurisdiction.
 #
 
+import functools
 import json
 import logging
 import os
@@ -20,6 +21,8 @@ from earthkit.data.core.caching import CACHE, auxiliary_cache_file
 
 LOG = logging.getLogger(__name__)
 
+os.environ["ECCODES_GRIB_SHOW_HOUR_STEPUNIT"] = "1"
+
 # For some reason, cffi can get stuck in the GC if that function
 # needs to be called defined for the first time in a GC thread.
 try:
@@ -31,27 +34,95 @@ except Exception:
     pass
 
 
+class EccodesFeatures:
+    def __init__(self):
+        v = eccodes.codes_get_version_info()
+        try:
+            self._version = tuple([int(x) for x in v["eccodes"].split(".")])
+        except Exception:
+            self._version = (0, 0, 0)
+
+        try:
+            self._py_version = tuple([int(x) for x in v["bindings"].split(".")])
+        except Exception:
+            self._py_version = (0, 0, 0)
+
+        LOG.debug(f"ecCodes versions: {self.versions}")
+
+    def check_clone_kwargs(self, **kwargs):
+        if not (self._py_version >= (1, 7, 0) and self._version >= (2, 34, 0)):
+            kwargs = dict(**kwargs)
+            kwargs.pop("headers_only", None)
+        return kwargs
+
+    @property
+    def versions(self):
+        return f"ecCodes: {self._version} eccodes-python: {self._py_version}"
+
+
+ECC_FEATURES = EccodesFeatures()
+
+
+def check_clone_kwargs(func):
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        kwargs = ECC_FEATURES.check_clone_kwargs(**kwargs)
+        return func(*args, **kwargs)
+
+    return wrapped
+
+
 class CodesMessagePositionIndex:
     VERSION = 1
+    MAGIC = None
 
-    def __init__(self, path):
+    def __init__(self, path, parts=None):
         self.path = path
         self.offsets = None
         self.lengths = None
+        self.parts = parts
         self._cache_file = None
         self._load()
 
     def __len__(self):
         return len(self.offsets)
 
-    def _get_message_positions(self, path):
+    def _get_message_positions(self, path, parts):
+        fd = os.open(path, os.O_RDONLY)
+
+        try:
+            if parts is None:
+                yield from self._get_message_positions_part(fd, (0, -1))
+            else:
+                for part in parts:
+                    try:
+                        yield from self._get_message_positions_part(fd, part)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+        finally:
+            os.close(fd)
+
+    def _get_message_positions_part(self, path, part):
         raise NotImplementedError
+
+    @staticmethod
+    def _get_bytes(fd, count):
+        buf = os.read(fd, count)
+        if len(buf) != count:
+            raise Exception
+        return int.from_bytes(
+            buf,
+            byteorder="big",
+            signed=False,
+        )
 
     def _build(self):
         offsets = []
         lengths = []
 
-        for offset, length in self._get_message_positions(self.path):
+        for offset, length in self._get_message_positions(self.path, self.parts):
             offsets.append(offset)
             lengths.append(length)
 
@@ -145,8 +216,9 @@ class CodesHandle(eccodes.Message):
     def get_long(self, name):
         return self.get(name, ktype=int)
 
-    def clone(self):
-        return self._from_raw_handle(eccodes.codes_clone(self._handle))
+    @check_clone_kwargs
+    def clone(self, **kwargs):
+        return self._from_raw_handle(eccodes.codes_clone(self._handle, **kwargs))
 
     def set_multiple(self, values):
         try:
