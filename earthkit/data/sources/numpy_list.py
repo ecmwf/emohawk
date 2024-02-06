@@ -133,6 +133,28 @@ class NumpyFieldListCore(PandasMixIn, XarrayMixIn, FieldList):
         else:
             return type(self)(self.to_numpy(**kwargs), self._metadata)
 
+    def save(self, filename, append=False, check_nans=True, bits_per_value=16):
+        r"""Write all the fields into a file.
+
+        Parameters
+        ----------
+        filename: str
+            The target file path.
+        append: bool
+            When it is true append data to the target file. Otherwise
+            the target file be overwritten if already exists.
+        check_nans: bool
+            Replace nans in the values with GRIB missing values when generating the output.
+        bits_per_value: int
+            Set the ``bitsPerValue`` GRIB key in the generated output.
+        """
+        super().save(
+            filename,
+            append=append,
+            check_nans=check_nans,
+            bits_per_value=bits_per_value,
+        )
+
 
 class MultiUnwindMerger:
     def __init__(self, sources):

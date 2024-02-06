@@ -45,39 +45,38 @@ BUFR_LS_KEYS = {
 
 
 class BufrCodesMessagePositionIndex(CodesMessagePositionIndex):
+    MAGIC = b"BUFR"
+
     # This does not belong here, should be in the C library
-    def _get_message_positions(self, path):
-        fd = os.open(path, os.O_RDONLY)
-        try:
+    def _get_message_positions_part(self, fd, part):
+        assert part is not None
+        assert len(part) == 2
 
-            def get(count):
-                buf = os.read(fd, count)
-                assert len(buf) == count
-                return int.from_bytes(
-                    buf,
-                    byteorder="big",
-                    signed=False,
-                )
+        offset = part[0]
+        end_pos = part[0] + part[1] if part[1] > 0 else -1
 
-            offset = 0
-            while True:
-                code = os.read(fd, 4)
-                if len(code) < 4:
-                    break
+        if os.lseek(fd, offset, os.SEEK_SET) != offset:
+            return
 
-                if code != b"BUFR":
-                    offset = os.lseek(fd, offset + 1, os.SEEK_SET)
-                    continue
+        while True:
+            code = os.read(fd, 4)
+            if len(code) < 4:
+                break
 
-                length = get(3)
-                edition = get(1)
+            if code != self.MAGIC:
+                offset = os.lseek(fd, offset + 1, os.SEEK_SET)
+                continue
 
-                if edition in [3, 4]:
-                    yield offset, length
-                    offset = os.lseek(fd, offset + length, os.SEEK_SET)
+            length = self._get_bytes(fd, 3)
+            edition = self._get_bytes(fd, 1)
 
-        finally:
-            os.close(fd)
+            if end_pos > 0 and offset + length > end_pos:
+                return
+
+            if edition in [3, 4]:
+                yield offset, length
+
+            offset = os.lseek(fd, offset + length, os.SEEK_SET)
 
 
 class BUFRCodesHandle(CodesHandle):
@@ -629,10 +628,6 @@ class MultiBUFRList(BUFRList, MultiIndex):
 
 
 class BUFRInFiles(BUFRList):
-    # Remote BUFRLists (with urls) are also here,
-    # as the actual fieldlist is accessed on a file in cache.
-    # This class changes the interface (__getitem__ and __len__)
-    # into the interface (part and number_of_parts).
     def _getitem(self, n):
         if isinstance(n, int):
             part = self.part(n if n >= 0 else len(self) + n)
@@ -651,14 +646,17 @@ class BUFRInFiles(BUFRList):
 
 
 class BUFRInOneFile(BUFRInFiles):
-    def __init__(self, path):
+    def __init__(self, path, parts=None):
         self.path = path
+        self._file_parts = parts
         self.__positions = None
 
     @property
     def _positions(self):
         if self.__positions is None:
-            self.__positions = BufrCodesMessagePositionIndex(self.path)
+            self.__positions = BufrCodesMessagePositionIndex(
+                self.path, parts=self._file_parts
+            )
         return self.__positions
 
     def part(self, n):
@@ -673,9 +671,9 @@ class BUFRReader(BUFRInOneFile, Reader):
 
     appendable = True  # BUFR messages can be added to the same file
 
-    def __init__(self, source, path):
+    def __init__(self, source, path, parts=None):
         Reader.__init__(self, source, path)
-        BUFRInOneFile.__init__(self, path)
+        BUFRInOneFile.__init__(self, path, parts=parts)
 
     def __repr__(self):
         return "BUFRReader(%s)" % (self.path,)

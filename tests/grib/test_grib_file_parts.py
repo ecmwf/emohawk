@@ -12,13 +12,13 @@
 import pytest
 
 from earthkit.data import from_source
-from earthkit.data.testing import earthkit_remote_test_data_file
+from earthkit.data.testing import earthkit_examples_file
 
 
-# TODO: the disabled tests require a fix in multiurl
 @pytest.mark.parametrize(
     "parts,expected_meta",
     [
+        ((0, 150), [("t", 1000)]),  # message length
         ([(0, 150)], [("t", 1000)]),  # message length
         ([(0, 154)], [("t", 1000)]),  # message length + extra bytes
         ([(0, 240)], [("t", 1000)]),  # message length + padding
@@ -26,18 +26,16 @@ from earthkit.data.testing import earthkit_remote_test_data_file
             [(0, 240)],
             [("t", 1000)],
         ),  # message length + padding + bytes from next message
-        # ([(0, 15)], []),  # shorter than message
+        ([(0, 15)], []),  # shorter than message
         ([(240, 150)], [("u", 1000)]),
         ([(240, 480)], [("u", 1000), ("v", 1000)]),
         ([(240, 240), (720, 240)], [("u", 1000), ("t", 850)]),
         ([(240, 240), (720, 243)], [("u", 1000), ("t", 850)]),
-        # ([(240, 240), (720, 16)], [("u", 1000)]),  # second part shorter than message
+        ([(240, 240), (720, 16)], [("u", 1000)]),  # second part shorter than message
     ],
 )
-def test_grib_single_url_parts(parts, expected_meta):
-    ds = from_source(
-        "url", earthkit_remote_test_data_file("examples/test6.grib"), parts=parts
-    )
+def test_grib_single_file_parts(parts, expected_meta):
+    ds = from_source("file", earthkit_examples_file("test6.grib"), parts=parts)
 
     assert len(ds) == len(expected_meta)
     if len(ds) > 0:
@@ -49,6 +47,11 @@ def test_grib_single_url_parts(parts, expected_meta):
     [
         (
             [(240, 150)],
+            None,
+            [("u", 1000), ("2t", 0), ("msl", 0)],
+        ),
+        (
+            (240, 150),
             None,
             [("u", 1000), ("2t", 0), ("msl", 0)],
         ),
@@ -72,17 +75,18 @@ def test_grib_single_url_parts(parts, expected_meta):
         ),
     ],
 )
-def test_grib_multi_url_parts(parts1, parts2, expected_meta):
+def test_grib_multi_file_parts(parts1, parts2, expected_meta):
     ds = from_source(
-        "url",
+        "file",
         [
-            [earthkit_remote_test_data_file("examples/test6.grib"), parts1],
-            [earthkit_remote_test_data_file("examples/test.grib"), parts2],
+            [earthkit_examples_file("test6.grib"), parts1],
+            [earthkit_examples_file("test.grib"), parts2],
         ],
     )
 
     assert len(ds) == len(expected_meta)
-    assert ds.metadata(("param", "level")) == expected_meta
+    if len(ds) > 0:
+        assert ds.metadata(("param", "level")) == expected_meta
 
 
 if __name__ == "__main__":

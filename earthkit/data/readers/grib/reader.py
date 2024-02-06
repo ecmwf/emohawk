@@ -19,9 +19,9 @@ LOG = logging.getLogger(__name__)
 class GRIBReader(GribFieldListInOneFile, Reader):
     appendable = True  # GRIB messages can be added to the same file
 
-    def __init__(self, source, path):
+    def __init__(self, source, path, parts=None):
         Reader.__init__(self, source, path)
-        GribFieldListInOneFile.__init__(self, path)
+        GribFieldListInOneFile.__init__(self, path, parts=parts)
 
     def __repr__(self):
         return "GRIBReader(%s)" % (self.path,)

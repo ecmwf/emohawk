@@ -8,6 +8,7 @@
 #
 
 import datetime
+import logging
 from contextlib import closing
 from itertools import product
 
@@ -23,6 +24,8 @@ from earthkit.data.utils.projections import Projection
 
 from . import Reader
 
+LOG = logging.getLogger(__name__)
+
 GEOGRAPHIC_COORDS = {
     "x": ["x", "projection_x_coordinate", "lon", "longitude"],
     "y": ["y", "projection_y_coordinate", "lat", "latitude"],
@@ -34,6 +37,8 @@ def as_datetime(self, time):
 
 
 def as_level(self, level):
+    if isinstance(level, str):
+        return level
     n = float(level)
     if int(n) == n:
         return int(n)
@@ -187,13 +192,16 @@ def get_fields_from_ds(
             standard_name = getattr(c, "standard_name", "")
             axis = getattr(c, "axis", "")
             long_name = getattr(c, "long_name", "")
+            coord_name = getattr(c, "name", "")
 
+            # LOG.debug(f"{standard_name=} {long_name=} {axis=} {coord_name}")
             use = False
 
             if (
                 standard_name.lower() in GEOGRAPHIC_COORDS["x"]
                 or (long_name == "longitude")
                 or (axis == "X")
+                or coord_name.lower() in GEOGRAPHIC_COORDS["x"]
             ):
                 has_lon = True
                 use = True
@@ -202,11 +210,10 @@ def get_fields_from_ds(
                 standard_name.lower() in GEOGRAPHIC_COORDS["y"]
                 or (long_name == "latitude")
                 or (axis == "Y")
+                or coord_name.lower() in GEOGRAPHIC_COORDS["y"]
             ):
                 has_lat = True
                 use = True
-
-            # print(f"  standard_name={standard_name}")
 
             # Of course, not every one sets the standard_name
             if (
@@ -222,13 +229,16 @@ def get_fields_from_ds(
                     break
 
             # TODO: Support other level types
-            if standard_name in [
-                "air_pressure",
-                "model_level_number",
-                "altitude",
-            ] or long_name in [
-                "pressure_level"
-            ]:  # or axis == 'Z':
+            if (
+                standard_name
+                in [
+                    "air_pressure",
+                    "model_level_number",
+                    "altitude",
+                ]
+                or long_name in ["pressure_level"]
+                or coord_name in ["level"]
+            ):  # or axis == 'Z':
                 coordinates.append(LevelCoordinate(c, coord in info))
                 use = True
 

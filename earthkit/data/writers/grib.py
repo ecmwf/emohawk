@@ -13,7 +13,7 @@ from . import Writer
 class GribWriter(Writer):
     DATA_FORMAT = "grib"
 
-    def write(self, f, values, metadata, check_nans=True):
+    def write(self, f, values, metadata, check_nans=True, bits_per_value=16):
         r"""Write a GRIB field to a file object.
 
         Parameters
@@ -21,13 +21,18 @@ class GribWriter(Writer):
         f: file object
             The target file object.
         values: ndarray
-            Values of the GRIB field/message.
-        values: :class:`GribMetadata`
-            Metadata of the GRIB field/message.
+            Values of the GRIB field.
+        metadata: :class:`GribMetadata`
+            Metadata of the GRIB field.
         check_nans: bool
             Replace nans in ``values`` with GRIB missing values when writing to``f``.
+        bits_per_value: int
+            Set the ``bitsPerValue`` GRIB key in the generated GRIB message.
         """
         handle = metadata._handle.clone()
+
+        handle.set_long("bitsPerValue", bits_per_value)
+
         if check_nans:
             import numpy as np
 

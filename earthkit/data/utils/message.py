@@ -74,25 +74,55 @@ def check_clone_kwargs(func):
 
 class CodesMessagePositionIndex:
     VERSION = 1
+    MAGIC = None
 
-    def __init__(self, path):
+    def __init__(self, path, parts=None):
         self.path = path
         self.offsets = None
         self.lengths = None
+        self.parts = parts
         self._cache_file = None
         self._load()
 
     def __len__(self):
         return len(self.offsets)
 
-    def _get_message_positions(self, path):
+    def _get_message_positions(self, path, parts):
+        fd = os.open(path, os.O_RDONLY)
+
+        try:
+            if parts is None:
+                yield from self._get_message_positions_part(fd, (0, -1))
+            else:
+                for part in parts:
+                    try:
+                        yield from self._get_message_positions_part(fd, part)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+        finally:
+            os.close(fd)
+
+    def _get_message_positions_part(self, path, part):
         raise NotImplementedError
+
+    @staticmethod
+    def _get_bytes(fd, count):
+        buf = os.read(fd, count)
+        if len(buf) != count:
+            raise Exception
+        return int.from_bytes(
+            buf,
+            byteorder="big",
+            signed=False,
+        )
 
     def _build(self):
         offsets = []
         lengths = []
 
-        for offset, length in self._get_message_positions(self.path):
+        for offset, length in self._get_message_positions(self.path, self.parts):
             offsets.append(offset)
             lengths.append(length)
 

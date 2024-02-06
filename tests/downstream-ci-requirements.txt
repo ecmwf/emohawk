@@ -3,7 +3,7 @@ cfgrib>=0.9.10.1
 eccodes>=1.5.0
 ecmwf-api-client>=1.6.1
 ecmwf-opendata>=0.1.2
-polytope-client>=0.7.1
+polytope-client>=0.7.2
 dask
 entrypoints
 filelock
@@ -23,6 +23,7 @@ earthkit-meteo>=0.0.1
 git+https://github.com/ecmwf/earthkit-data-demo-source
 geopandas
 cartopy
+eccovjson>=0.0.5
 # for testing
 pytest
 pytest-cov

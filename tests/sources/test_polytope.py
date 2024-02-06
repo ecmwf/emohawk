@@ -45,7 +45,7 @@ def test_polytope_odb():
         "domain": "off",
     }
 
-    src = from_source("polytope", "ichange", request)
+    src = from_source("polytope", "ichange", request, stream=False)
     df = src.to_pandas()
     assert len(df) == 52
 
@@ -69,7 +69,7 @@ def test_polytope_grib():
         "domain": "g",
     }
 
-    ds = from_source("polytope", "ecmwf-mars", request)
+    ds = from_source("polytope", "ecmwf-mars", request, stream=False)
 
     assert len(ds) == 2
     assert ds.metadata("level") == [500, 500]

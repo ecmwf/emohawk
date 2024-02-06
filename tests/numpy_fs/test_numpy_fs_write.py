@@ -11,6 +11,7 @@
 
 import logging
 import os
+import sys
 
 import numpy as np
 import pytest
@@ -19,6 +20,10 @@ from earthkit.data import from_source
 from earthkit.data.core.fieldlist import FieldList
 from earthkit.data.core.temporary import temp_file
 from earthkit.data.testing import earthkit_examples_file
+
+here = os.path.dirname(__file__)
+sys.path.insert(0, here)
+from numpy_fs_fixtures import load_numpy_fs  # noqa: E402
 
 LOG = logging.getLogger(__name__)
 
@@ -142,6 +147,18 @@ def test_numpy_fs_grib_write_generating_proc_id():
 
         assert np.allclose(r_tmp.values[0], v1)
         assert np.allclose(r_tmp.values[1], v2)
+
+
+@pytest.mark.parametrize(
+    "_kwargs,expected_value", [({}, 16), ({"bits_per_value": 12}, 12)]
+)
+def test_numpy_fs_grib_write_bits_per_value(_kwargs, expected_value):
+    ds, _ = load_numpy_fs(1)
+
+    with temp_file() as tmp:
+        ds.save(tmp, **_kwargs)
+        ds1 = from_source("file", tmp)
+        assert ds1.metadata("bitsPerValue") == [expected_value] * len(ds)
 
 
 if __name__ == "__main__":

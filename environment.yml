@@ -26,8 +26,9 @@ dependencies:
   - git+https://github.com/ecmwf/multiurl
   - git+https://github.com/ecmwf/pyfdb
   - ecmwf-opendata>=0.1.2
-  - polytope-client>=0.7.1
+  - polytope-client>=0.7.2
   - earthkit-meteo>=0.0.1
+  - eccovjson>=0.0.5
 - tqdm
 - markdown
 - jsonschema

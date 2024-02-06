@@ -15,7 +15,6 @@ Here is a list of example notebooks to illustrate how to use earthkit-data.
     examples/cds.ipynb
     examples/ecmwf_open_data.ipynb
     examples/fdb.ipynb
-    examples/mars.ipynb
     examples/polytope.ipynb
     examples/wekeo.ipynb
 
@@ -33,6 +32,7 @@ Here is a list of example notebooks to illustrate how to use earthkit-data.
     examples/grib_multi.ipynb
     examples/grib_from_stream.ipynb
     examples/grib_file_pattern.ipynb
+    examples/grib_file_parts.ipynb
     examples/grib_tar.ipynb
     examples/grib_url.ipynb
     examples/grib_url_stream.ipynb

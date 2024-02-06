@@ -13,19 +13,20 @@ common being the :ref:`file <data-sources-file>` source.
 Adding a new source as a pip plugin
 -------------------------------------
 
-A **sources plugin** should contain a Python class inherited from :class:`earthkit.data.Source` to implement access for a custom data source. Let us suppose the new class is called "MyClass".
-
-The name of the Python package containing the plugin should start with ``earthkit-data-`` and use "-". Let us call it "earthkit-data-my-source". When it is hosted on PyPI we should be able to install this package as:
+A **sources plugin** is a Python package with a name that must start with ``earthkit-data-`` and consistently use "-" separators. Let us call it "earthkit-data-my-source". When it is hosted on PyPI we should be able to install it as:
 
 .. code-block:: shell
 
     pip install earthkit-data-my-source
 
-The package to import should start with :py:class:`earthkit_data\_` and use "_". In our case this would be: "earthkit_data_my_source". We should be able to import the class from it as:
+
+This package must contain a Python class inherited from :class:`earthkit.data.Source` to implement access for a custom data source. Let us suppose the new class is called "MyClass". We should be able to import the class as:
 
 .. code-block:: python
 
     from earthkit_data_my_source import MyClass
+
+Please note that in this line the package name to import form has to contain "_" characters.
 
 In the ``setup.cfg`` file of the package the ``entry_points``
 integration must be set as follow:
@@ -68,6 +69,7 @@ Having finished the installation, tabular data can be read in earthkit-data as f
 
     import earthkit.data
 
+    # assume you have test.db available
     ds = earthkit.data.from_source(
         "demo-source",
         "sqlite:///test.db",

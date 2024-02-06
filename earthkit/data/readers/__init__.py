@@ -24,7 +24,7 @@ class ReaderMeta(type(Base), type(os.PathLike)):
 
 
 class Reader(Base, os.PathLike, metaclass=ReaderMeta):
-    appendable = False  # Set to True if the data can be appened to and existing file
+    appendable = False  # Set to True if the data can be appended to and existing file
     binary = True
 
     def __init__(self, source, path):
@@ -83,6 +83,9 @@ class Reader(Base, os.PathLike, metaclass=ReaderMeta):
         LOG.warning(f"index-content(): Ignoring {self.path}")
         return []
 
+    def ranges(self):
+        self.source._kw
+
 
 _READERS = {}
 
@@ -140,7 +143,7 @@ def _unknown(method_name, source, path_or_data, **kwargs):
     return unknowns[method_name](source, path_or_data, **kwargs)
 
 
-def reader(source, path, content_type=None):
+def reader(source, path, **kwargs):
     """Create the reader for a file/directory specified by path"""
     assert isinstance(path, str), source
 
@@ -175,7 +178,7 @@ def reader(source, path, content_type=None):
         source,
         path,
         magic=magic,
-        content_type=content_type,
+        **kwargs,
     )
 
 
@@ -188,7 +191,7 @@ def memory_reader(source, buffer):
     return _find_reader("memory_reader", source, buffer, magic=magic)
 
 
-def stream_reader(source, stream, memory):
+def stream_reader(source, stream, memory, content_type=None):
     """Create a reader for a stream"""
     magic = None
     if hasattr(stream, "peek") and callable(stream.peek):
@@ -206,4 +209,5 @@ def stream_reader(source, stream, memory):
         stream,
         magic=magic,
         memory=memory,
+        content_type=content_type,
     )

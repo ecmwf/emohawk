@@ -269,7 +269,10 @@ def _from_source(source, **kwargs):
         raise TypeError(f"got invalid keyword argument(s): {list(kwargs.keys())}")
 
     if not isinstance(source, (list, tuple)):
-        maker = StreamSourceMaker(source, stream_kwargs)
+        source = [source]
+
+    if len(source) == 1:
+        maker = StreamSourceMaker(source[0], stream_kwargs)
         return maker()
     else:
         sources = [StreamSourceMaker(s, stream_kwargs) for s in source]

@@ -191,10 +191,6 @@ class GribMultiFieldList(GribFieldList, MultiIndex):
 
 
 class GribFieldListInFiles(GribFieldList):
-    # Remote FieldLists (with urls) are also here,
-    # as the actual fieldlist is accessed on a file in cache.
-    # This class changes the interface (__getitem__ and __len__)
-    # into the interface (part and number_of_parts).
     def _getitem(self, n):
         if isinstance(n, int):
             part = self.part(n if n >= 0 else len(self) + n)

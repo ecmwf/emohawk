@@ -91,5 +91,5 @@ class DirectoryReader(Reader):
 
 
 def reader(source, path, *, magic=None, deeper_check=False, **kwargs):
-    if magic is None or os.path.isdir(path):
+    if magic is None and os.path.isdir(path):
         return DirectoryReader(source, path)

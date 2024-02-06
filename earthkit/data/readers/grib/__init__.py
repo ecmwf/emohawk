@@ -12,7 +12,7 @@ LOG = logging.getLogger(__name__)
 
 
 def _match_magic(magic, deeper_check):
-    if magic is not None:
+    if magic is not None and len(magic) > 0:
         type_id = b"GRIB"
         if not deeper_check:
             return len(magic) >= 4 and magic[:4] == type_id
@@ -21,11 +21,17 @@ def _match_magic(magic, deeper_check):
     return False
 
 
-def reader(source, path, *, magic=None, deeper_check=False, **kwargs):
+def _is_default(magic, content_type):
+    return (magic is None or len(magic) == 0) and (
+        content_type is None or len(content_type) == 0
+    )
+
+
+def reader(source, path, *, magic=None, deeper_check=False, parts=None, **kwargs):
     if _match_magic(magic, deeper_check):
         from .reader import GRIBReader
 
-        return GRIBReader(source, path)
+        return GRIBReader(source, path, parts=parts)
 
 
 def memory_reader(source, buffer, *, magic=None, deeper_check=False, **kwargs):
@@ -36,10 +42,16 @@ def memory_reader(source, buffer, *, magic=None, deeper_check=False, **kwargs):
 
 
 def stream_reader(
-    source, stream, magic=None, *, deeper_check=False, memory=False, **kwargs
+    source,
+    stream,
+    magic=None,
+    *,
+    deeper_check=False,
+    content_type=None,
+    memory=False,
+    **kwargs,
 ):
-    # by default we assume the stream is grib data
-    if magic is None or _match_magic(magic, deeper_check):
+    if _is_default(magic, content_type) or _match_magic(magic, deeper_check):
         from .memory import GribFieldListInMemory, GribStreamReader
 
         r = GribStreamReader(stream)

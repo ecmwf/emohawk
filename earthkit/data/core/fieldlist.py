@@ -1174,6 +1174,8 @@ class FieldList(Index):
         append: bool
             When it is true append data to the target file. Otherwise
             the target file be overwritten if already exists.
+        **kwargs: dict, optional
+            Other keyword arguments passed to :obj:`write`.
         """
         flag = "wb" if not append else "ab"
         with open(filename, flag) as f:
@@ -1186,6 +1188,8 @@ class FieldList(Index):
         ----------
         f: file object
             The target file object.
+        **kwargs: dict, optional
+            Other keyword arguments passed to the underlying field implementation.
         """
         for s in self:
             s.write(f, **kwargs)
