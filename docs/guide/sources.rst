@@ -426,7 +426,7 @@ ads
 cds
 ---
 
-.. py:function:: from_source("cds", dataset, *args, **kwargs)
+.. py:function:: from_source("cds", dataset, *args, prompt=True, **kwargs)
   :noindex:
 
   The ``cds`` source accesses the `Copernicus Climate Data Store`_ (CDS), using the cdsapi_ package. In addition to data retrieval, the request has post-processing options such as ``grid`` and ``area`` for regridding and sub-area extraction respectively. It can
@@ -434,6 +434,11 @@ cds
 
   :param str dataset: the name of the CDS dataset
   :param tuple *args: specify the request as dict. A sequence of dicts can be used to specify multiple requests.
+  :param bool prompt: when True it can offer a prompt to specify the credentials for cdsapi_ and write them into the default RC file ``~/.cdsapirc``. The prompt only appears when:
+
+    - no cdsapi_ RC file exists at the default location ``~/.cdsapirc``
+    - no cdsapi_ RC file exists at the location specified via the ``CDSAPI_RC`` environment variable
+    - no credentials specified via the ``CDSAPI_URL`` and ``CDSAPI_KEY`` environment variables
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves ERA5 reanalysis GRIB data for a subarea for 2 surface parameters. The request is specified using ``kwargs``:
@@ -607,7 +612,7 @@ fdb
 mars
 --------------
 
-.. py:function:: from_source("mars", *args, **kwargs)
+.. py:function:: from_source("mars", *args, prompt=True, **kwargs)
   :noindex:
 
   The ``mars`` source will retrieve data from the ECMWF MARS (Meteorological Archival and Retrieval System) archive. In addition
@@ -619,6 +624,11 @@ mars
   The MARS access is direct when the MARS client is installed (as at ECMWF), otherwise it will use the `web API`_. In order to use the `web API`_ you will need to register and retrieve an access token. For a more extensive documentation about MARS, please refer to the `MARS user documentation`_.
 
   :param tuple *args: positional arguments specifying the request as a dict
+  :param bool prompt: when True it can offer a prompt to specify the credentials for `web API`_ and write them into the default RC file ``~/.ecmwfapirc``. The prompt only appears when:
+
+    - no `web API`_ RC file exists at the default location ``~/.ecmwfapirc``
+    - no `web API`_ RC file exists at the location specified via the ``ECMWF_API_RC_FILE`` environment variable
+    - no credentials specified via the ``ECMWF_API_URL`` and ``ECMWF_API_KEY``  environment variables
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves analysis GRIB data for a subarea for 2 surface parameters:
@@ -701,13 +711,18 @@ polytope
 wekeo
 -----
 
-.. py:function:: from_source("wekeo", dataset, *args, **kwargs)
+.. py:function:: from_source("wekeo", dataset, *args, prompt=True, **kwargs)
   :noindex:
 
   `WEkEO`_ is the Copernicus DIAS reference service for environmental data and virtual processing environments. The ``wekeo`` source provides access to `WEkEO`_ using the WEkEO grammar. The retrieval is based on the hda_ Python API.
 
   :param str dataset: the name of the WEkEO dataset
   :param tuple *args: specify the request as a dict
+  :param bool prompt: when True it can offer a prompt to specify the credentials for hda_ and write them into the default RC file ``~/.hdarc``. The prompt only appears when:
+
+    - no hda_ RC file exists at the default location ``~/.hdarc``
+    - no hda_ RC file exists at the location specified via the ``HDA_RC`` environment variable
+    - no credentials specified via the ``HDA_URL``, ``HDA_USER`` and ``HDA_PASSWORD`` environment variables
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves Normalized Difference Vegetation Index data derived from EO satellite imagery in NetCDF format:
@@ -746,13 +761,18 @@ wekeo
 wekeocds
 --------
 
-.. py:function:: from_source("wekeocds", dataset, *args, **kwargs)
+.. py:function:: from_source("wekeocds", dataset, *args, prompt=True, **kwargs)
   :noindex:
 
   `WEkEO`_ is the Copernicus DIAS reference service for environmental data and virtual processing environments. The ``wekeocds`` source provides access to `Copernicus Climate Data Store`_ (CDS) datasets served on `WEkEO`_ using the `cdsapi`_ grammar. The retrieval is based on the hda_ Python API.
 
   :param str dataset: the name of the WEkEO dataset
   :param tuple *args: specify the request as a dict
+  :param bool prompt: when True it can offer a prompt to specify the credentials for hda_ and write them into the default RC file ``~/.hdarc``. The prompt only appears when:
+
+    - no hda_ RC file exists at the default location ``~/.hdarc``
+    - no hda_ RC file exists at the location specified via the ``HDA_RC`` environment variable
+    - no credentials specified via the ``HDA_URL``, ``HDA_USER`` and ``HDA_PASSWORD`` environment variables
   :param dict **kwargs: other keyword arguments specifying the request
 
   The following example retrieves ERA5 surface data for multiple days in GRIB format:

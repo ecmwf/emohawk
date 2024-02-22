@@ -12,8 +12,8 @@
 
 import pytest
 
-from earthkit.data.sources.file import FileSource
-from earthkit.data.sources.url import Url
+from earthkit.data.sources.file import FileSourcePathAndParts
+from earthkit.data.sources.url import UrlSourcePathAndParts
 from earthkit.data.utils.parts import SimplePart
 
 
@@ -21,6 +21,8 @@ from earthkit.data.utils.parts import SimplePart
     "paths,parts,expected_paths,expected_parts",
     [
         ("a.grib", None, "a.grib", None),
+        (["a.grib"], [None], "a.grib", None),
+        ("a.grib", [None], "a.grib", None),
         (["a.grib", None], None, "a.grib", None),
         (["a.grib", [(0, 150)]], None, "a.grib", (SimplePart(0, 150),)),
         (["a.grib", (0, 150)], None, "a.grib", (SimplePart(0, 150),)),
@@ -80,16 +82,84 @@ from earthkit.data.utils.parts import SimplePart
         ),
     ],
 )
-def test_prepare_file_parts(paths, parts, expected_paths, expected_parts):
-    res_paths, res_parts = FileSource._paths_and_parts(paths, parts)
+def test_file_parts_prepare(paths, parts, expected_paths, expected_parts):
+    p = FileSourcePathAndParts(paths, parts)
+    res_paths, res_parts = p.path, p.parts
     assert res_paths == expected_paths
     assert res_parts == expected_parts
+
+
+def test_file_parts_update_1():
+    p = FileSourcePathAndParts("", None)
+    assert p.path == ""
+    assert p.parts is None
+
+    p.update("a.grib")
+    assert p.path == "a.grib"
+    assert p.parts is None
+
+    p.update(["a.grib", "b.grib"])
+    assert p.path == ["a.grib", "b.grib"]
+    assert p.parts == [None, None]
+
+
+def test_file_parts_update_2():
+    p = FileSourcePathAndParts("", None)
+    assert p.path == ""
+    assert p.parts is None
+
+    p.update(["a.grib"])
+    assert p.path == ["a.grib"]
+    assert p.parts == [None]
+
+    p.update("a.grib")
+    assert p.path == "a.grib"
+    assert p.parts is None
+
+
+def test_file_parts_iter_1():
+    p = FileSourcePathAndParts("a.grib", None)
+    assert p.path == "a.grib"
+    assert p.parts is None
+
+    for pt, pr in p:
+        pt == "a.grib"
+        pr is None
+
+
+def test_file_parts_iter_2():
+    p = FileSourcePathAndParts(["a.grib", "b.grib"], None)
+    assert p.path == ["a.grib", "b.grib"]
+    assert p.parts == [None, None]
+
+    ref_path = ["a.grib", "b.grib"]
+    ref_parts = [None, None]
+
+    i = 0
+    for pt, pr in p:
+        pt == ref_path[i]
+        pr is ref_parts[i]
+        i += 1
+
+
+def test_file_parts_zipped_1():
+    p = FileSourcePathAndParts("a.grib", None)
+    assert p.path == "a.grib"
+    assert p.parts is None
+    assert p.zipped() == [("a.grib", None)]
+
+
+def test_file_parts_zipped_2():
+    p = FileSourcePathAndParts(["a.grib", "b.grib"], None)
+    assert p.path == ["a.grib", "b.grib"]
+    assert p.parts == [None, None]
+    assert p.zipped() == [("a.grib", None), ("b.grib", None)]
 
 
 @pytest.mark.parametrize(
     "urls,parts,expected_values",
     [
-        ("a.grib", None, [["a.grib", None]]),
+        ("a.grib", None, [("a.grib", None)]),
         (["a.grib", None], None, [("a.grib", None)]),
         (["a.grib", [(0, 150)]], None, [("a.grib", (SimplePart(0, 150),))]),
         (["a.grib", (0, 150)], None, [("a.grib", (SimplePart(0, 150),))]),
@@ -153,8 +223,9 @@ def test_prepare_file_parts(paths, parts, expected_paths, expected_parts):
         ),
     ],
 )
-def test_prepare_url_parts(urls, parts, expected_values):
-    res = Url._urls_and_parts(urls, parts)
+def test_url_parts_prepare(urls, parts, expected_values):
+    p = UrlSourcePathAndParts(urls, parts)
+    res = p.zipped()
     assert res == expected_values
 
 

@@ -52,17 +52,22 @@ class MarsRetriever(ECMWFApi):
             if os.path.exists(StandaloneMarsClient.EXE):
                 return StandaloneMarsClient()
 
-        prompt = MARSAPIKeyPrompt()
-        prompt.check()
+        if self.prompt:
+            prompt = MARSAPIKeyPrompt()
+            prompt.check()
 
-        try:
-            return ecmwfapi.ECMWFService("mars")
-        except Exception as e:
-            if ".ecmwfapirc" in str(e):
-                prompt.ask_user_and_save()
+            try:
                 return ecmwfapi.ECMWFService("mars")
+            except Exception as e:
+                if ".ecmwfapirc" in str(e) or not prompt.env_configured():
+                    LOG.warning(e)
+                    LOG.exception(f"Could not load ecmwf api (mars) client. {e}")
+                    prompt.ask_user_and_save()
+                    return ecmwfapi.ECMWFService("mars")
 
-            raise
+                raise
+        else:
+            return ecmwfapi.ECMWFService("mars")
 
 
 source = MarsRetriever

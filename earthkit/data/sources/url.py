@@ -16,7 +16,7 @@ from earthkit.data.core.caching import cache_file
 from earthkit.data.core.settings import SETTINGS
 from earthkit.data.core.statistics import record_statistics
 from earthkit.data.utils import progress_bar
-from earthkit.data.utils.parts import check_urls_and_parts, ensure_urls_and_parts
+from earthkit.data.utils.parts import PathAndParts
 
 from .file import FileSource
 
@@ -108,6 +108,10 @@ def download_and_cache(
     return path
 
 
+class UrlSourcePathAndParts(PathAndParts):
+    compress = True
+
+
 class UrlBase(FileSource):
     def __init__(
         self,
@@ -126,9 +130,8 @@ class UrlBase(FileSource):
     ):
         super().__init__(filter=filter, merger=merger)
 
-        self.url = url
+        self._url_and_parts = UrlSourcePathAndParts(url, parts)
         self.chunk_size = chunk_size
-        self.parts = parts
         self.http_headers = http_headers
         self.auth = auth
         self.verify = verify
@@ -137,11 +140,11 @@ class UrlBase(FileSource):
         self.stream = stream
         self._kwargs = kwargs
         LOG.debug(
-            f"url={self.url} parts={self.parts} auth={self.auth} _kwargs={self._kwargs}"
+            f"url={self.url} url_parts={self.url_parts} auth={self.auth} _kwargs={self._kwargs}"
         )
 
     def connect_to_mirror(self, mirror):
-        return mirror.connection_for_url(self, self.url, self.parts)
+        return mirror.connection_for_url(self, self.url, self.url_parts)
 
     def prepare_headers(self, url):
         headers = {}
@@ -155,6 +158,14 @@ class UrlBase(FileSource):
             headers = None
 
         return headers
+
+    @property
+    def url(self):
+        return self._url_and_parts.path
+
+    @property
+    def url_parts(self):
+        return self._url_and_parts.parts
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.url})"
@@ -191,21 +202,18 @@ class Url(UrlBase):
         # TODO: re-enable this feature
         extension = None
 
-        # put urls and parts into one list
-        self.urls_and_parts = self._urls_and_parts(self.url, self.parts)
-
         if not self.stream:
             self.update_if_out_of_date = update_if_out_of_date
 
             LOG.debug(
                 (
-                    f"urls_and_parts={self.urls_and_parts} auth={self.auth}) "
+                    f"url={self.url} url_parts={self.url_parts} auth={self.auth}) "
                     f"http_headers={self.http_headers}"
                     f" _kwargs={self._kwargs}"
                 )
             )
             self.downloader = Downloader(
-                self.urls_and_parts,
+                self._url_and_parts.zipped(),
                 chunk_size=self.chunk_size,
                 timeout=SETTINGS.get("url-download-timeout"),
                 verify=self.verify,
@@ -218,8 +226,6 @@ class Url(UrlBase):
                 override_target_file=False,
                 download_file_extension=".download",
             )
-
-            print(f"downloader={self.downloader}")
 
             if extension and extension[0] != ".":
                 extension = "." + extension
@@ -240,7 +246,7 @@ class Url(UrlBase):
 
             self.path = self.cache_file(
                 download,
-                dict(url=self.urls_and_parts),
+                dict(url=self.url, parts=self.url_parts),
                 extension=extension,
                 force=force,
             )
@@ -254,7 +260,7 @@ class Url(UrlBase):
         if self.stream:
             # # create one stream source per url
             s = []
-            for url, parts in self.urls_and_parts:
+            for url, parts in self._url_and_parts:
                 s.append(
                     SingleUrlStream(
                         url,
@@ -271,43 +277,7 @@ class Url(UrlBase):
 
             return _from_source(s, **self._kwargs)
         else:
-            # the underlying file source also try to use parts! So
-            # it has to be cleared to avoid using it again on the
-            # downloaded file!
-            self.parts = None
             return super().mutate()
-
-    @staticmethod
-    def _urls_and_parts(urls, parts):
-        """Preprocess urls and parts.
-
-        Parameters
-        ----------
-        urls: str or list/tuple
-            The url(s). When it is a sequence either each
-            item is a url (str), or a pair of a url and :ref:`parts <parts>`.
-        parts: part,list/tuple of parts or None.
-            The :ref:`parts <parts>`.
-
-        Returns
-        -------
-        list
-            Each item is a pair of url and part in a format expected by
-            ``multiurl``.  A part can be a
-            SimplePart, list/tuple of SimpleParts or None.
-
-        """
-        if parts is None:
-            if isinstance(urls, str):
-                return [[urls, None]]
-            elif isinstance(urls, (list, tuple)) and all(
-                isinstance(p, str) for p in urls
-            ):
-                return [(u, None) for u in urls]
-
-        urls = check_urls_and_parts(urls, parts)
-        urls_and_parts = ensure_urls_and_parts(urls, parts, compress=False)
-        return urls_and_parts
 
     def out_of_date(self, url, path, cache_data):
         if SETTINGS.get("check-out-of-date-urls") is False:
@@ -473,7 +443,7 @@ class SingleUrlStream(UrlBase):
         downloader = Downloader(
             self.url,
             chunk_size=self.chunk_size,
-            parts=self.parts,
+            parts=self.url_parts,
             timeout=SETTINGS.get("url-download-timeout"),
             verify=self.verify,
             range_method=self.range_method,

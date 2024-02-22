@@ -21,13 +21,15 @@ NO_ADS = not os.path.exists(os.path.expanduser("~/.adsapirc"))
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_ADS, reason="No access to ADS")
-def test_ads_grib_1():
+@pytest.mark.parametrize("prompt", [True, False])
+def test_ads_grib_1_prompt(prompt):
     s = from_source(
         "ads",
         "cams-global-reanalysis-eac4",
         variable=["particulate_matter_10um", "particulate_matter_1um"],
         area=[50, -50, 20, 50],
         date="2012-12-12",
+        prompt=prompt,
         time="12:00",
     )
     assert len(s) == 2

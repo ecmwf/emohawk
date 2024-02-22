@@ -18,6 +18,8 @@ PROJ_PARAMS_TO_KWARGS = {
     "proj": "proj_name",
 }
 
+STANDARD_PARALLELS = ["lat_1", "lat_2"]
+
 PROJ_PARAMS_TO_GLOBE_KWARGS = {
     "a": "semimajor_axis",
     "b": "semiminor_axis",
@@ -62,5 +64,11 @@ def to_projection_kwargs(proj_params):
         if k in PROJ_PARAMS_TO_KWARGS
     }
     kwargs["globe"] = globe_params
+
+    standard_parallels = tuple(
+        proj_params[param] for param in STANDARD_PARALLELS if param in proj_params
+    )
+    if standard_parallels:
+        kwargs["standard_parallels"] = standard_parallels
 
     return kwargs

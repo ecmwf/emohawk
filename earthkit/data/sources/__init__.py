@@ -33,6 +33,8 @@ class Source(Base):
     _dataset = None
     _parent = None
 
+    source_filename = None
+
     def __init__(self, **kwargs):
         self._kwargs = kwargs
 

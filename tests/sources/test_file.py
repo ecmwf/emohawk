@@ -13,6 +13,8 @@
 import logging
 import os
 
+import pytest
+
 from earthkit.data import from_source
 from earthkit.data.core.temporary import temp_directory
 from earthkit.data.testing import earthkit_examples_file
@@ -28,9 +30,77 @@ def test_file_source_grib():
     assert len(s) == 2
 
 
+def test_file_source_grib_save():
+    s = from_source("file", earthkit_examples_file("test.grib"))
+    with temp_directory() as tmpdir:
+        # Check file save to assigned filename
+        s.save(os.path.join(tmpdir, "test2.grib"))
+        assert os.path.isfile(os.path.join(tmpdir, "test2.grib"))
+        # Check file can be saved in current dir with detected filename:
+        here = os.curdir
+        os.chdir(tmpdir)
+        s.save()
+        assert os.path.isfile("test.grib")
+        os.chdir(here)
+
+
+def test_file_source_grib_no_overwrite():
+    _s = from_source("file", earthkit_examples_file("test.grib"))
+    with temp_directory() as tmpdir:
+        os.chdir(tmpdir)
+        # Save the file locally
+        _s.save("test.grib")
+        # Open the local file
+        s = from_source("file", "test.grib")
+        with pytest.warns(
+            UserWarning,
+            match="Earhtkit refusing to overwrite the file we are currently reading",
+        ):
+            s.save("test.grib")
+        with pytest.warns(
+            UserWarning,
+            match="Earhtkit refusing to overwrite the file we are currently reading",
+        ):
+            s.save()
+
+
 def test_file_source_netcdf():
     s = from_source("file", earthkit_examples_file("test.nc"))
     assert len(s) == 2
+
+
+def test_file_source_netcdf_save():
+    s = from_source("file", earthkit_examples_file("test.nc"))
+    with temp_directory() as tmpdir:
+        # Check file save to assigned filename
+        s.save(os.path.join(tmpdir, "test2.nc"))
+        assert os.path.isfile(os.path.join(tmpdir, "test2.nc"))
+        # Check file can be saved in current dir with detected filename:
+        here = os.curdir
+        os.chdir(tmpdir)
+        s.save()
+        assert os.path.isfile("test.nc")
+        os.chdir(here)
+
+
+def test_file_source_netcdf_no_overwrite():
+    _s = from_source("file", earthkit_examples_file("test.nc"))
+    with temp_directory() as tmpdir:
+        os.chdir(tmpdir)
+        # Save the file locally
+        _s.save("test.nc")
+        # Open the local file
+        s = from_source("file", "test.nc")
+        with pytest.warns(
+            UserWarning,
+            match="Earhtkit refusing to overwrite the file we are currently reading",
+        ):
+            s.save("test.nc")
+        with pytest.warns(
+            UserWarning,
+            match="Earhtkit refusing to overwrite the file we are currently reading",
+        ):
+            s.save()
 
 
 def test_file_source_odb():

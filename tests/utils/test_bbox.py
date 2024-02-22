@@ -250,6 +250,13 @@ def test_bbox_union_with():
     assert b == BoundingBox(north=60, west=-20, south=-40, east=55)
 
 
+def test_bbox_make_invalid():
+    import numpy as np
+
+    b = BoundingBox.make_invalid()
+    assert b.as_tuple() == (np.nan, np.nan, np.nan, np.nan)
+
+
 if __name__ == "__main__":
     from earthkit.data.testing import main
 

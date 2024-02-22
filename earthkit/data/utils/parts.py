@@ -88,6 +88,8 @@ def check_urls_and_parts(urls, parts):
 def _ensure_parts(parts):
     if parts is None:
         return None
+    if parts == [None]:
+        return None
     if len(parts) == 2 and isinstance(parts[0], int) and isinstance(parts[1], int):
         parts = [parts]
     parts = [SimplePart(offset, length) for offset, length in parts]
@@ -149,3 +151,66 @@ def compress_parts(parts):
         result.append((offset, length))
         last = offset + length
     return tuple(SimplePart(offset, length) for offset, length in result)
+
+
+class PathAndParts:
+    compress = None
+
+    def __init__(self, path, parts):
+        self.path, self.parts = self._parse(path, parts)
+
+    def is_empty(self):
+        return not (self.parts is not None and any(x is not None for x in self.parts))
+
+    def update(self, path):
+        if self.path != path:
+            self.path, self.parts = self._parse(path, self.parts)
+
+    def _parse(self, paths, parts):
+        """Preprocess paths and parts.
+
+        Parameters
+        ----------
+        paths: str or list/tuple
+            The path(s). When it is a sequence either each
+            item is a path (str), or a pair of a path and :ref:`parts <parts>`.
+        parts: part,list/tuple of parts or None.
+            The :ref:`parts <parts>`.
+
+        Returns
+        -------
+        str or list of str
+            The path or paths.
+        SimplePart, list or tuple, None
+            The parts (one for each path). A part can be a single
+            SimplePart, a list/tuple of SimpleParts or None.
+
+        """
+        if parts is None:
+            if isinstance(paths, str):
+                return paths, None
+            elif isinstance(paths, (list, tuple)) and all(
+                isinstance(p, str) for p in paths
+            ):
+                return paths, [None] * len(paths)
+
+        paths = check_urls_and_parts(paths, parts)
+        paths_and_parts = ensure_urls_and_parts(paths, parts, compress=self.compress)
+
+        paths, parts = zip(*paths_and_parts)
+        assert len(paths) == len(parts)
+        if len(paths) == 1:
+            return paths[0], parts[0]
+        else:
+            return paths, parts
+
+    def zipped(self):
+        return [(pt, pr) for pt, pr in self]
+
+    def __iter__(self):
+        path = self.path
+        parts = self.parts
+        if isinstance(self.path, str):
+            path = [self.path]
+            parts = [self.parts]
+        return zip(path, parts)

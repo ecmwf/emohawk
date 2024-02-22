@@ -7,7 +7,6 @@
 # nor does it submit to any jurisdiction.
 #
 
-import os
 
 import cdsapi
 import yaml
@@ -41,19 +40,13 @@ class ADSAPIKeyPrompt(APIKeyPrompt):
     def save(self, input, file):
         yaml.dump(input, file, default_flow_style=False)
 
+    def load(self, file):
+        return yaml.safe_load(file.read())
+
 
 def client():
     prompt = ADSAPIKeyPrompt()
-    prompt.check()
-
-    path = os.path.expanduser(prompt.rcfile)
-
-    if not os.path.exists(path):
-        prompt.ask_user_and_save()
-
-    with open(path) as f:
-        rc = yaml.safe_load(f.read())
-
+    rc = prompt.check(load=True)
     return cdsapi.Client(**rc)
 
 

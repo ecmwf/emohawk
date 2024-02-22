@@ -18,10 +18,12 @@ from earthkit.data.testing import NO_HDA
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_HDA, reason="No access to WEKEO")
-def test_wekeo_download():
+@pytest.mark.parametrize("prompt", [True, False])
+def test_wekeo_download(prompt):
     s = from_source(
         "wekeo",
         "EO:CLMS:DAT:CGLS_GLOBAL_NDVI300_V1_333M",
+        prompt=prompt,
         request={
             "datasetId": "EO:CLMS:DAT:CGLS_GLOBAL_NDVI300_V1_333M",
             "dateRangeSelectValues": [

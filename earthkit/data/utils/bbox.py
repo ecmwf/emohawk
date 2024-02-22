@@ -77,6 +77,12 @@ class BoundingBox:
 
         return self.as_tuple() == other.as_tuple()
 
+    @classmethod
+    def make_invalid(cls):
+        import numpy as np
+
+        return cls(north=np.nan, west=np.nan, south=np.nan, east=np.nan)
+
     @property
     def width(self):
         """number: Returns the East-West size (degrees)"""
@@ -236,6 +242,14 @@ class BoundingBox:
 
     def as_dict(self):
         return dict(north=self.north, west=self.west, south=self.south, east=self.east)
+
+    @classmethod
+    def from_geopandas(cls, gdf):
+        try:
+            bb = gdf.crs.area_of_use.bounds
+            return BoundingBox(east=bb[0], south=bb[1], west=bb[2], north=bb[3])
+        except AttributeError:
+            return BoundingBox.make_invalid()
 
 
 def bounding_box(obj):

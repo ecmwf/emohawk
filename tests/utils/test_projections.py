@@ -35,6 +35,16 @@ def test_from_proj_string_laea():
     }
 
 
+def test_from_proj_string_lcc():
+    proj_string = "+proj=lcc +lon_0=-90 +lat_1=33 +lat_2=45"
+    projection = projections.Projection.from_proj_string(proj_string)
+    assert isinstance(projection, projections.LambertConformal)
+    assert projection.parameters == {
+        "central_longitude": -90.0,
+        "standard_parallels": (33.0, 45.0),
+    }
+
+
 def test_from_cf_grid_mapping_aea():
     grid_mapping = {
         "grid_mapping_name": "albers_conical_equal_area",

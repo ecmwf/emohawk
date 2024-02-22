@@ -13,7 +13,7 @@ from collections import defaultdict
 
 from earthkit.data.core import Base
 from earthkit.data.core.index import Index
-from earthkit.data.decorators import cached_method
+from earthkit.data.decorators import cached_method, detect_out_filename
 from earthkit.data.utils.metadata import metadata_argument
 
 
@@ -1164,16 +1164,17 @@ class FieldList(Index):
                 )
         return False
 
+    @detect_out_filename
     def save(self, filename, append=False, **kwargs):
         r"""Write all the fields into a file.
 
         Parameters
         ----------
-        filename: str
-            The target file path.
-        append: bool
+        filename: str, optional
+            The target file path, if not defined attempts will be made to detect the filename
+        append: bool, optional
             When it is true append data to the target file. Otherwise
-            the target file be overwritten if already exists.
+            the target file be overwritten if already exists. Default is False
         **kwargs: dict, optional
             Other keyword arguments passed to :obj:`write`.
         """

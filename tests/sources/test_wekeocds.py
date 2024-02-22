@@ -18,7 +18,8 @@ from earthkit.data.testing import NO_HDA
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_HDA, reason="No access to WEKEO")
-def test_wekeo_grib_1():
+@pytest.mark.parametrize("prompt", [True, False])
+def test_wekeo_grib_1_prompt(prompt):
     s = from_source(
         "wekeocds",
         "EO:ECMWF:DAT:REANALYSIS_ERA5_SINGLE_LEVELS",
@@ -28,6 +29,7 @@ def test_wekeo_grib_1():
         month=["12"],
         day=["12"],
         time=["13:00"],
+        prompt=prompt,
         format="grib",
     )
     assert len(s) == 2

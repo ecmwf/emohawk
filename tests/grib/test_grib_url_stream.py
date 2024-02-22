@@ -409,7 +409,7 @@ def test_grib_single_url_stream_parts(path, parts, expected_meta):
         ),
     ],
 )
-def test_grib_single_url_stream_parts_as_arg(parts, expected_meta):
+def test_grib_single_url_stream_parts_as_arg_valid(parts, expected_meta):
     ds = from_source(
         "url",
         [earthkit_remote_test_data_file("examples/test6.grib"), parts],

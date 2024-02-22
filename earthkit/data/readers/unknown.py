@@ -15,10 +15,19 @@ LOG = logging.getLogger(__name__)
 
 
 class UnknownReaderBase(Reader):
-    def __init__(self, source, path="", magic=None, content_type=None, **kwargs):
+    def __init__(
+        self,
+        source,
+        path="",
+        magic=None,
+        content_type=None,
+        skip_warning=False,
+        **kwargs,
+    ):
         super().__init__(source, path)
         self.magic = magic
         self.content_type = content_type
+        self.skip_warning = skip_warning
 
     def ignore(self):
         # Used by multi-source
@@ -31,31 +40,34 @@ class UnknownReaderBase(Reader):
 class UnknownReader(UnknownReaderBase):
     def __init__(self, source, path, **kwargs):
         super().__init__(source, path=path, **kwargs)
-        LOG.warning(
-            (
-                f"Unknown file type, no reader available. "
-                f"path={path} magic={self.magic} content_type={self.content_type}"
+        if not self.skip_warning:
+            LOG.warning(
+                (
+                    f"Unknown file type, no reader available. "
+                    f"path={path} magic={self.magic} content_type={self.content_type}"
+                )
             )
-        )
 
 
 class UnknownStreamReader(UnknownReaderBase):
     def __init__(self, source, data, **kwargs):
         super().__init__(source, **kwargs)
-        LOG.warning(
-            (
-                f"Unknown stream data type, no reader available. "
-                f"magic={self.magic} content_type={self.content_type}"
+        if not self.skip_warning:
+            LOG.warning(
+                (
+                    f"Unknown stream data type, no reader available. "
+                    f"magic={self.magic} content_type={self.content_type}"
+                )
             )
-        )
 
 
 class UnknownMemoryReader(UnknownReaderBase):
     def __init__(self, source, data, **kwargs):
         super().__init__(source, **kwargs)
-        LOG.warning(
-            (
-                f"Unknown memory data type, no reader available. "
-                f"magic={self.magic} content_type={self.content_type}"
+        if not self.skip_warning:
+            LOG.warning(
+                (
+                    f"Unknown memory data type, no reader available. "
+                    f"magic={self.magic} content_type={self.content_type}"
+                )
             )
-        )

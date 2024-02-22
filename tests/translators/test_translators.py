@@ -18,6 +18,7 @@ import pandas as pd
 import xarray as xr
 
 from earthkit.data import from_source, transform, translators, wrappers
+from earthkit.data.testing import earthkit_test_data_file
 from earthkit.data.translators import ndarray as ndtranslator
 from earthkit.data.translators import pandas as pdtranslator
 from earthkit.data.translators import string as strtranslator
@@ -133,7 +134,7 @@ def test_gpd_dataframe_translator():
 
 def test_transform_from_grib_file():
     # transform grib-based data object
-    f = from_source("file", "tests/data/test_single.grib")
+    f = from_source("file", earthkit_test_data_file("test_single.grib"))
 
     # np.ndarray
     transformed = transform(f, np.ndarray)

@@ -115,6 +115,12 @@ class LambertAzimuthalEqualArea(Projection):
     CARTOPY_CRS = "LambertAzimuthalEqualArea"
 
 
+class LambertConformal(Projection):
+    PROJ_NAME = "lcc"
+    CF_GRID_MAPPING_NAME = "lambert_conformal_conic"
+    CARTOPY_CRS = "LambertConformal"
+
+
 class AlbersEqualArea(Projection):
     PROJ_NAME = "aea"
     CF_GRID_MAPPING_NAME = "albers_conical_equal_area"
@@ -131,6 +137,7 @@ _PROJECTIONS = [
     EquidistantCylindrical,
     LongLat,
     LambertAzimuthalEqualArea,
+    LambertConformal,
     AlbersEqualArea,
     Mercator,
 ]

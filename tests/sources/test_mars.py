@@ -18,13 +18,15 @@ from earthkit.data.testing import NO_MARS
 @pytest.mark.long_test
 @pytest.mark.download
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
-def test_mars_grib_1():
+@pytest.mark.parametrize("prompt", [True, False])
+def test_mars_grib_1_prompt(prompt):
     s = from_source(
         "mars",
         param=["2t", "msl"],
         levtype="sfc",
         area=[50, -50, 20, 50],
         grid=[2, 2],
+        prompt=prompt,
         date="2023-05-10",
     )
     assert len(s) == 2

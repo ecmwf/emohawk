@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import threading
+import warnings
 
 from earthkit.data.utils import load_json_or_yaml
 from earthkit.data.utils.availability import Availability
@@ -31,6 +32,38 @@ def dict_args(func):
                 m.append(q)
         p.update(kwargs)
         return func(*m, **p)
+
+    return wrapped
+
+
+def detect_out_filename(func):
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        # Detect filename:
+        if len(args) == 0:
+            for att in ["source_filename", "path"]:
+                if hasattr(self, att) and getattr(self, att) is not None:
+                    args = [os.path.basename(getattr(self, att))]
+                    break
+            else:
+                raise TypeError("Please provide an output filename")
+
+        # Ensure we do not overwrite file that is being read:
+        if (
+            args[0] is not None
+            and os.path.isfile(args[0])
+            and hasattr(self, "path")
+            and self.path is not None
+            and os.path.samefile(args[0], self.path)
+        ):
+            warnings.warn(
+                UserWarning(
+                    f"Earhtkit refusing to overwrite the file we are currently reading: {args[0]}"
+                )
+            )
+            return
+
+        return func(self, *args, **kwargs)
 
     return wrapped
 

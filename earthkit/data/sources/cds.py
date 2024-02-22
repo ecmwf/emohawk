@@ -6,8 +6,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 #
-import collections.abc
+
 import itertools
+import logging
 import sys
 from functools import cached_property
 
@@ -16,7 +17,7 @@ import yaml
 
 from earthkit.data.core.thread import SoftThreadPool
 from earthkit.data.decorators import normalize
-from earthkit.data.utils import tqdm
+from earthkit.data.utils import ensure_iterable, tqdm
 
 from .file import FileSource
 from .prompt import APIKeyPrompt
@@ -34,10 +35,7 @@ else:
             yield batch
 
 
-def ensure_iterable(obj):
-    if isinstance(obj, str) or not isinstance(obj, collections.abc.Iterable):
-        return [obj]
-    return obj
+LOG = logging.getLogger(__name__)
 
 
 class CDSAPIKeyPrompt(APIKeyPrompt):
@@ -61,23 +59,33 @@ class CDSAPIKeyPrompt(APIKeyPrompt):
     ]
 
     rcfile = "~/.cdsapirc"
+    rcfile_env = "CDSAPI_RC"
+    config_env = ("CDSAPI_URL", "CDSAPI_KEY")
 
     def save(self, input, file):
         yaml.dump(input, file, default_flow_style=False)
 
+    def load(self, file):
+        return yaml.safe_load(file.read())
 
-def client():
-    prompt = CDSAPIKeyPrompt()
-    prompt.check()
 
-    try:
-        return cdsapi.Client()
-    except Exception as e:
-        if ".cdsapirc" in str(e):
-            prompt.ask_user_and_save()
+def client(use_prompt):
+    if use_prompt:
+        prompt = CDSAPIKeyPrompt()
+        prompt.check()
+
+        try:
             return cdsapi.Client()
+        except Exception as e:
+            if ".cdsapirc" in str(e) or not prompt.has_config_env():
+                LOG.warning(e)
+                LOG.exception(f"Could not load cds api client. {e}")
+                prompt.ask_user_and_save()
+                return cdsapi.Client()
 
-        raise
+            raise
+    else:
+        return cdsapi.Client()
 
 
 EXTENSIONS = {
@@ -91,11 +99,10 @@ class CdsRetriever(FileSource):
     CdsRetriever
     """
 
-    def client(self):
-        return client()
-
-    def __init__(self, dataset, *args, **kwargs):
+    def __init__(self, dataset, *args, prompt=True, **kwargs):
         super().__init__()
+
+        self.prompt = prompt
 
         assert isinstance(dataset, str)
         if args and kwargs:
@@ -108,7 +115,7 @@ class CdsRetriever(FileSource):
         assert all(isinstance(request, dict) for request in args)
         self._args = args
 
-        self.client()  # Trigger password prompt before thraeding
+        self.client()  # Trigger password prompt before threading
 
         nthreads = min(self.settings("number-of-download-threads"), len(self.requests))
 
@@ -125,13 +132,17 @@ class CdsRetriever(FileSource):
 
     def _retrieve(self, dataset, request):
         def retrieve(target, args):
-            self.client().retrieve(args[0], args[1], target)
+            print(f"RETRIEVE={args}")
+            cds_result = self.client().retrieve(args[0], args[1])
+            self.source_filename = cds_result.location.split("/")[-1]
+            cds_result.download(target=target)
 
-        return self.cache_file(
+        return_object = self.cache_file(
             retrieve,
             (dataset, request),
             extension=EXTENSIONS.get(request.get("format"), ".cache"),
         )
+        return return_object
 
     @staticmethod
     @normalize("date", "date-list(%Y-%m-%d)")
@@ -157,6 +168,9 @@ class CdsRetriever(FileSource):
                 subrequest = dict(zip(split_on, values))
                 requests.append(request | subrequest)
         return requests
+
+    def client(self):
+        return client(self.prompt)
 
 
 source = CdsRetriever

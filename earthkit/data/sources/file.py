@@ -14,12 +14,17 @@ import os
 
 from earthkit.data import from_source
 from earthkit.data.core.caching import CACHE
+from earthkit.data.decorators import detect_out_filename
 from earthkit.data.readers import reader
-from earthkit.data.utils.parts import check_urls_and_parts, ensure_urls_and_parts
+from earthkit.data.utils.parts import PathAndParts
 
 from . import Source
 
 LOG = logging.getLogger(__name__)
+
+
+class FileSourcePathAndParts(PathAndParts):
+    compress = False
 
 
 class FileSourceMeta(type(Source), type(os.PathLike)):
@@ -38,10 +43,10 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
         Source.__init__(self, **kwargs)
         self.filter = filter
         self.merger = merger
-        self.path, self.parts = self._paths_and_parts(path, parts)
+        self._path_and_parts = FileSourcePathAndParts(path, parts)
 
         if self._kwargs.get("indexing", False):
-            if self.parts is not None and any(x is not None for x in self.parts):
+            if not self._path_and_parts.is_empty():
                 raise ValueError("Cannot specify parts when indexing is enabled!")
 
     def mutate(self):
@@ -125,6 +130,7 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     def values(self):
         return self._reader.values
 
+    @detect_out_filename
     def save(self, path, **kwargs):
         return self._reader.save(path, **kwargs)
 
@@ -187,44 +193,17 @@ class FileSource(Source, os.PathLike, metaclass=FileSourceMeta):
     def statistics(self, **kwargs):
         return self._reader.statistics(**kwargs)
 
-    @staticmethod
-    def _paths_and_parts(paths, parts):
-        """Preprocess paths and parts.
+    @property
+    def path(self):
+        return self._path_and_parts.path
 
-        Parameters
-        ----------
-        paths: str or list/tuple
-            The path(s). When it is a sequence either each
-            item is a path (str), or a pair of a path and :ref:`parts <parts>`.
-        parts: part,list/tuple of parts or None.
-            The :ref:`parts <parts>`.
+    @path.setter
+    def path(self, v):
+        self._path_and_parts.update(v)
 
-        Returns
-        -------
-        str or list of str
-            The path or paths.
-        SimplePart, list or tuple, None
-            The parts (one for each path). A part can be a single
-            SimplePart, a list/tuple of SimpleParts or None.
-
-        """
-        if parts is None:
-            if isinstance(paths, str):
-                return paths, None
-            elif isinstance(paths, (list, tuple)) and all(
-                isinstance(p, str) for p in paths
-            ):
-                return paths, [None] * len(paths)
-
-        paths = check_urls_and_parts(paths, parts)
-        paths_and_parts = ensure_urls_and_parts(paths, parts, compress=True)
-
-        paths, parts = zip(*paths_and_parts)
-        assert len(paths) == len(parts)
-        if len(paths) == 1:
-            return paths[0], parts[0]
-        else:
-            return paths, parts
+    @property
+    def parts(self):
+        return self._path_and_parts.parts
 
 
 class IndexedFileSource(FileSource):

@@ -1,7 +1,16 @@
 Version 0.5 Updates
 /////////////////////////
 
-Version 0.5.0
+
+Version 0.5.2
+===============
+
+Fixes
+++++++
+- fixed issue when retrievals like :ref:`data-sources-mars` failed when a datelist with exactly five elements was used
+
+
+Version 0.5.1
 ===============
 
 New features

@@ -14,7 +14,7 @@ from importlib import import_module
 
 from earthkit.data.core import Base
 from earthkit.data.core.settings import SETTINGS
-from earthkit.data.decorators import locked
+from earthkit.data.decorators import detect_out_filename, locked
 
 LOG = logging.getLogger(__name__)
 
@@ -32,6 +32,7 @@ class Reader(Base, os.PathLike, metaclass=ReaderMeta):
 
         self._source = weakref.ref(source)
         self.path = path
+        self.source_filename = self.source.source_filename
 
     @property
     def source(self):
@@ -60,6 +61,7 @@ class Reader(Base, os.PathLike, metaclass=ReaderMeta):
     def cache_file(self, *args, **kwargs):
         return self.source.cache_file(*args, **kwargs)
 
+    @detect_out_filename
     def save(self, path, **kwargs):
         mode = "wb" if self.binary else "w"
         with open(path, mode) as f:
