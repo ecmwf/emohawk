@@ -22,15 +22,20 @@ class GeoTIFFEncodedData(EncodedData):
     def __init__(self, ds):
         self.ds = ds
 
-    def to_bytes(self):
+    def to_bytes(self, **kwargs):
         import rasterio.io
 
-        m = rasterio.io.MemoryFile
-        self.ds.rio.to_raster(m, driver=self._GDAL_DRIVER)
+        m = rasterio.io.MemoryFile()
+        self._to_raster(m, **kwargs)
         return m.getbuffer()
 
-    def to_file(self, f):
-        self.ds.rio.to_raster(f, driver=self._GDAL_DRIVER)
+    def to_file(self, f, **kwargs):
+        self._to_raster(f, **kwargs)
+
+    def _to_raster(self, dst, **kwargs):
+        options = {"driver": self._GDAL_DRIVER}
+        options.update(kwargs)
+        self.ds.rio.to_raster(dst, **options)
 
     def metadata(self, key):
         raise NotImplementedError
@@ -51,7 +56,11 @@ class GeoTIFFEncoder(Encoder):
         return data._encode(self, **kwargs)
 
     def _encode(self, data, **kwargs):
-        return GeoTIFFEncodedData(data.to_xarray())
+        ds = data.to_xarray()
+        if ds.rio.crs is None:
+            crs = data.projection().to_cartopy_crs()
+            ds.rio.write_crs(crs, inplace=True)
+        return GeoTIFFEncodedData(ds)
 
     def _encode_field(self, field, **kwargs):
         return self._encode(field, **kwargs)
