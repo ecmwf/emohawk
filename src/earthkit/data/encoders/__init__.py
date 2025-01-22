@@ -19,7 +19,7 @@ LOG = logging.getLogger(__name__)
 
 
 """Assign encoders to file suffixes"""
-_SUFFIXES = {".grib": "grib", ".nc": "netcdf", ".png": "png"}
+_SUFFIXES = {".grib": "grib", ".nc": "netcdf", ".png": "png", ".tif": "geotiff", ".tiff": "geotiff"}
 
 
 class EncodedData(metaclass=ABCMeta):
