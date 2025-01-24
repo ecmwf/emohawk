@@ -67,19 +67,13 @@ class ArrayField(Field):
             self._metadata.get("number", None),
         )
 
-    def write(self, f, **kwargs):
-        r"""Write the field to a file object.
+    def _encode(self, encoder, **kwargs):
+        """Double dispatch to the encoder"""
+        values = kwargs.pop("values", None)
+        if values is None:
+            values = self.to_numpy(flatten=True)
 
-        Parameters
-        ----------
-        f: file object
-            The target file object.
-        **kwargs: dict, optional
-            Other keyword arguments passed to :meth:`data.writers.grib.GribWriter.write`.
-        """
-        from earthkit.data.writers import write
-
-        write(f, self, values=self.to_numpy(flatten=True), **kwargs)
+        return encoder._encode_field(self, values=values, **kwargs)
 
     @property
     def _metadata(self):

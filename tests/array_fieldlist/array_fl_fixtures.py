@@ -135,7 +135,7 @@ def check_array_fl_from_to_fieldlist(ds, ds_input, md_full, array_backend=None, 
 
 def check_save_to_disk(ds, len_ref, meta_ref):
     tmp = temp_file()
-    ds.save(tmp.path)
+    ds.to_target("file", tmp.path)
     assert os.path.exists(tmp.path)
     r_tmp = from_source("file", tmp.path)
     assert len(r_tmp) == len_ref

@@ -210,11 +210,11 @@ class GeoTIFFFieldList(FieldList):
     def describe(self, *args, **kwargs):
         self._not_implemented()
 
-    def save(self, filename, append=False, **kwargs):
-        self._not_implemented()
+    # def save(self, filename, append=False, **kwargs):
+    #     self._not_implemented()
 
-    def write(self, f, **kwargs):
-        self._not_implemented()
+    # def write(self, f, **kwargs):
+    #     self._not_implemented()
 
 
 class GeoTIFFReader(GeoTIFFFieldList, Reader):

@@ -16,8 +16,10 @@ from earthkit.data import from_source
 from earthkit.data.core.temporary import temp_file
 from earthkit.data.sources.stream import StreamFieldList
 from earthkit.data.testing import ARRAY_BACKENDS
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_examples_file
 from earthkit.data.testing import earthkit_remote_test_data_file
+from earthkit.data.testing import write_to_file
 
 
 def repeat_list_items(items, count):
@@ -332,12 +334,13 @@ def test_grib_from_stream_in_memory_convert_to_numpy(convert_kwargs, expected_sh
         assert ds1.to_numpy(**convert_kwargs).shape == expected_shape
 
 
-def test_grib_save_when_loaded_from_stream():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_save_when_loaded_from_stream(write_method):
     with open(earthkit_examples_file("test6.grib"), "rb") as stream:
         fs = from_source("stream", stream, read_all=True)
         assert len(fs) == 6
         with temp_file() as tmp:
-            fs.save(tmp)
+            write_to_file(write_method, tmp, fs)
             fs_saved = from_source("file", tmp)
             assert len(fs) == len(fs_saved)
 

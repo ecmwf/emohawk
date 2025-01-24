@@ -365,11 +365,27 @@ class XarrayEarthkitDataArray(XarrayEarthkit):
             )
         )
 
+    def _remove_earthkit_attrs(self):
+        """Create a copy of the dataarray and remove earthkit attributes."""
+        da = self._obj
+        if "_earthkit" in da.attrs:
+            da = da.copy()
+            del da.attrs["_earthkit"]
+        return da
+
     def _to_fields(self):
         from .grib import data_array_to_fields
 
         for f in data_array_to_fields(self._obj, metadata=self.metadata):
             yield f
+
+    def to_netcdf(self, *args, **kwargs):
+        """Remove earthkit attributes before writing to netcdf."""
+        ds = self._obj
+        if "_earthkit" in self._obj.attrs:
+            ds = self._remove_earthkit_attrs()
+
+        return ds.to_netcdf(*args, **kwargs)
 
 
 @xarray.register_dataset_accessor("earthkit")

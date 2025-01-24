@@ -36,17 +36,17 @@ class MetaBase(type):
 class Base(metaclass=MetaBase):
     # Convertors
     def to_numpy(self, **kwargs):
-        """Converts into a numpy array"""
+        """Convert into a numpy array"""
         self._not_implemented()
 
     @abstractmethod
     def to_xarray(self, **kwargs):
-        """Converts into an xarray dataset"""
+        """Convert into an xarray dataset"""
         self._not_implemented()
 
     @abstractmethod
     def to_pandas(self, **kwargs):
-        """Converts into a pandas dataframe"""
+        """Convert into a pandas dataframe"""
         self._not_implemented()
 
     # Change class
@@ -55,38 +55,33 @@ class Base(metaclass=MetaBase):
 
     @classmethod
     def merge(cls, *args, **kwargs):
-        """Merges the object with other ones."""
+        """Merge the object with other ones."""
         return None
 
     @abstractmethod
     def metadata(self, *args, **kwargs):
-        """Returns metadata."""
+        """Return metadata."""
         self._not_implemented()
 
     # I/O
     @abstractmethod
-    def save(self, path, **kwargs):
-        """Writes data into the specified ``path``."""
-        self._not_implemented()
-
-    @abstractmethod
-    def write(self, f, **kwargs):
-        """Writes data to the ``f`` file object."""
+    def to_target(self, *args, **kwargs):
+        """Write data into the specified target."""
         self._not_implemented()
 
     @abstractmethod
     def datetime(self):
-        """Returns datetime."""
+        """Return datetime."""
         self._not_implemented()
 
     @abstractmethod
     def bounding_box(self):
-        """Returns the bounding box."""
+        """Return the bounding box."""
         self._not_implemented()
 
     @abstractmethod
     def sel(self, *args, **kwargs):
-        """Filters the object based on metadata."""
+        """Filter the object based on metadata."""
         self._not_implemented()
 
     @abstractmethod

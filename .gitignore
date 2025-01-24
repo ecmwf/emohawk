@@ -216,8 +216,7 @@ docs/examples/earthkit_use_cases/*.grib
 docs/examples/_fdb
 docs/experimental/_*
 docs/experimental/*.grib*
-docs/experimental/*.png
-
+docs/experimental/*.png*
 
 # PyBuilder
 .pybuilder/

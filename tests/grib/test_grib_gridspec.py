@@ -20,8 +20,10 @@ from earthkit.data.core.gridspec import GridSpec
 from earthkit.data.core.temporary import temp_file
 from earthkit.data.readers.grib.gridspec import GridSpecConverter
 from earthkit.data.readers.grib.gridspec import make_gridspec
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_remote_test_data_file
 from earthkit.data.testing import earthkit_test_data_file
+from earthkit.data.testing import write_to_file
 
 SUPPORTED_GRID_TYPES = [
     "sh",
@@ -179,7 +181,8 @@ def test_grib_metadata_from_gridspec_invalid(metadata, gridspec, name):
         "test-data/grids/healpix/H4_nested.grib2",
     ],
 )
-def test_grib_gridspec_to_fieldlist(input_file):
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_gridspec_to_fieldlist(input_file, write_method):
     import numpy as np
 
     def make_lat_lon(dx):
@@ -234,7 +237,7 @@ def test_grib_gridspec_to_fieldlist(input_file):
 
     # save
     with temp_file() as tmp:
-        ds.save(tmp)
+        write_to_file(write_method, tmp, ds)
         assert os.path.exists(tmp)
         r_tmp = from_source("file", tmp)
 

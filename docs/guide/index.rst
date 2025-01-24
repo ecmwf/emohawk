@@ -8,6 +8,8 @@ User guide
    sources
    data
    data_format/index.rst
+   encoders
+   targets
    streams
    config
    caching

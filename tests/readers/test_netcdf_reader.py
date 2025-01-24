@@ -20,9 +20,11 @@ from earthkit.data import from_source
 from earthkit.data.core.temporary import temp_file
 from earthkit.data.readers.netcdf.field import NetCDFField
 from earthkit.data.testing import NO_CDS
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_examples_file
 from earthkit.data.testing import earthkit_file
 from earthkit.data.testing import earthkit_test_data_file
+from earthkit.data.testing import write_to_file
 
 
 def check_array(v, shape=None, first=None, last=None, meanv=None, eps=1e-3):
@@ -246,7 +248,8 @@ def test_get_fields_missing_standard_name_attr_in_coord_array():
 
 
 @pytest.mark.no_eccodes
-def test_netcdf_non_fieldlist():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_netcdf_non_fieldlist(write_method):
     ds = from_source("file", earthkit_test_data_file("hovexp_vert_area.nc"))
     with pytest.raises(TypeError):
         len(ds)
@@ -260,7 +263,7 @@ def test_netcdf_non_fieldlist():
     assert ds.to_numpy().shape == (1, 6, 5)
 
     with temp_file() as tmp:
-        ds.save(tmp)
+        write_to_file(write_method, tmp, ds)
         assert os.path.exists(tmp)
         ds_saved = from_source("file", tmp)
         assert ds_saved.to_xarray().identical(res)

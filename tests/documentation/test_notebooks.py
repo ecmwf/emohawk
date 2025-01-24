@@ -40,6 +40,7 @@ SKIP = [
     "ecmwf_open_data.ipynb",
     "shapefile.ipynb",
     "grib_to_xarray.ipynb",
+    "grib_to_fdb_target.ipynb",
     "xarray_engine.ipynb",
     "netcdf_opendap.ipynb",
 ]

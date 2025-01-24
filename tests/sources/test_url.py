@@ -18,9 +18,11 @@ from earthkit.data import config
 from earthkit.data import from_source
 from earthkit.data.core.temporary import temp_directory
 from earthkit.data.core.temporary import temp_file
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_examples_file
 from earthkit.data.testing import earthkit_remote_test_data_file
 from earthkit.data.testing import network_off
+from earthkit.data.testing import write_to_file
 
 
 @pytest.mark.skipif(  # TODO: fix
@@ -190,14 +192,15 @@ def test_url_part_file_source():
         assert f.read() == b"GRIB7777GRIB7777"
 
 
-def test_url_netcdf_source_save():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_url_netcdf_source_save(write_method):
     ds = from_source(
         "url",
         earthkit_remote_test_data_file("examples/test.nc"),
     )
 
     with temp_file() as tmp:
-        ds.save(tmp)
+        write_to_file(write_method, tmp, ds)
         assert os.path.exists(tmp)
         ds_saved = from_source("file", tmp)
         assert len(ds_saved) == 2

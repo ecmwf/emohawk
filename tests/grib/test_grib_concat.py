@@ -22,7 +22,7 @@ from earthkit.data.testing import earthkit_examples_file
 def _check_save_to_disk(ds, len_ref, meta_ref):
     # save to disk
     tmp = temp_file()
-    ds.save(tmp.path)
+    ds.to_target("file", tmp.path)
     assert os.path.exists(tmp.path)
     r_tmp = from_source("file", tmp.path)
     assert len(r_tmp) == len_ref

@@ -16,6 +16,8 @@ from earthkit.data.core.temporary import temp_file
 from earthkit.data.testing import NO_MARS
 from earthkit.data.testing import NO_MARS_API
 from earthkit.data.testing import NO_MARS_DIRECT
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
+from earthkit.data.testing import write_to_file
 
 
 @pytest.mark.long_test
@@ -167,7 +169,8 @@ def test_mars_grib_log_4():
 
 @pytest.mark.long_test
 @pytest.mark.download
-def test_mars_grib_save():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_mars_grib_save(write_method):
     ds = from_source(
         "mars",
         param="2t",
@@ -178,7 +181,7 @@ def test_mars_grib_save():
     assert len(ds) == 1
 
     with temp_file() as tmp:
-        ds.save(tmp)
+        write_to_file(write_method, tmp, ds)
 
         ds1 = from_source("file", tmp)
         assert len(ds1) == 1

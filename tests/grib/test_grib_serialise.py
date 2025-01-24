@@ -19,7 +19,9 @@ import pytest
 from earthkit.data import from_source
 from earthkit.data.core.temporary import temp_file
 from earthkit.data.readers.grib.metadata import StandAloneGribMetadata
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_examples_file
+from earthkit.data.testing import write_to_file
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
@@ -98,7 +100,8 @@ def test_grib_serialise_array_field_memory(fl_type, representation):
 
 @pytest.mark.parametrize("fl_type", FL_NUMPY)
 @pytest.mark.parametrize("representation", ["file", "memory"])
-def test_grib_serialise_array_fieldlist(fl_type, representation):
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_serialise_array_fieldlist(fl_type, representation, write_method):
     ds0, _ = load_grib_data("test.grib", fl_type)
     ds = ds0.to_fieldlist()
 
@@ -118,7 +121,7 @@ def test_grib_serialise_array_fieldlist(fl_type, representation):
     v1 = ds[0]._array
 
     with temp_file() as tmp:
-        ds2.save(tmp)
+        write_to_file(write_method, tmp, ds2)
         assert os.path.exists(tmp)
         r_tmp = from_source("file", tmp)
         assert len(ds2) == len(r_tmp)

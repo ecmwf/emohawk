@@ -15,10 +15,13 @@ import pytest
 
 from earthkit.data import from_source
 from earthkit.data.core.temporary import temp_file
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_examples_file
+from earthkit.data.testing import write_to_file
 
 
-def test_netcdf_fieldlist_save():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_netcdf_fieldlist_save(write_method):
     ds = from_source("file", earthkit_examples_file("test.nc"))
 
     # the file must be saved without loading the fields
@@ -26,7 +29,7 @@ def test_netcdf_fieldlist_save():
     assert ds._fields is None
 
     with temp_file() as tmp:
-        ds.save(tmp)
+        write_to_file(write_method, tmp, ds)
         # assert ds._reader._fields is None
         assert ds._fields is None
         assert os.path.exists(tmp)
@@ -34,27 +37,30 @@ def test_netcdf_fieldlist_save():
         assert len(r_tmp) == 2
 
 
-def test_netcdf_fieldlist_subset_save_1():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_netcdf_fieldlist_subset_save_1(write_method):
     ds = from_source("file", earthkit_examples_file("test.nc"))
     assert len(ds) == 2
     r = ds[1]
 
     tmp = temp_file()
     with pytest.raises(NotImplementedError):
-        r.save(tmp.path)
+        write_to_file(write_method, tmp.path, r)
 
 
-def test_netcdf_fieldlist_subset_save_2():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_netcdf_fieldlist_subset_save_2(write_method):
     ds = from_source("file", earthkit_examples_file("tuv_pl.nc"))
     assert len(ds) == 18
     r = ds[1:4]
 
     tmp = temp_file()
     with pytest.raises(NotImplementedError):
-        r.save(tmp.path)
+        write_to_file(write_method, tmp.path, r)
 
 
-def test_netcdf_fieldlist_multi_subset_save():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_netcdf_fieldlist_multi_subset_save(write_method):
     ds1 = from_source("file", earthkit_examples_file("test.nc"))
     ds2 = from_source("file", earthkit_examples_file("tuv_pl.nc"))
 
@@ -62,13 +68,14 @@ def test_netcdf_fieldlist_multi_subset_save():
     assert len(ds) == 20
 
     tmp = temp_file()
-    ds.save(tmp.path)
+    write_to_file(write_method, tmp.path, ds)
     assert os.path.exists(tmp.path)
     r_tmp = from_source("file", tmp.path)
     assert len(r_tmp) == 20
 
 
-def test_netcdf_fieldlist_multi_subset_save_bad():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_netcdf_fieldlist_multi_subset_save_bad(write_method):
     ds1 = from_source("file", earthkit_examples_file("test.nc"))
     ds2 = from_source("file", earthkit_examples_file("tuv_pl.nc"))
 
@@ -77,4 +84,4 @@ def test_netcdf_fieldlist_multi_subset_save_bad():
 
     tmp = temp_file()
     with pytest.raises(NotImplementedError):
-        ds.save(tmp.path)
+        write_to_file(write_method, tmp.path, ds)

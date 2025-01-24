@@ -301,20 +301,21 @@ class GribField(Field):
             self._metadata.get("number", None),
         )
 
-    def write(self, f, **kwargs):
-        r"""Write the message to a file object.
+    # def write(self, f, **kwargs):
+    #     r"""Write the message to a file object.
 
-        Parameters
-        ----------
-        f: file object
-            The target file object.
-        bits_per_value: int or None
-            Set the ``bitsPerValue`` GRIB key in the generated GRIB message. When
-            None the ``bitsPerValue`` stored in the metadata will be used.
-        """
-        from earthkit.data.writers import write
+    #     Parameters
+    #     ----------
+    #     f: file object
+    #         The target file object.
+    #     bits_per_value: int or None
+    #         Set the ``bitsPerValue`` GRIB key in the generated GRIB message. When
+    #         None the ``bitsPerValue`` stored in the metadata will be used.
+    #     """
+    #     self.handle.write(f)
+    #     # from earthkit.data.writers import write
 
-        write(f, self, **kwargs)
+    #     # write(f, self, **kwargs)
 
     def message(self):
         r"""Return a buffer containing the encoded message.

@@ -22,12 +22,15 @@ from .arguments.transformers import ALL
 from .core.caching import CACHE as cache
 from .core.config import CONFIG as config
 from .core.fieldlist import FieldList
+from .encoders import get_encoder
 from .indexing.fieldlist import SimpleFieldList
 from .readers.grib.output import new_grib_output
 from .sources import Source
 from .sources import from_source
 from .sources import from_source_lazily
 from .sources.array_list import ArrayField
+from .targets import get_target
+from .targets import to_target
 from .utils.examples import download_example_file
 from .utils.examples import remote_example_file
 
@@ -42,6 +45,8 @@ __all__ = [
     "from_source",
     "from_source_lazily",
     "from_object",
+    "get_encoder",
+    "get_target",
     "transform",
     "new_grib_output",
     "remote_example_file",
@@ -49,5 +54,6 @@ __all__ = [
     "settings",
     "SimpleFieldList",
     "Source",
+    "to_target",
     "__version__",
 ]

@@ -163,6 +163,16 @@ Xarray engine
     xarray_engine_split.ipynb
     xarray_engine_seasonal.ipynb
 
+Targets and encoders
++++++++++++++++++++++
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    grib_to_file_target.ipynb
+    grib_to_fdb_target.ipynb
+    grib_encoder.ipynb
 
 Miscellaneous
 +++++++++++++

@@ -221,6 +221,9 @@ class XArrayMetadata(RawMetadata):
     def ls_keys(self):
         return self.LS_KEYS
 
+    def data_format(self):
+        return "netcdf"
+
 
 class XArrayField(Field):
     def __init__(self, ds, variable, slices, non_dim_coords):

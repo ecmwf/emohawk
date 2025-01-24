@@ -18,7 +18,9 @@ import pytest
 from earthkit.data import from_source
 from earthkit.data.core.fieldlist import FieldList
 from earthkit.data.core.temporary import temp_file
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_examples_file
+from earthkit.data.testing import write_to_file
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, here)
@@ -26,7 +28,8 @@ from array_fl_fixtures import check_array_fl  # noqa: E402
 from array_fl_fixtures import check_array_fl_from_to_fieldlist  # noqa: E402
 
 
-def test_array_fl_grib_single_field():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_array_fl_grib_single_field(write_method):
     ds = from_source("file", earthkit_examples_file("test.grib"))
 
     assert ds[0].metadata("shortName") == "2t"
@@ -52,13 +55,14 @@ def test_array_fl_grib_single_field():
 
     # save to disk
     tmp = temp_file()
-    r.save(tmp.path)
+    write_to_file(write_method, tmp.path, r)
     assert os.path.exists(tmp.path)
     r_tmp = from_source("file", tmp.path)
     _check_field(r_tmp)
 
 
-def test_array_fl_grib_multi_field():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_array_fl_grib_multi_field(write_method):
     ds = from_source("file", earthkit_examples_file("test.grib"))
 
     assert ds[0].metadata("shortName") == "2t"
@@ -78,7 +82,7 @@ def test_array_fl_grib_multi_field():
 
     # save to disk
     tmp = temp_file()
-    r.save(tmp.path)
+    write_to_file(write_method, tmp.path, r)
     assert os.path.exists(tmp.path)
     r_tmp = from_source("file", tmp.path)
     assert len(r_tmp) == 2

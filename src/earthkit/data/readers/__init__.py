@@ -12,6 +12,8 @@ import os
 import weakref
 from importlib import import_module
 
+import deprecation
+
 from earthkit.data.core import Base
 from earthkit.data.core.config import CONFIG
 from earthkit.data.decorators import detect_out_filename
@@ -74,21 +76,38 @@ class Reader(Base, os.PathLike, metaclass=ReaderMeta):
         return self.source.cache_file(*args, **kwargs)
 
     @detect_out_filename
+    @deprecation.deprecated(deprecated_in="0.13.0", removed_in=None, details="Use to_target() instead")
     def save(self, path, **kwargs):
-        mode = "wb" if self.binary else "w"
-        with open(path, mode) as f:
-            self.write(f, **kwargs)
+        self.to_target("file", path, **kwargs)
 
+        # original code
+        # mode = "wb" if self.binary else "w"
+        # with open(path, mode) as f:
+        #     self.write(f, **kwargs)
+
+    @deprecation.deprecated(deprecated_in="0.13.0", removed_in=None, details="Use to_target() instead")
     def write(self, f, **kwargs):
-        if not self.appendable:
-            assert f.tell() == 0
-        mode = "rb" if self.binary else "r"
-        with open(self.path, mode) as g:
-            while True:
-                chunk = g.read(1024 * 1024)
-                if not chunk:
-                    break
-                f.write(chunk)
+        self.to_target("file", f, **kwargs)
+
+        # original code
+        # if not self.appendable:
+        #     assert f.tell() == 0
+        # mode = "rb" if self.binary else "r"
+        # with open(self.path, mode) as g:
+        #     while True:
+        #         chunk = g.read(1024 * 1024)
+        #         if not chunk:
+        #             break
+        #         f.write(chunk)
+
+    def _write(self, target, **kwargs):
+        assert target is not None
+        target._write_reader(self, **kwargs)
+
+    def to_target(self, target, *args, **kwargs):
+        from earthkit.data.targets import to_target
+
+        to_target(target, *args, data=self, **kwargs)
 
     def __fspath__(self):
         return self.path

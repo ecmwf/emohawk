@@ -185,7 +185,7 @@ def test_grib_metadata_headers_only_clone_true_grids(file):
     # save to disk, with the given bitsPerValue
     md_ref_tmp = dict(**md_ref_1)
     md_ref_tmp["bitsPerValue"] = 24
-    check_field_write(f, md_ref_tmp, shape_ref, vals_ref, bits_per_value=24)
+    check_field_write(f, md_ref_tmp, shape_ref, vals_ref, bitsPerValue=24)
 
     # create new field with modified bitsPerValue
     f = f.copy(metadata=f.metadata().override(bitsPerValue=8))
@@ -239,7 +239,7 @@ def test_grib_metadata_headers_only_clone_false_grids(file):
     # save to disk, with the given bitsPerValue
     md_ref_tmp = dict(**md_ref_1)
     md_ref_tmp["bitsPerValue"] = 24
-    check_field_write(f, md_ref_tmp, shape_ref, vals_ref, bits_per_value=24)
+    check_field_write(f, md_ref_tmp, shape_ref, vals_ref, bitsPerValue=24)
 
     # create new field with modified bitsPerValue
     f = f.copy(metadata=f.metadata().override(bitsPerValue=8, headers_only_clone=False))

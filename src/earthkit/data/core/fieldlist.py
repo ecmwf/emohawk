@@ -12,6 +12,8 @@ from abc import abstractmethod
 from collections import defaultdict
 from functools import cached_property
 
+import deprecation
+
 from earthkit.data.core import Base
 from earthkit.data.core.index import Index
 from earthkit.data.core.index import MaskIndex
@@ -668,6 +670,7 @@ class Field(Base):
         """
         return self._metadata.dump(namespace=namespace, **kwargs)
 
+    @deprecation.deprecated(deprecated_in="0.13.0", details="Use to_target() instead")
     def save(self, filename, append=False, **kwargs):
         r"""Write the field into a file.
 
@@ -680,15 +683,43 @@ class Field(Base):
             the target file be overwritten if already exists. Default is False
         **kwargs: dict, optional
             Other keyword arguments passed to :obj:`write`.
-
-        See Also
-        --------
-        :obj:`write`
-
         """
-        flag = "wb" if not append else "ab"
-        with open(filename, flag) as f:
-            self.write(f, **kwargs)
+        self.to_target("file", filename, append=append, **kwargs)
+        # the original implementation
+        # flag = "wb" if not append else "ab"
+        # with open(filename, flag) as f:
+        #     self.write(f, **kwargs)
+
+    @deprecation.deprecated(deprecated_in="0.13.0", details="Use to_target() instead")
+    def write(self, f, **kwargs):
+        self.to_target("file", f, **kwargs)
+
+    def _write(self, target, **kwargs):
+        assert target is not None
+        target._write(self, **kwargs)
+
+    def to_target(self, target, *args, **kwargs):
+        r"""Write the field into a target object.
+
+        Parameters
+        ----------
+        target: object
+            The target object to write the field into.
+        *args: tuple
+            Positional arguments used to specify the target object.
+        **kwargs: dict, optional
+            Other keyword arguments used to write the field into the target object.
+        """
+        from earthkit.data.targets import to_target
+
+        to_target(target, *args, data=self, **kwargs)
+
+    def default_encoder(self):
+        return self._metadata.data_format()
+
+    def _encode(self, encoder, **kwargs):
+        """Double dispatch to the encoder"""
+        return encoder._encode_field(self, **kwargs)
 
     def __getitem__(self, key):
         """Return the value of the metadata ``key``."""
@@ -1580,6 +1611,7 @@ class FieldList(Index):
                 return all(f._metadata.geography._unique_grid_id() == grid for f in self)
         return False
 
+    @deprecation.deprecated(deprecated_in="0.13.0", removed_in=None, details="Use to_target() instead")
     @detect_out_filename
     def save(self, filename, append=False, **kwargs):
         r"""Write all the fields into a file.
@@ -1601,10 +1633,19 @@ class FieldList(Index):
         :meth:`SimpleFieldList.save() <data.indexing.fieldlist.SimpleFieldList.save>`
 
         """
-        flag = "wb" if not append else "ab"
-        with open(filename, flag) as f:
-            self.write(f, **kwargs)
+        metadata = {}
+        bits_per_value = kwargs.pop("bits_per_value", None)
+        if bits_per_value is not None:
+            metadata = {"bitsPerValue": bits_per_value}
 
+        self.to_target("file", filename, append=append, metadata=metadata, **kwargs)
+
+        # original code
+        # flag = "wb" if not append else "ab"
+        # with open(filename, flag) as f:
+        #     self.write(f, **kwargs)
+
+    @deprecation.deprecated(deprecated_in="0.13.0", removed_in=None, details="Use to_target() instead")
     def write(self, f, **kwargs):
         r"""Write all the fields to a file object.
 
@@ -1620,8 +1661,29 @@ class FieldList(Index):
         read
 
         """
-        for s in self:
-            s.write(f, **kwargs)
+
+        metadata = {}
+        bits_per_value = kwargs.pop("bits_per_value", None)
+        if bits_per_value is not None:
+            metadata = {"bitsPerValue": bits_per_value}
+
+        self.to_target("file", f, metadata=metadata, **kwargs)
+
+        # original code
+        # for s in self:
+        #     s.write(f, **kwargs)
+
+    def _write(self, target, **kwargs):
+        assert target is not None
+        target._write(self, **kwargs)
+
+    def default_encoder(self):
+        if len(self) > 0:
+            return self[0]._metadata.data_format()
+
+    def _encode(self, encoder, **kwargs):
+        """Double dispatch to the encoder"""
+        return encoder._encode_fieldlist(self, **kwargs)
 
     def to_tensor(self, *args, **kwargs):
         from earthkit.data.indexing.tensor import FieldListTensor

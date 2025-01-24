@@ -11,6 +11,8 @@ import logging
 from functools import cached_property
 from itertools import product
 
+import deprecation
+
 from earthkit.data.core.fieldlist import FieldList
 from earthkit.data.core.index import MaskIndex
 from earthkit.data.core.index import MultiIndex
@@ -221,6 +223,19 @@ class XArrayFieldListCore(FieldList):
     def new_mask_index(cls, *args, **kwargs):
         return XArrayMaskFieldList(*args, **kwargs)
 
+    def _write(self, target, **kwargs):
+        assert target is not None
+        encoder = kwargs.get("encoder", None)
+        if encoder is None and kwargs.get("default_encoder", None) is None:
+            kwargs["default_encoder"] = "netcdf"
+        target._write(self, **kwargs)
+
+    def _encode_grib(self, encoder, **kwargs):
+        return encoder._from_xarray(self.to_xarray(), **kwargs)
+
+    def default_encoder(self):
+        return "netcdf"
+
 
 class XArrayFieldList(XArrayFieldListCore):
     VERSION = 1
@@ -283,8 +298,11 @@ class NetCDFFieldList(XArrayFieldListCore):
         #     return xr.open_dataset(self.path, **kwargs)
         return type(self).to_xarray_multi_from_paths([self.path], **kwargs)
 
-    def write(self, *args, **kwargs):
-        return self.to_netcdf(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     return self.to_netcdf(*args, **kwargs)
+
+    # def write(self, *args, **kwargs):
+    #     return self.to_netcdf(*args, **kwargs)
 
 
 class NetCDFFieldListFromFileOrURL(NetCDFFieldList):
@@ -339,9 +357,11 @@ class NetCDFMaskFieldList(NetCDFFieldList, MaskIndex):
     def to_xarray(self, *args, **kwargs):
         self._not_implemented()
 
+    @deprecation.deprecated(deprecated_in="0.13.0", removed_in=None, details="Use to_target() instead")
     def write(self, *args, **kwargs):
         self._not_implemented()
 
+    @deprecation.deprecated(deprecated_in="0.13.0", removed_in=None, details="Use to_target() instead")
     def save(self, *args, **kwargs):
         self._not_implemented()
 

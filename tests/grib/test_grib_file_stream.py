@@ -18,9 +18,11 @@ from earthkit.data import from_source
 from earthkit.data.core.temporary import temp_directory
 from earthkit.data.core.temporary import temp_file
 from earthkit.data.sources.stream import StreamFieldList
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_examples_file
 from earthkit.data.testing import earthkit_remote_test_data_file
 from earthkit.data.testing import make_tgz
+from earthkit.data.testing import write_to_file
 
 
 def repeat_list_items(items, count):
@@ -152,7 +154,8 @@ def test_grib_file_stream_in_memory():
     assert np.allclose(vals, ref)
 
 
-def test_grib_save_when_loaded_from_file_stream():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_save_when_loaded_from_file_stream(write_method):
     ds = from_source(
         "file",
         earthkit_examples_file("test6.grib"),
@@ -161,7 +164,7 @@ def test_grib_save_when_loaded_from_file_stream():
     )
     assert len(ds) == 6
     with temp_file() as tmp:
-        ds.save(tmp)
+        write_to_file(write_method, tmp, ds)
         ds_saved = from_source("file", tmp)
         assert len(ds) == len(ds_saved)
 
@@ -458,12 +461,13 @@ def test_grib_file_stream_multi_file_parts(parts1, parts2, expected_meta):
     assert sum([1 for _ in ds]) == 0
 
 
-def test_grib_file_stream_glob():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_file_stream_glob(write_method):
     s1 = from_source("file", earthkit_examples_file("test.grib"))
     s2 = from_source("file", earthkit_examples_file("test4.grib"))
     with temp_directory() as tmpdir:
-        s1.save(os.path.join(tmpdir, "a.grib"))
-        s2.save(os.path.join(tmpdir, "b.grib"))
+        write_to_file(write_method, os.path.join(tmpdir, "a.grib"), s1)
+        write_to_file(write_method, os.path.join(tmpdir, "b.grib"), s2)
 
         ds = from_source("file", os.path.join(tmpdir, "*a.grib"), stream=True)
 
@@ -486,12 +490,13 @@ def test_grib_file_stream_glob():
         assert sum([1 for _ in ds]) == 0
 
 
-def test_grib_file_stream_single_directory():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_file_stream_single_directory(write_method):
     s1 = from_source("file", earthkit_examples_file("test.grib"))
     s2 = from_source("file", earthkit_examples_file("test4.grib"))
     with temp_directory() as tmpdir:
-        s1.save(os.path.join(tmpdir, "a.grib"))
-        s2.save(os.path.join(tmpdir, "b.grib"))
+        write_to_file(write_method, os.path.join(tmpdir, "a.grib"), s1)
+        write_to_file(write_method, os.path.join(tmpdir, "b.grib"), s2)
 
         ds = from_source("file", tmpdir, stream=True)
 
@@ -518,17 +523,18 @@ def test_grib_file_stream_single_directory():
         assert sum([1 for _ in ds]) == 0
 
 
-def test_grib_file_stream_multi_directory():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_file_stream_multi_directory(write_method):
     s1 = from_source("file", earthkit_examples_file("test.grib"))
     s2 = from_source("file", earthkit_examples_file("test4.grib"))
     s3 = from_source("file", earthkit_examples_file("test6.grib"))
     with temp_directory() as tmpdir1:
-        s1.save(os.path.join(tmpdir1, "a.grib"))
-        s2.save(os.path.join(tmpdir1, "b.grib"))
+        write_to_file(write_method, os.path.join(tmpdir1, "a.grib"), s1)
+        write_to_file(write_method, os.path.join(tmpdir1, "b.grib"), s2)
 
         with temp_directory() as tmpdir2:
-            s1.save(os.path.join(tmpdir2, "a.grib"))
-            s3.save(os.path.join(tmpdir2, "b.grib"))
+            write_to_file(write_method, os.path.join(tmpdir2, "a.grib"), s1)
+            write_to_file(write_method, os.path.join(tmpdir2, "b.grib"), s3)
 
             ds = from_source("file", [tmpdir1, tmpdir2], stream=True)
 
@@ -561,12 +567,13 @@ def test_grib_file_stream_multi_directory():
 
 
 @pytest.mark.parametrize("filter_kwarg", [(lambda x: "b.grib" in x), ("*b.grib")])
-def test_grib_file_stream_single_directory_filter(filter_kwarg):
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_file_stream_single_directory_filter(filter_kwarg, write_method):
     s1 = from_source("file", earthkit_examples_file("test.grib"))
     s2 = from_source("file", earthkit_examples_file("test4.grib"))
     with temp_directory() as tmpdir:
-        s1.save(os.path.join(tmpdir, "a.grib"))
-        s2.save(os.path.join(tmpdir, "b.grib"))
+        write_to_file(write_method, os.path.join(tmpdir, "a.grib"), s1)
+        write_to_file(write_method, os.path.join(tmpdir, "b.grib"), s2)
 
         ds = from_source("file", tmpdir, filter=filter_kwarg, stream=True)
 
@@ -589,17 +596,18 @@ def test_grib_file_stream_single_directory_filter(filter_kwarg):
 
 
 @pytest.mark.parametrize("filter_kwarg", [(lambda x: "b.grib" in x), ("*b.grib")])
-def test_grib_file_stream_multi_directory_filter(filter_kwarg):
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_file_stream_multi_directory_filter(filter_kwarg, write_method):
     s1 = from_source("file", earthkit_examples_file("test.grib"))
     s2 = from_source("file", earthkit_examples_file("test4.grib"))
     s3 = from_source("file", earthkit_examples_file("test6.grib"))
     with temp_directory() as tmpdir1:
-        s1.save(os.path.join(tmpdir1, "a.grib"))
-        s2.save(os.path.join(tmpdir1, "b.grib"))
+        write_to_file(write_method, os.path.join(tmpdir1, "a.grib"), s1)
+        write_to_file(write_method, os.path.join(tmpdir1, "b.grib"), s2)
 
         with temp_directory() as tmpdir2:
-            s1.save(os.path.join(tmpdir2, "a.grib"))
-            s3.save(os.path.join(tmpdir2, "b.grib"))
+            write_to_file(write_method, os.path.join(tmpdir2, "a.grib"), s1)
+            write_to_file(write_method, os.path.join(tmpdir2, "b.grib"), s3)
 
             ds = from_source("file", [tmpdir1, tmpdir2], filter=filter_kwarg, stream=True)
 
@@ -627,17 +635,18 @@ def test_grib_file_stream_multi_directory_filter(filter_kwarg):
             assert sum([1 for _ in ds]) == 0
 
 
-def test_grib_file_stream_multi_directory_with_tar():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_file_stream_multi_directory_with_tar(write_method):
     s1 = from_source("file", earthkit_examples_file("test.grib"))
     s2 = from_source("file", earthkit_examples_file("test4.grib"))
     s3 = from_source("file", earthkit_examples_file("test6.grib"))
     with temp_directory() as tmpdir1:
-        s1.save(os.path.join(tmpdir1, "a.grib"))
-        s2.save(os.path.join(tmpdir1, "b.grib"))
+        write_to_file(write_method, os.path.join(tmpdir1, "a.grib"), s1)
+        write_to_file(write_method, os.path.join(tmpdir1, "b.grib"), s2)
 
         with temp_directory() as tmpdir2:
-            s1.save(os.path.join(tmpdir2, "a.grib"))
-            s3.save(os.path.join(tmpdir2, "b.grib"))
+            write_to_file(write_method, os.path.join(tmpdir2, "a.grib"), s1)
+            write_to_file(write_method, os.path.join(tmpdir2, "b.grib"), s3)
 
             paths = [os.path.join(tmpdir2, f) for f in ["a.grib", "b.grib"]]
             make_tgz(tmpdir2, "test.tar.gz", paths)

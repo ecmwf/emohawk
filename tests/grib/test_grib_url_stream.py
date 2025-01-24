@@ -15,7 +15,9 @@ import pytest
 from earthkit.data import from_source
 from earthkit.data.core.temporary import temp_file
 from earthkit.data.sources.stream import StreamFieldList
+from earthkit.data.testing import WRITE_TO_FILE_METHODS
 from earthkit.data.testing import earthkit_remote_test_data_file
+from earthkit.data.testing import write_to_file
 
 
 def repeat_list_items(items, count):
@@ -147,7 +149,8 @@ def test_grib_url_stream_in_memory():
     assert np.allclose(vals, ref)
 
 
-def test_grib_save_when_loaded_from_url_stream():
+@pytest.mark.parametrize("write_method", WRITE_TO_FILE_METHODS)
+def test_grib_save_when_loaded_from_url_stream(write_method):
     ds = from_source(
         "url",
         earthkit_remote_test_data_file("examples/test6.grib"),
@@ -156,7 +159,7 @@ def test_grib_save_when_loaded_from_url_stream():
     )
     assert len(ds) == 6
     with temp_file() as tmp:
-        ds.save(tmp)
+        write_to_file(write_method, tmp, ds)
         ds_saved = from_source("file", tmp)
         assert len(ds) == len(ds_saved)
 

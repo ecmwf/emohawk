@@ -150,6 +150,22 @@ class ClonedFieldCore:
     def handle(self):
         return self._metadata._handle
 
+    def _encode(self, encoder, **kwargs):
+        """Double dispatch to the encoder"""
+        md = {}
+        # wrapped metadata
+        if hasattr(self._metadata, "extra"):
+            md = {k: self._metadata._extra_value(k) for k, v in self._metadata.extra.items()}
+
+        metadata = kwargs.pop("metadata", {})
+        metadata.update(md)
+
+        values = kwargs.pop("values", None)
+        if values is None:
+            values = self._values()
+
+        return encoder._encode_field(self, values=values, metadata=metadata, **kwargs)
+
 
 # For backwards compatibility
 FieldArray = SimpleFieldList

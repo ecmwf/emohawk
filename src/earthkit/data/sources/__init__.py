@@ -99,6 +99,14 @@ class Source(Base):
     def graph(self, depth=0):
         print(" " * depth, self)
 
+    def to_target(self, target, *args, **kwargs):
+        from earthkit.data.targets import to_target
+
+        to_target(target, *args, data=self, **kwargs)
+
+    def default_encoder(self):
+        return None
+
 
 class SourceLoader:
     kind = "source"
