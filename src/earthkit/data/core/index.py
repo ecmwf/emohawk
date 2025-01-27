@@ -633,10 +633,17 @@ class MaskIndex(Index):
 
 class MultiIndex(Index):
     def __init__(self, indexes, *args, **kwargs):
-        self._indexes = list(indexes)
+        self._indexes = list(self._flatten(indexes))
         super().__init__(*args, **kwargs)
         # self.indexes = list(i for i in indexes if len(i))
         # TODO: propagate  index._init_args, index._init_order_by, index._init_kwargs, for each i in indexes?
+
+    def _flatten(self, indexes):
+        for i in indexes:
+            if isinstance(i, MultiIndex):
+                yield from self._flatten(i._indexes)
+            else:
+                yield i
 
     def sel(self, *args, **kwargs):
         if not args and not kwargs:
