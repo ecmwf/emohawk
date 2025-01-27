@@ -28,6 +28,7 @@ from .sources import Source
 from .sources import from_source
 from .sources import from_source_lazily
 from .sources.array_list import ArrayField
+from .utils import array as array_api
 from .utils.examples import download_example_file
 from .utils.examples import remote_example_file
 
@@ -35,6 +36,7 @@ settings = config
 
 __all__ = [
     "ALL",
+    "array_api",
     "ArrayField",
     "cache",
     "download_example_file",
